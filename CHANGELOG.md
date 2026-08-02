@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 — 2026-08-03
+
+- Add configurable dock mop-drying state and formatted remaining-time display beside the vacuum state.
+- Surface dock-side mop washing from the detailed Roborock status sensor even while Home Assistant reports the vacuum as docked.
+- Use Home Assistant's high-level Roborock Cleaning mode select for true Vacuum mode instead of the incompatible mop-intensity `off` workaround.
+- Add an explicit, tested `set_clean_motor_mode` fallback for true Vacuum mode on Home Assistant 2026.7 and older.
+
 ## 0.1.1 — 2026-08-03
 
 - Fix the production bundle failing to load in Home Assistant when the browser has no Node.js `process` global.

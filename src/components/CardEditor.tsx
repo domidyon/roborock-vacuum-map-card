@@ -113,8 +113,11 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
         <h3>Entities</h3>
         {([
           ['map_select', 'select', 'Floor selector'],
+          ['cleaning_mode', 'select', 'Cleaning mode'],
           ['mop_mode', 'select', 'Mop mode'],
           ['mop_intensity', 'select', 'Mop intensity'],
+          ['dock_mop_drying', 'binary_sensor', 'Dock mop drying'],
+          ['dock_mop_drying_remaining_time', 'sensor', 'Dock mop drying remaining time'],
           ['battery', 'sensor', 'Battery'],
           ['current_room', 'sensor', 'Current room'],
           ['cleaning_area', 'sensor', 'Cleaning area'],
@@ -125,6 +128,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
         ] as const).map(([key, domain, label]) => (
           <label key={key}>{label}<SelectEntity hass={hass} domain={domain} optional value={config.entities?.[key]} onChange={(value) => onChange({ ...config, entities: { ...config.entities, [key]: value } })} /></label>
         ))}
+        <label className="checkbox"><input type="checkbox" checked={config.vacuum_mode_fallback === 'set_clean_motor_mode'} onChange={(event) => onChange({ ...config, vacuum_mode_fallback: event.target.checked ? 'set_clean_motor_mode' : undefined })} /> Use atomic Vacuum-mode fallback (Home Assistant 2026.7 and older)</label>
       </section>
 
       <section>

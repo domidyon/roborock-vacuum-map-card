@@ -33,14 +33,23 @@ svg { width: 20px; height: 20px; stroke-width: 2; }
   padding: 20px 20px 14px;
 
   h1 { margin: 0 0 4px; font-size: 22px; line-height: 1.2; }
-  > div:first-child > span { color: var(--rvm-muted); font-size: 14px; text-transform: capitalize; vertical-align: middle; }
 }
+
+.state-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  color: var(--rvm-muted);
+  font-size: 14px;
+  text-transform: capitalize;
+}
+.state-line .state-detail { text-transform: none; }
 
 .state-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
-  margin-right: 7px;
   border-radius: 50%;
   background: var(--rvm-muted);
 }

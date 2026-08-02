@@ -69,6 +69,24 @@ async function selectOption(
   }
 }
 
+async function setLegacyVacuumMode(hass: HomeAssistant, config: RoborockVacuumMapCardConfig): Promise<void> {
+  const mode: Record<string, number> = {
+    fan_power: 102,
+    water_box_mode: 200,
+  };
+  if (config.entities?.mop_mode) mode.mop_mode = 300;
+  try {
+    await hass.callService(
+      'vacuum',
+      'send_command',
+      { command: 'set_clean_motor_mode', params: [mode] },
+      { entity_id: config.entity },
+    );
+  } catch (error) {
+    throw new JobExecutionError('set_cleaning_mode', error instanceof Error ? error.message : String(error), { cause: error });
+  }
+}
+
 export async function executeJob({
   getHass,
   config,
@@ -87,7 +105,6 @@ export async function executeJob({
   if (errorEntity && !['none', 'unknown', 'unavailable', ''].includes(errorEntity.state)) {
     throw new JobExecutionError('preflight', `Vacuum error: ${errorEntity.state}`);
   }
-
   const areaIds = [...new Set(rooms.map((room) => room.area_id).filter((value): value is string => Boolean(value)))];
   if (areaIds.length === 0) throw new JobExecutionError('preflight', 'Select at least one room mapped to a Home Assistant area');
 
@@ -102,6 +119,16 @@ export async function executeJob({
     if (!mopMode) throw new JobExecutionError('set_smartplan', 'SmartPlan requires a mop-mode entity');
     await selectOption(getHass, mopMode, 'smart_mode', 'set_smartplan', timeoutMs, pollMs, sleep);
   } else {
+    const cleaningMode = config.entities?.cleaning_mode;
+    if (cleaningMode && entityAvailable(getHass(), cleaningMode)) {
+      const option = draft.cleaning_type === 'vacuum' ? 'vacuum' : 'vac_and_mop';
+      await selectOption(getHass, cleaningMode, option, 'set_cleaning_mode', timeoutMs, pollMs, sleep);
+    } else if (draft.cleaning_type === 'vacuum' && config.vacuum_mode_fallback === 'set_clean_motor_mode') {
+      await setLegacyVacuumMode(getHass(), config);
+    } else if (draft.cleaning_type === 'vacuum') {
+      throw new JobExecutionError('set_cleaning_mode', 'Vacuum-only requires a cleaning-mode entity');
+    }
+
     const mopMode = config.entities?.mop_mode;
     if (draft.mop_mode) {
       if (!mopMode) throw new JobExecutionError('set_mop_mode', 'The selected profile requires a mop-mode entity');
@@ -112,7 +139,7 @@ export async function executeJob({
       await selectOption(getHass, mopMode, draft.mop_mode, 'set_mop_mode', timeoutMs, pollMs, sleep);
     }
 
-    if (draft.mop_intensity) {
+    if (draft.cleaning_type !== 'vacuum' && draft.mop_intensity) {
       const mopIntensity = config.entities?.mop_intensity;
       if (!mopIntensity) throw new JobExecutionError('set_mop_intensity', 'The selected profile requires a mop-intensity entity');
       await selectOption(getHass, mopIntensity, draft.mop_intensity, 'set_mop_intensity', timeoutMs, pollMs, sleep);

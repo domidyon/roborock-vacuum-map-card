@@ -21,11 +21,13 @@ export function detectCapabilities(hass: HomeAssistant, config: RoborockVacuumMa
     ? vacuum.attributes.fan_speed_list.map(String)
     : [];
   const mapOptions = options(hass, config.entities?.map_select);
+  const cleaningModes = options(hass, config.entities?.cleaning_mode);
   const mopModes = options(hass, config.entities?.mop_mode);
   const mopIntensities = options(hass, config.entities?.mop_intensity);
   return {
     fanSpeeds,
     mapOptions,
+    cleaningModes,
     mopModes,
     mopIntensities,
     canStart: Boolean(supported & FEATURE.start),
@@ -33,6 +35,7 @@ export function detectCapabilities(hass: HomeAssistant, config: RoborockVacuumMa
     canStop: Boolean(supported & FEATURE.stop),
     canDock: Boolean(supported & FEATURE.returnHome),
     hasMapSelect: mapOptions.length > 0,
+    hasCleaningMode: cleaningModes.length > 0,
     hasMopMode: mopModes.length > 0,
     hasMopIntensity: mopIntensities.length > 0,
   };

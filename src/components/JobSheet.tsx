@@ -50,6 +50,8 @@ export function JobSheet({
   onClose,
   onStart,
 }: JobSheetProps) {
+  const vacuumOnlyAvailable = presets.find(({ preset }) => preset.id === 'vacuum_only')?.available ?? false;
+
   return (
     <div className="sheet-layer" role="presentation">
       <button type="button" className="sheet-backdrop" aria-label={t(language, 'close')} onClick={onClose} />
@@ -92,13 +94,14 @@ export function JobSheet({
                       type="button"
                       key={type}
                       className={draft.cleaning_type === type ? 'active' : ''}
+                      disabled={submitting || (type === 'vacuum' && !vacuumOnlyAvailable)}
+                      title={type === 'vacuum' && !vacuumOnlyAvailable ? t(language, 'unsupported') : undefined}
                       onClick={() =>
                         onDraftChange({
                           ...draft,
                           preset_id: 'custom_draft',
                           cleaning_type: type,
-                          mop_mode: type === 'vacuum' && capabilities.mopModes.includes('custom') ? 'custom' : draft.mop_mode,
-                          mop_intensity: type === 'vacuum' && capabilities.mopIntensities.includes('off') ? 'off' : draft.mop_intensity,
+                          mop_mode: type === 'vacuum' && capabilities.mopModes.includes('standard') ? 'standard' : draft.mop_mode,
                         })
                       }
                     >
@@ -121,7 +124,7 @@ export function JobSheet({
                   onChange={(mop_mode) => onDraftChange({ ...draft, preset_id: 'custom_draft', mop_mode })}
                 />
               )}
-              {capabilities.hasMopIntensity && (
+              {draft.cleaning_type !== 'vacuum' && capabilities.hasMopIntensity && (
                 <Choice
                   label={t(language, 'mopIntensity')}
                   value={draft.mop_intensity}

@@ -62,4 +62,21 @@ describe('vacuum card flows', () => {
     release();
     await waitFor(() => expect(calls.filter((call) => call === 'vacuum.clean_area')).toHaveLength(1));
   });
+
+  it('shows mop drying and its formatted remaining time alongside docked', () => {
+    const hass = createHass();
+    hass.states['binary_sensor.mop_drying'].state = 'on';
+    hass.states['sensor.mop_drying_remaining'].state = '3.9';
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    const stateLine = screen.getByText('docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('docked · Drying mop · 3 h 54 min remaining');
+  });
+
+  it('shows a dock-side mop wash as active detail instead of only docked', () => {
+    const hass = createHass();
+    hass.states['sensor.status'] = { entity_id: 'sensor.status', state: 'washing_the_mop', attributes: {} };
+    render(<VacuumCard hass={hass} config={{ ...configFixture, entities: { ...configFixture.entities, status: 'sensor.status' } }} />);
+    const stateLine = screen.getByText('docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('docked · Washing mop');
+  });
 });

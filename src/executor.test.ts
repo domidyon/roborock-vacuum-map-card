@@ -62,7 +62,7 @@ describe('job executor', () => {
       config: configFixture,
       floor: configFixture.floors[0],
       rooms: [configFixture.floors[0].rooms[0]],
-      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', mop_mode: 'custom', mop_intensity: 'off' },
+      draft: { preset_id: 'vacuum_and_mop', strategy: 'custom', cleaning_type: 'vacuum_and_mop', fan_speed: 'balanced', mop_mode: 'custom', mop_intensity: 'off' },
       pollMs: 0,
     })).rejects.toMatchObject({ operation: 'set_fan_speed' });
     expect(calls).not.toContain('vacuum.clean_area');
@@ -72,5 +72,60 @@ describe('job executor', () => {
     const hass = createHass();
     hass.states['vacuum.roborock'].state = 'cleaning';
     await expect(executeJob({ getHass: () => hass, config: configFixture, floor: configFixture.floors[0], rooms: [], draft: { preset_id: 'x', strategy: 'custom', cleaning_type: 'vacuum' } })).rejects.toMatchObject({ operation: 'preflight' });
+  });
+
+  it('uses the high-level Vacuum mode and never sends mop intensity off', async () => {
+    const hass = createHass();
+    const calls: string[] = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push(`${domain}.${service}:${String(data?.option ?? data?.fan_speed ?? (data?.cleaning_area_id as string[] | undefined)?.join(','))}`);
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    await executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', mop_mode: 'standard' },
+      pollMs: 0,
+    });
+    expect(calls).toEqual([
+      'select.select_option:vacuum',
+      'select.select_option:standard',
+      'vacuum.set_fan_speed:balanced',
+      'vacuum.clean_area:kitchen',
+    ]);
+    expect(calls.some((call) => call.includes(':off'))).toBe(false);
+  });
+
+  it('uses one atomic Vacuum-mode command on Home Assistant 2026.7 and older', async () => {
+    const hass = createHass();
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data });
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    await executeJob({
+      getHass: () => hass,
+      config: {
+        ...configFixture,
+        entities: { ...configFixture.entities, cleaning_mode: 'select.not_installed_yet' },
+        vacuum_mode_fallback: 'set_clean_motor_mode',
+      },
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', mop_mode: 'standard' },
+      pollMs: 0,
+    });
+    expect(calls[0]).toEqual({
+      domain: 'vacuum',
+      service: 'send_command',
+      data: {
+        command: 'set_clean_motor_mode',
+        params: [{ fan_power: 102, water_box_mode: 200, mop_mode: 300 }],
+      },
+    });
+    expect(calls.some(({ domain, data }) => domain === 'select' && data?.option === 'off')).toBe(false);
+    expect(calls.at(-1)).toMatchObject({ domain: 'vacuum', service: 'clean_area' });
   });
 });

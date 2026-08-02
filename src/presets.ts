@@ -14,8 +14,7 @@ export const BUILT_IN_PRESETS: PresetConfig[] = [
     strategy: 'custom',
     cleaning_type: 'vacuum',
     fan_speed: 'balanced',
-    mop_mode: 'custom',
-    mop_intensity: 'off',
+    mop_mode: 'standard',
   },
   {
     id: 'vacuum_and_mop',
@@ -24,7 +23,7 @@ export const BUILT_IN_PRESETS: PresetConfig[] = [
     strategy: 'custom',
     cleaning_type: 'vacuum_and_mop',
     fan_speed: 'balanced',
-    mop_mode: 'custom',
+    mop_mode: 'standard',
     mop_intensity: 'medium',
   },
   {
@@ -37,7 +36,16 @@ export const BUILT_IN_PRESETS: PresetConfig[] = [
   },
 ];
 
-function missingOption(capabilities: RoborockCapabilities, preset: PresetConfig): string | undefined {
+function missingOption(
+  config: RoborockVacuumMapCardConfig,
+  capabilities: RoborockCapabilities,
+  preset: PresetConfig,
+): string | undefined {
+  const canSetVacuumMode = capabilities.cleaningModes.includes('vacuum')
+    || config.vacuum_mode_fallback === 'set_clean_motor_mode';
+  if (preset.cleaning_type === 'vacuum' && !canSetVacuumMode) {
+    return 'cleaning mode “vacuum”';
+  }
   if (preset.fan_speed && !capabilities.fanSpeeds.includes(preset.fan_speed)) return `fan speed “${preset.fan_speed}”`;
   if (preset.mop_mode && !capabilities.mopModes.includes(preset.mop_mode)) return `mop mode “${preset.mop_mode}”`;
   if (preset.mop_intensity && !capabilities.mopIntensities.includes(preset.mop_intensity)) {
@@ -51,7 +59,7 @@ export function getAvailablePresets(
   capabilities: RoborockCapabilities,
 ): AvailablePreset[] {
   return [...BUILT_IN_PRESETS, ...(config.presets ?? [])].map((preset) => {
-    const missing = missingOption(capabilities, preset);
+    const missing = missingOption(config, capabilities, preset);
     return {
       preset,
       available: !missing,

@@ -26,6 +26,35 @@ function stateText(hass: HomeAssistant, entityId?: string): string | undefined {
   return `${entity.state}${entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : ''}`;
 }
 
+function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, language: 'en' | 'nl' | undefined): string | undefined {
+  if (!entityId) return undefined;
+  const entity = hass.states[entityId];
+  if (!entity || ['unknown', 'unavailable'].includes(entity.state)) return undefined;
+  const value = Number(entity.state);
+  if (!Number.isFinite(value) || value < 0) return undefined;
+  const unit = String(entity.attributes.unit_of_measurement ?? '');
+  const minutes = unit === 's'
+    ? value / 60
+    : unit === 'min'
+      ? value
+      : unit === 'd'
+        ? value * 24 * 60
+        : value * 60;
+  const roundedMinutes = Math.max(0, Math.round(minutes));
+  const hours = Math.floor(roundedMinutes / 60);
+  const remainingMinutes = roundedMinutes % 60;
+  const parts = [
+    hours > 0 ? `${hours} ${language === 'nl' ? 'u' : 'h'}` : undefined,
+    remainingMinutes > 0 || hours === 0 ? `${remainingMinutes} min` : undefined,
+  ].filter(Boolean);
+  return `${parts.join(' ')} ${t(language, 'remaining')}`;
+}
+
+function detailedActivity(language: 'en' | 'nl' | undefined, state?: string): string | undefined {
+  if (state === 'washing_the_mop') return t(language, 'washingMop');
+  return undefined;
+}
+
 function initialFloor(config: RoborockVacuumMapCardConfig, hass: HomeAssistant): FloorConfig {
   const current = config.entities?.map_select ? hass.states[config.entities.map_select]?.state : undefined;
   return config.floors.find((floor) => floor.map_select_option === current) ?? config.floors[0];
@@ -54,20 +83,31 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     hassRef.current = hass;
   }, [hass]);
 
+  const detailedStatus = config.entities?.status ? hass.states[config.entities.status]?.state : undefined;
+  const jobActive = isVacuumActive(vacuum?.state) || detailedStatus === 'washing_the_mop';
+
   useEffect(() => {
-    if (execution.phase === 'starting' && isVacuumActive(vacuum?.state)) {
+    if (execution.phase === 'starting' && jobActive) {
       // The vacuum state is an external Home Assistant state machine.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setExecution((current) => ({ ...current, phase: 'active' }));
-    } else if (execution.phase === 'active' && !isVacuumActive(vacuum?.state)) {
+    } else if (execution.phase === 'active' && !jobActive) {
       setExecution({ phase: 'idle' });
       setSelected(new Set());
     }
-  }, [execution.phase, vacuum?.state]);
+  }, [execution.phase, jobActive]);
 
   const launched = new Set(execution.floor_id === floor.id ? execution.segment_ids ?? [] : []);
   const selectedRooms = floor.rooms.filter((room) => selected.has(room.segment_id));
   const selectedNames = selectedRooms.map((room) => room.name);
+  const mopDrying = config.entities?.dock_mop_drying
+    ? hass.states[config.entities.dock_mop_drying]?.state === 'on'
+    : false;
+  const headerDetails = [
+    detailedActivity(language, detailedStatus),
+    mopDrying ? t(language, 'dryingMop') : undefined,
+    mopDrying ? formatRemainingTime(hass, config.entities?.dock_mop_drying_remaining_time, language) : undefined,
+  ].filter((value): value is string => Boolean(value));
   const statusItems = [
     { icon: <Battery />, label: t(language, 'battery'), value: stateText(hass, config.entities?.battery) },
     { icon: <MapPin />, label: t(language, 'room'), value: stateText(hass, config.entities?.current_room) },
@@ -121,8 +161,11 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       <div className="card-header">
         <div>
           <h1>{config.name ?? vacuum?.attributes.friendly_name ?? 'Roborock'}</h1>
-          <span className={`state-dot state-${vacuum?.state ?? 'unavailable'}`} />
-          <span>{vacuum?.state?.replaceAll('_', ' ') ?? 'unavailable'}</span>
+          <div className="state-line">
+            <span className={`state-dot state-${vacuum?.state ?? 'unavailable'}`} />
+            <span>{vacuum?.state?.replaceAll('_', ' ') ?? 'unavailable'}</span>
+            {headerDetails.map((detail) => <span className="state-detail" key={detail}>{` · ${detail}`}</span>)}
+          </div>
         </div>
         {statusItems.length > 0 && (
           <div className="status-strip">

@@ -19,6 +19,10 @@ window.__serviceCalls = [];
 if (scenario === 'missing-calibration') delete hass.states['image.downstairs'].attributes.calibration_points;
 if (scenario === 'missing-map') hass.states['image.downstairs'].state = 'unavailable';
 if (scenario === 'unmapped-room') config.floors[0].rooms[0].area_id = undefined;
+if (scenario === 'drying') {
+  hass.states['binary_sensor.mop_drying'].state = 'on';
+  hass.states['sensor.mop_drying_remaining'].state = '3.9';
+}
 
 hass.callService = async (domain, service, data, target) => {
   window.__serviceCalls.push({ domain, service, data, target });

@@ -27,8 +27,11 @@ export const configFixture: RoborockVacuumMapCardConfig = {
   language: 'en',
   entities: {
     map_select: 'select.map',
+    cleaning_mode: 'select.cleaning_mode',
     mop_mode: 'select.mop_mode',
     mop_intensity: 'select.mop_intensity',
+    dock_mop_drying: 'binary_sensor.mop_drying',
+    dock_mop_drying_remaining_time: 'sensor.mop_drying_remaining',
     battery: 'sensor.battery',
     current_room: 'sensor.current_room',
     cleaning_area: 'sensor.area',
@@ -81,8 +84,11 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
     states: {
       'vacuum.roborock': { entity_id: 'vacuum.roborock', state: 'docked', attributes: { friendly_name: 'Roborock', fan_speed_list: ['quiet', 'balanced', 'turbo'], fan_speed: 'balanced', supported_features: 30524 } },
       'select.map': { entity_id: 'select.map', state: 'Downstairs', attributes: { options: ['Downstairs', 'Upstairs'] } },
+      'select.cleaning_mode': { entity_id: 'select.cleaning_mode', state: 'vac_and_mop', attributes: { options: ['vacuum', 'vac_and_mop', 'mop'] } },
       'select.mop_mode': { entity_id: 'select.mop_mode', state: 'custom', attributes: { options: ['standard', 'deep', 'deep_plus', 'fast', 'smart_mode', 'custom'] } },
       'select.mop_intensity': { entity_id: 'select.mop_intensity', state: 'off', attributes: { options: ['off', 'medium', 'high'] } },
+      'binary_sensor.mop_drying': { entity_id: 'binary_sensor.mop_drying', state: 'off', attributes: {} },
+      'sensor.mop_drying_remaining': { entity_id: 'sensor.mop_drying_remaining', state: '0', attributes: { unit_of_measurement: 'h' } },
       'sensor.battery': { entity_id: 'sensor.battery', state: '100', attributes: { unit_of_measurement: '%' } },
       'sensor.current_room': { entity_id: 'sensor.current_room', state: 'Living room', attributes: {} },
       'sensor.area': { entity_id: 'sensor.area', state: '40.9', attributes: { unit_of_measurement: 'm²' } },

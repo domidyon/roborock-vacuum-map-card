@@ -53,6 +53,11 @@ test('shows prerequisite errors rather than guessed hitboxes', async ({ page }) 
   await expect(page.locator('.room-hitbox')).toHaveCount(0);
 });
 
+test('shows dock mop drying with its remaining time', async ({ page }) => {
+  await page.goto('/?scenario=drying');
+  await expect(page.locator('.state-line')).toContainText('docked · Drying mop · 3 h 54 min remaining');
+});
+
 test('retains the draft and never starts cleaning after a settings error', async ({ page }) => {
   await page.goto('/?scenario=service-error');
   await page.getByRole('button', { name: 'Kitchen' }).click();

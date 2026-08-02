@@ -41,8 +41,11 @@ export interface HomeAssistant {
 
 export interface RoborockEntityConfig {
   map_select?: string;
+  cleaning_mode?: string;
   mop_mode?: string;
   mop_intensity?: string;
+  dock_mop_drying?: string;
+  dock_mop_drying_remaining_time?: string;
   battery?: string;
   current_room?: string;
   cleaning_area?: string;
@@ -91,6 +94,7 @@ export interface RoborockVacuumMapCardConfig {
   floors: FloorConfig[];
   presets?: PresetConfig[];
   default_preset?: string;
+  vacuum_mode_fallback?: 'set_clean_motor_mode';
   [key: string]: unknown;
 }
 
@@ -106,6 +110,7 @@ export interface JobDraft {
 export interface RoborockCapabilities {
   fanSpeeds: string[];
   mapOptions: string[];
+  cleaningModes: string[];
   mopModes: string[];
   mopIntensities: string[];
   canStart: boolean;
@@ -113,6 +118,7 @@ export interface RoborockCapabilities {
   canStop: boolean;
   canDock: boolean;
   hasMapSelect: boolean;
+  hasCleaningMode: boolean;
   hasMopMode: boolean;
   hasMopIntensity: boolean;
 }

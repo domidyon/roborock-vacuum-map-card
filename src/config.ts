@@ -46,8 +46,11 @@ export const cardConfigSchema = z
     entities: z
       .object({
         map_select: optionalEntityId,
+        cleaning_mode: optionalEntityId,
         mop_mode: optionalEntityId,
         mop_intensity: optionalEntityId,
+        dock_mop_drying: optionalEntityId,
+        dock_mop_drying_remaining_time: optionalEntityId,
         battery: optionalEntityId,
         current_room: optionalEntityId,
         cleaning_area: optionalEntityId,
@@ -62,6 +65,7 @@ export const cardConfigSchema = z
     floors: z.array(floorSchema).min(1),
     presets: z.array(presetSchema).optional().default([]),
     default_preset: z.string().optional().default('vacuum_only'),
+    vacuum_mode_fallback: z.literal('set_clean_motor_mode').optional(),
   })
   .passthrough()
   .superRefine((config, ctx) => {
