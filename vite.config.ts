@@ -1,8 +1,11 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
+  define: command === 'build' ? {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  } : {},
   build: {
     lib: {
       entry: 'src/main.tsx',
@@ -21,4 +24,4 @@ export default defineConfig({
     css: true,
     coverage: { reporter: ['text', 'lcov'] },
   },
-});
+}));

@@ -1,6 +1,6 @@
 {
   "name": "roborock-vacuum-map-card",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Roborock-native, room-aware Home Assistant dashboard card",
   "type": "module",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "npm run build && playwright test",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
