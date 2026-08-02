@@ -1,0 +1,20 @@
+import { describe, expect, it } from 'vitest';
+import { detectCapabilities } from './capabilities';
+import { getAvailablePresets } from './presets';
+import { configFixture, createHass } from './test/fixtures';
+
+describe('capability detection and presets', () => {
+  it('derives transport and setting options from live entities', () => {
+    const capabilities = detectCapabilities(createHass(), configFixture);
+    expect(capabilities).toMatchObject({ canStart: true, canPause: true, canStop: true, canDock: true, hasMopMode: true });
+    expect(capabilities.fanSpeeds).toEqual(['quiet', 'balanced', 'turbo']);
+  });
+
+  it('marks presets unavailable when required live options are absent', () => {
+    const hass = createHass();
+    hass.states['select.mop_intensity'].attributes.options = ['off'];
+    const presets = getAvailablePresets(configFixture, detectCapabilities(hass, configFixture));
+    expect(presets.find(({ preset }) => preset.id === 'vacuum_only')?.available).toBe(true);
+    expect(presets.find(({ preset }) => preset.id === 'vacuum_and_mop')?.available).toBe(false);
+  });
+});

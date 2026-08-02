@@ -1,0 +1,39 @@
+Roborock Vacuum Map Card
+Copyright (c) 2026 Dyon Heintjes
+
+This project includes adapted interaction and presentation patterns from:
+
+  Dreame Vacuum Map Card
+  Copyright (c) 2025 Noam Bergauz
+  https://github.com/noambergauz/dreame-vacuum-map-card
+
+The adapted portions include the React custom-element and Shadow DOM approach,
+calibrated map coordinate conversion, zoom and pan presentation, clickable SVG
+room overlays, and modal/segmented-control/toast interaction patterns. Those
+portions were used under the MIT License reproduced below.
+
+MIT License
+
+Copyright (c) 2025 Noam Bergauz
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Roborock is a trademark of Beijing Roborock Technology Co., Ltd. This project
+is unofficial, is not affiliated with or endorsed by Roborock, and does not
+contain Roborock proprietary software.
