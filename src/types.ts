@@ -113,9 +113,11 @@ export interface FloorConfig {
 
 export interface AssistedCarryJob {
   segment_ids: number[];
-  fan_speed: string;
-  mop_mode: string;
-  mop_intensity: string;
+  strategy: CleaningStrategy;
+  cleaning_type: CleaningType;
+  fan_speed?: string;
+  mop_mode?: string;
+  mop_intensity?: string;
   cleaning_count: CleaningCount;
 }
 

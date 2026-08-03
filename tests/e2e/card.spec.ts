@@ -29,6 +29,10 @@ test('Entire upstairs includes every current room', async ({ page }) => {
   await page.getByRole('button', { name: 'Entire floor' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Office · Landing · Bedroom · Laundry');
+  await expect(dialog.getByRole('tab', { name: 'AI SmartPlan' })).toBeVisible();
+  await expect(dialog.getByRole('tab', { name: 'Vac followed by Mop' })).toBeVisible();
+  await expect(dialog.getByRole('tab', { name: 'Vac & Mop' })).toBeVisible();
+  await expect(dialog.getByRole('tab', { name: 'Vacuum only' })).toBeVisible();
 });
 
 test('the upstairs landing remains individually selectable', async ({ page }) => {

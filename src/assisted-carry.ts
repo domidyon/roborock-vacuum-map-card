@@ -40,24 +40,28 @@ export function assistedStage(hass: HomeAssistant, config: RoborockVacuumMapCard
 }
 
 export function createAssistedJob(segmentIds: number[], draft: JobDraft): AssistedCarryJob {
-  if (draft.strategy !== 'custom' || draft.cleaning_type !== 'vacuum_and_mop') {
-    throw new AssistedCarryError('prepare', 'Assisted carry requires Vac & Mop');
+  if (draft.strategy !== 'smartplan' && !draft.fan_speed) {
+    throw new AssistedCarryError('prepare', 'Suction is required');
   }
-  if (!draft.fan_speed || !draft.mop_mode || !draft.mop_intensity) {
-    throw new AssistedCarryError('prepare', 'Suction, water flow, and route are required');
+  if (draft.strategy !== 'smartplan' && draft.cleaning_type !== 'vacuum' && (!draft.mop_mode || !draft.mop_intensity)) {
+    throw new AssistedCarryError('prepare', 'Water flow and route are required');
   }
   return {
     segment_ids: [...new Set(segmentIds)],
-    fan_speed: draft.fan_speed,
-    mop_mode: draft.mop_mode,
-    mop_intensity: draft.mop_intensity,
-    cleaning_count: draft.cleaning_count,
+    strategy: draft.strategy,
+    cleaning_type: draft.cleaning_type,
+    fan_speed: draft.strategy === 'smartplan' ? undefined : draft.fan_speed,
+    mop_mode: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' ? undefined : draft.mop_mode,
+    mop_intensity: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' ? undefined : draft.mop_intensity,
+    cleaning_count: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum_then_mop' ? 1 : draft.cleaning_count,
   };
 }
 
 export function encodeAssistedJob(job: AssistedCarryJob): string {
   return JSON.stringify({
     s: job.segment_ids,
+    g: job.strategy,
+    t: job.cleaning_type,
     f: job.fan_speed,
     m: job.mop_mode,
     w: job.mop_intensity,
@@ -70,13 +74,23 @@ export function decodeAssistedJob(value: string | undefined): AssistedCarryJob |
   try {
     const raw = JSON.parse(value) as Record<string, unknown>;
     if (!Array.isArray(raw.s) || !raw.s.every((item) => Number.isInteger(item))) return undefined;
-    if (![raw.f, raw.m, raw.w].every((item) => typeof item === 'string')) return undefined;
     if (![1, 2].includes(Number(raw.c))) return undefined;
+    const strategy = raw.g === undefined ? 'custom' : raw.g;
+    const cleaningType = raw.t === undefined ? 'vacuum_and_mop' : raw.t;
+    if (!['custom', 'smartplan'].includes(String(strategy))) return undefined;
+    if (!['vacuum', 'vacuum_and_mop', 'vacuum_then_mop'].includes(String(cleaningType))) return undefined;
+    const fanSpeed = typeof raw.f === 'string' ? raw.f : undefined;
+    const mopMode = typeof raw.m === 'string' ? raw.m : undefined;
+    const mopIntensity = typeof raw.w === 'string' ? raw.w : undefined;
+    if (strategy === 'custom' && !fanSpeed) return undefined;
+    if (strategy === 'custom' && cleaningType !== 'vacuum' && (!mopMode || !mopIntensity)) return undefined;
     return {
       segment_ids: raw.s as number[],
-      fan_speed: String(raw.f),
-      mop_mode: String(raw.m),
-      mop_intensity: String(raw.w),
+      strategy: strategy as AssistedCarryJob['strategy'],
+      cleaning_type: cleaningType as AssistedCarryJob['cleaning_type'],
+      fan_speed: fanSpeed,
+      mop_mode: mopMode,
+      mop_intensity: mopIntensity,
       cleaning_count: Number(raw.c) as 1 | 2,
     };
   } catch {
@@ -124,14 +138,17 @@ export async function startAssistedCarry(
     .map((room) => room.area_id)
     .filter((areaId): areaId is string => Boolean(areaId));
   if (areaIds.length === 0) throw new AssistedCarryError('start_upstairs', 'No mapped rooms were saved');
+  const variables: Record<string, unknown> = {
+    cleaning_area_id: areaIds,
+    strategy: job.strategy,
+    cleaning_type: job.cleaning_type,
+    cleaning_count: job.cleaning_count,
+  };
+  if (job.fan_speed) variables.fan_speed = job.fan_speed;
+  if (job.mop_mode) variables.mop_mode = job.mop_mode;
+  if (job.mop_intensity) variables.mop_intensity = job.mop_intensity;
   await hass.callService('script', 'turn_on', {
-    variables: {
-      cleaning_area_id: areaIds,
-      fan_speed: job.fan_speed,
-      mop_mode: job.mop_mode,
-      mop_intensity: job.mop_intensity,
-      cleaning_count: job.cleaning_count,
-    },
+    variables,
   }, { entity_id: script });
 }
 

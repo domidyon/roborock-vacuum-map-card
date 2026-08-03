@@ -55,7 +55,6 @@ describe('job executor', () => {
     expect(calls).toEqual([
       'select.select_option:Upstairs',
       'select.select_option:vacuum',
-      'select.select_option:standard',
       'vacuum.set_fan_speed:balanced',
       'vacuum.send_command:set_clean_repeat_times',
       'select.select_option:Upstairs',
@@ -165,7 +164,6 @@ describe('job executor', () => {
     });
     expect(calls).toEqual([
       'select.select_option:vacuum',
-      'select.select_option:standard',
       'vacuum.set_fan_speed:balanced',
       'vacuum.send_command:set_clean_repeat_times',
       'vacuum.clean_area:kitchen',

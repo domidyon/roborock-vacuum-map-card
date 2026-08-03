@@ -221,7 +221,7 @@ export async function executeJob({
     }
 
     const mopMode = config.entities?.mop_mode;
-    if (draft.mop_mode) {
+    if (draft.cleaning_type !== 'vacuum' && draft.mop_mode) {
       if (!mopMode) throw new JobExecutionError('set_mop_mode', 'The selected profile requires a mop-mode entity');
       const currentMode = getHass().states[mopMode]?.state;
       if (currentMode === 'smart_mode' && SAFE_SMARTPLAN_EXIT_MODES.has(draft.mop_mode)) {

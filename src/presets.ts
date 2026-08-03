@@ -66,8 +66,10 @@ function missingOption(
     }
   }
   if (preset.fan_speed && !capabilities.fanSpeeds.includes(preset.fan_speed)) return `fan speed “${preset.fan_speed}”`;
-  if (preset.mop_mode && !capabilities.mopModes.includes(preset.mop_mode)) return `mop mode “${preset.mop_mode}”`;
-  if (preset.mop_intensity && !capabilities.mopIntensities.includes(preset.mop_intensity)) {
+  if (preset.cleaning_type !== 'vacuum' && preset.mop_mode && !capabilities.mopModes.includes(preset.mop_mode)) {
+    return `mop mode “${preset.mop_mode}”`;
+  }
+  if (preset.cleaning_type !== 'vacuum' && preset.mop_intensity && !capabilities.mopIntensities.includes(preset.mop_intensity)) {
     return `mop intensity “${preset.mop_intensity}”`;
   }
   return undefined;

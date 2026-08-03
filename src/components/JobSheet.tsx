@@ -80,8 +80,7 @@ export function JobSheet({
   onClose,
   onStart,
 }: JobSheetProps) {
-  const modeIds = assistedCarry ? (['vacuum_and_mop'] as const) : MODE_IDS;
-  const appModes = modeIds.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
+  const appModes = MODE_IDS.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
     (mode): mode is AvailablePreset => Boolean(mode),
   );
   const savedPresets = presets.filter(({ preset }) => !MODE_IDS.includes(preset.id as typeof MODE_IDS[number]));

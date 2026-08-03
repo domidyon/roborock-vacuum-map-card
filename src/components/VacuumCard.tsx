@@ -119,8 +119,8 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     setSelected(new Set(carryJob.segment_ids));
     setDraft({
       preset_id: 'assisted_carry',
-      strategy: 'custom',
-      cleaning_type: 'vacuum_and_mop',
+      strategy: carryJob.strategy,
+      cleaning_type: carryJob.cleaning_type,
       fan_speed: carryJob.fan_speed,
       mop_mode: carryJob.mop_mode,
       mop_intensity: carryJob.mop_intensity,
@@ -175,12 +175,14 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
 
   const openJobSheet = (assisted: boolean) => {
     if (assisted) {
-      const vacAndMop = presets.find(({ preset, available }) => preset.id === 'vacuum_and_mop' && available)?.preset;
-      if (!vacAndMop) {
+      const assistedPreset = presets.find(({ preset, available }) => preset.id === config.default_preset && available)?.preset
+        ?? presets.find(({ preset, available }) => preset.id === 'vacuum_only' && available)?.preset
+        ?? presets.find(({ available }) => available)?.preset;
+      if (!assistedPreset) {
         setToast(t(language, 'unsupported'));
         return;
       }
-      setDraft(draftFromPreset(vacAndMop));
+      setDraft(draftFromPreset(assistedPreset));
     }
     setAssistedConfiguring(assisted);
     setSheetOpen(true);

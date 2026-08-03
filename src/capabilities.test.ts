@@ -19,6 +19,15 @@ describe('capability detection and presets', () => {
     expect(presets.find(({ preset }) => preset.id === 'vacuum_and_mop')?.available).toBe(false);
   });
 
+  it('does not require mop capabilities for Vacuum-only', () => {
+    const hass = createHass();
+    hass.states['select.mop_mode'].attributes.options = [];
+    hass.states['select.mop_intensity'].attributes.options = [];
+    const presets = getAvailablePresets(configFixture, detectCapabilities(hass, configFixture));
+    expect(presets.find(({ preset }) => preset.id === 'vacuum_only')?.available).toBe(true);
+    expect(presets.find(({ preset }) => preset.id === 'vacuum_and_mop')?.available).toBe(false);
+  });
+
   it('disables vacuum-only presets without the high-level cleaning mode', () => {
     const config = { ...configFixture, entities: { ...configFixture.entities, cleaning_mode: undefined } };
     const presets = getAvailablePresets(config, detectCapabilities(createHass(), config));

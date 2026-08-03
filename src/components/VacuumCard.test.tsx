@@ -61,7 +61,7 @@ describe('vacuum card flows', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('Landing');
   });
 
-  it('persists an upstairs Vac & Mop draft and starts dock preparation', async () => {
+  it('shows all four upstairs modes, persists Vac & Mop, and starts dock preparation', async () => {
     const hass = createHass();
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown>; target?: Record<string, unknown> }> = [];
     hass.callService = vi.fn(async (domain, service, data, target) => {
@@ -75,8 +75,11 @@ describe('vacuum card flows', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Office' }));
     await userEvent.click(screen.getByRole('button', { name: 'Prepare upstairs' }));
     const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('tab', { name: 'AI SmartPlan' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('tab', { name: 'Vac followed by Mop' })).toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vac & Mop' })).toBeInTheDocument();
-    expect(within(dialog).queryByRole('tab', { name: 'AI SmartPlan' })).not.toBeInTheDocument();
+    expect(within(dialog).getByRole('tab', { name: 'Vacuum only' })).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Vac & Mop' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Prepare upstairs' }));
     await waitFor(() => expect(calls.at(-1)).toEqual({
       domain: 'script',
@@ -85,6 +88,7 @@ describe('vacuum card flows', () => {
       target: { entity_id: 'script.assisted_carry_prepare' },
     }));
     expect(calls[0]).toMatchObject({ domain: 'input_text', service: 'set_value', target: { entity_id: 'input_text.assisted_carry_job' } });
+    expect(JSON.parse(String(calls[0].data?.value))).toMatchObject({ g: 'custom', t: 'vacuum_and_mop' });
     expect(calls[1]).toMatchObject({ domain: 'input_select', service: 'select_option', data: { option: 'preparing' } });
   });
 
@@ -99,7 +103,7 @@ describe('vacuum card flows', () => {
     await waitFor(() => expect(calls).toContainEqual({
       domain: 'script',
       service: 'turn_on',
-      data: { variables: { cleaning_area_id: ['office', 'bedroom'], fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 } },
+      data: { variables: { cleaning_area_id: ['office', 'bedroom'], strategy: 'custom', cleaning_type: 'vacuum_and_mop', fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 } },
       target: { entity_id: 'script.assisted_carry_start' },
     }));
   });
@@ -189,5 +193,21 @@ describe('vacuum card flows', () => {
     calls.length = 0;
     await userEvent.click(screen.getByRole('button', { name: 'Dock' }));
     await waitFor(() => expect(calls).toEqual(['script.turn_off', 'vacuum.return_to_base']));
+  });
+
+  it('cancels the assisted no-dock sequence before a stop can reach phase two', async () => {
+    const hass = createHass();
+    hass.states['input_select.assisted_carry_stage'].state = 'cleaning_upstairs';
+    hass.states['input_text.assisted_carry_job'].state = '{"s":[1,3],"g":"custom","t":"vacuum_then_mop","f":"balanced","m":"standard","w":"medium","c":1}';
+    const calls: Array<{ domain: string; service: string; target?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, _data, target) => { calls.push({ domain, service, target }); });
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+    await waitFor(() => expect(calls).toEqual([
+      { domain: 'script', service: 'turn_off', target: { entity_id: 'script.roborock_vacuum_then_mop' } },
+      { domain: 'script', service: 'turn_off', target: { entity_id: 'script.assisted_carry_start' } },
+      { domain: 'vacuum', service: 'stop', target: { entity_id: 'vacuum.roborock' } },
+      { domain: 'input_select', service: 'select_option', target: { entity_id: 'input_select.assisted_carry_stage' } },
+    ]));
   });
 });
