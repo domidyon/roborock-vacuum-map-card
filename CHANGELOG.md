@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 — 2026-08-03
+
+- Use Home Assistant's content-driven `rows: auto` grid sizing so the card cannot overflow into the following section on narrow iPhone layouts.
+- Correct the version reported by the card's browser console banner.
+
 ## 0.3.0 — 2026-08-03
 
 - Add an app-style dock panel with Empty, Wash, Dry, and onboard-water-tank drain controls.

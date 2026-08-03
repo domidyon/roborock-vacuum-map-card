@@ -15,3 +15,20 @@ test('production bundle registers without a Node process global', async ({ page 
   await expect.poll(() => page.evaluate(() => Boolean(customElements.get('roborock-vacuum-map-card')))).toBe(true);
   expect(pageErrors).toEqual([]);
 });
+
+test('production card requests content-driven section height', async ({ page }) => {
+  await page.goto('/');
+  await page.addScriptTag({
+    path: path.resolve('dist/roborock-vacuum-map-card.js'),
+    type: 'module',
+  });
+
+  const gridOptions = await page.evaluate(() => {
+    const card = document.createElement('roborock-vacuum-map-card') as HTMLElement & {
+      getGridOptions: () => Record<string, unknown>;
+    };
+    return card.getGridOptions();
+  });
+
+  expect(gridOptions).toEqual({ columns: 12, rows: 'auto', min_rows: 8 });
+});
