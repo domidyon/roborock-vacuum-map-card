@@ -1,5 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Battery, Clock3, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Square, Timer, X } from 'lucide-react';
+import { Battery, Clock3, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Sparkles, Square, Timer, X } from 'lucide-react';
+import {
+  AssistedCarryError,
+  assistedFloor,
+  assistedStage,
+  createAssistedJob,
+  decodeAssistedJob,
+  finishAssistedCarry,
+  prepareAssistedCarry,
+  resetAssistedCarry,
+  setAssistedStage,
+  startAssistedCarry,
+} from '../assisted-carry';
 import { detectCapabilities, isVacuumActive } from '../capabilities';
 import { DockExecutionError, executeDockAction, executeDockSetting } from '../dock-executor';
 import { executeJob, JobExecutionError } from '../executor';
@@ -17,6 +29,7 @@ import type {
 import { DockSheet } from './DockSheet';
 import { JobSheet } from './JobSheet';
 import { MapView } from './MapView';
+import { AssistedCarryPanel } from './AssistedCarryPanel';
 
 interface VacuumCardProps {
   hass: HomeAssistant;
@@ -72,6 +85,8 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const floor = config.floors.find((item) => item.id === floorId) ?? config.floors[0];
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [assistedConfiguring, setAssistedConfiguring] = useState(false);
+  const [assistedPending, setAssistedPending] = useState(false);
   const [dockOpen, setDockOpen] = useState(false);
   const [dockPending, setDockPending] = useState<string>();
   const [toast, setToast] = useState<string>();
@@ -84,10 +99,34 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     draftFromPreset(defaultPreset ?? { id: 'custom', name: 'Custom', strategy: 'custom', cleaning_type: 'vacuum' }),
   );
   const vacuum = hass.states[config.entity];
+  const carryFloor = assistedFloor(config);
+  const carryStage = assistedStage(hass, config);
+  const carryJobState = config.entities?.assisted_carry_job
+    ? hass.states[config.entities.assisted_carry_job]?.state
+    : undefined;
+  const carryJob = useMemo(() => decodeAssistedJob(carryJobState), [carryJobState]);
+  const assistedActive = carryStage !== 'idle';
 
   useEffect(() => {
     hassRef.current = hass;
   }, [hass]);
+
+  useEffect(() => {
+    if (!assistedActive || !carryFloor || !carryJob) return;
+    // The helpers are the durable workflow source of truth after a reload.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFloorId(carryFloor.id);
+    setSelected(new Set(carryJob.segment_ids));
+    setDraft({
+      preset_id: 'assisted_carry',
+      strategy: 'custom',
+      cleaning_type: 'vacuum_and_mop',
+      fan_speed: carryJob.fan_speed,
+      mop_mode: carryJob.mop_mode,
+      mop_intensity: carryJob.mop_intensity,
+      cleaning_count: carryJob.cleaning_count,
+    });
+  }, [assistedActive, carryFloor, carryJob]);
 
   const detailedStatus = config.entities?.status ? hass.states[config.entities.status]?.state : undefined;
   const washing = ['washing_the_mop', 'washing_the_mop_2'].includes(detailedStatus ?? '');
@@ -128,9 +167,23 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   ].filter((item) => item.value);
 
   const switchFloor = (nextFloorId: string) => {
+    if (assistedActive) return;
     setFloorId(nextFloorId);
     setSelected(new Set());
     setSheetOpen(false);
+  };
+
+  const openJobSheet = (assisted: boolean) => {
+    if (assisted) {
+      const vacAndMop = presets.find(({ preset, available }) => preset.id === 'vacuum_and_mop' && available)?.preset;
+      if (!vacAndMop) {
+        setToast(t(language, 'unsupported'));
+        return;
+      }
+      setDraft(draftFromPreset(vacAndMop));
+    }
+    setAssistedConfiguring(assisted);
+    setSheetOpen(true);
   };
 
   const selectEntireFloor = () => {
@@ -138,10 +191,98 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       .filter((room) => room.include_in_floor_clean !== false && room.area_id)
       .map((room) => room.segment_id);
     setSelected(new Set(included));
-    setSheetOpen(true);
+    openJobSheet(Boolean(floor.assisted_carry));
+  };
+
+  const assistantMessage = (error: unknown): string => {
+    if (error instanceof AssistedCarryError) return `${error.operation}: ${error.message}`;
+    return error instanceof Error ? error.message : String(error);
+  };
+
+  const prepareUpstairs = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setAssistedPending(true);
+    try {
+      const job = createAssistedJob([...selected], draft);
+      await prepareAssistedCarry(hassRef.current, config, job);
+      setSheetOpen(false);
+      setToast(t(language, 'preparingUpstairs'));
+    } catch (error) {
+      setToast(assistantMessage(error));
+      try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
+    } finally {
+      submittingRef.current = false;
+      setAssistedPending(false);
+    }
+  };
+
+  const startUpstairs = async () => {
+    if (assistedPending || !carryFloor || !carryJob) return;
+    setAssistedPending(true);
+    try {
+      await startAssistedCarry(hassRef.current, config, carryFloor, carryJob);
+    } catch (error) {
+      setToast(assistantMessage(error));
+      try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
+    } finally {
+      setAssistedPending(false);
+    }
+  };
+
+  const finishUpstairs = async () => {
+    if (assistedPending) return;
+    setAssistedPending(true);
+    try {
+      await finishAssistedCarry(hassRef.current, config);
+    } catch (error) {
+      setToast(assistantMessage(error));
+      try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
+    } finally {
+      setAssistedPending(false);
+    }
+  };
+
+  const resetUpstairs = async () => {
+    if (assistedPending) return;
+    setAssistedPending(true);
+    try {
+      await resetAssistedCarry(hassRef.current, config);
+      setSelected(new Set());
+    } catch (error) {
+      setToast(assistantMessage(error));
+    } finally {
+      setAssistedPending(false);
+    }
+  };
+
+  const cancelUpstairs = async () => {
+    if (assistedPending) return;
+    setAssistedPending(true);
+    try {
+      const scripts = [
+        config.entities?.assisted_carry_prepare_script,
+        config.entities?.assisted_carry_start_script,
+        config.entities?.assisted_carry_finish_script,
+      ].filter((entityId): entityId is string => Boolean(entityId && hassRef.current.states[entityId]));
+      if (scripts.length > 0) await hassRef.current.callService('script', 'turn_off', {}, { entity_id: scripts });
+      if (carryStage === 'cleaning_upstairs') await hassRef.current.callService('vacuum', 'stop', {}, { entity_id: config.entity });
+      if (washing) await executeDockAction(hassRef.current, config, 'wash', true);
+      if (emptying) await executeDockAction(hassRef.current, config, 'empty', true);
+      await resetAssistedCarry(hassRef.current, config);
+      setSelected(new Set());
+    } catch (error) {
+      setToast(assistantMessage(error));
+    } finally {
+      setAssistedPending(false);
+    }
   };
 
   const submit = async () => {
+    if (assistedConfiguring) {
+      await prepareUpstairs();
+      return;
+    }
     if (submittingRef.current) return;
     submittingRef.current = true;
     setExecution({ phase: 'submitting', floor_id: floor.id, segment_ids: [...selected] });
@@ -166,8 +307,15 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         if (script && hassRef.current.states[script] && hassRef.current.states[script].state !== 'unavailable') {
           await hassRef.current.callService('script', 'turn_off', {}, { entity_id: script });
         }
+        const carryScript = config.entities?.assisted_carry_start_script;
+        if (assistedActive && carryScript && hassRef.current.states[carryScript] && hassRef.current.states[carryScript].state !== 'unavailable') {
+          await hassRef.current.callService('script', 'turn_off', {}, { entity_id: carryScript });
+        }
       }
       await hassRef.current.callService('vacuum', service, {}, { entity_id: config.entity });
+      if (service === 'stop' && carryStage === 'cleaning_upstairs') {
+        await setAssistedStage(hassRef.current, config, 'carry_downstairs');
+      }
     } catch (error) {
       setToast(`${service}: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -253,6 +401,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
               role="tab"
               aria-selected={floor.id === item.id}
               className={floor.id === item.id ? 'active' : ''}
+              disabled={assistedActive && floor.id !== item.id}
               key={item.id}
               onClick={() => switchFloor(item.id)}
             >
@@ -268,7 +417,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         language={language}
         selected={selected}
         launched={launched}
-        disabled={execution.phase === 'submitting' || execution.phase === 'starting' || execution.phase === 'active'}
+        disabled={assistedActive || execution.phase === 'submitting' || execution.phase === 'starting' || execution.phase === 'active'}
         onToggle={(segmentId) =>
           setSelected((current) => {
             const next = new Set(current);
@@ -279,6 +428,19 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         }
       />
 
+      {floor.assisted_carry && (
+        <AssistedCarryPanel
+          language={language}
+          stage={carryStage}
+          roomNames={selectedNames}
+          pending={assistedPending}
+          onStart={startUpstairs}
+          onFinish={finishUpstairs}
+          onReset={resetUpstairs}
+          onCancel={cancelUpstairs}
+        />
+      )}
+
       <div className="selection-row">
         <div>
           <strong>{t(language, 'selectedRooms')}</strong>
@@ -287,14 +449,14 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         <span className="selection-count">{selected.size}</span>
       </div>
 
-      <div className="primary-actions">
+      {!assistedActive && <div className="primary-actions">
         <button type="button" className="secondary" onClick={selectEntireFloor} disabled={execution.phase === 'submitting'}>
           <Home /> {t(language, 'entireFloor')}
         </button>
-        <button type="button" className="primary" onClick={() => setSheetOpen(true)} disabled={selected.size === 0 || execution.phase === 'submitting'}>
-          {t(language, 'configureJob')}
+        <button type="button" className="primary" onClick={() => openJobSheet(Boolean(floor.assisted_carry))} disabled={selected.size === 0 || execution.phase === 'submitting'}>
+          {floor.assisted_carry && <Sparkles />}{floor.assisted_carry ? t(language, 'prepareUpstairs') : t(language, 'configureJob')}
         </button>
-      </div>
+      </div>}
 
       <div className="transport" aria-label="Vacuum controls">
         {vacuum?.state === 'paused' && capabilities.canStart && (
@@ -319,9 +481,10 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           capabilities={capabilities}
           presets={presets}
           selectedRoomNames={selectedNames}
-          submitting={execution.phase === 'submitting'}
+          submitting={execution.phase === 'submitting' || assistedPending}
+          assistedCarry={assistedConfiguring}
           onDraftChange={setDraft}
-          onClose={() => execution.phase !== 'submitting' && setSheetOpen(false)}
+          onClose={() => execution.phase !== 'submitting' && !assistedPending && setSheetOpen(false)}
           onStart={submit}
         />
       )}

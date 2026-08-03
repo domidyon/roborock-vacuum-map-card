@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { configFixture, createHass } from '../test/fixtures';
@@ -58,8 +58,51 @@ describe('vacuum card flows', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Upstairs' }));
     loadMap();
     await userEvent.click(screen.getByRole('button', { name: 'Bathroom' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Prepare upstairs' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('Bathroom');
+  });
+
+  it('persists an upstairs Vac & Mop draft and starts dock preparation', async () => {
+    const hass = createHass();
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown>; target?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data, target });
+      if (domain === 'input_text') hass.states[String(target?.entity_id)].state = String(data?.value ?? '');
+      if (domain === 'input_select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Upstairs' }));
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Office' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Prepare upstairs' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('tab', { name: 'Vac & Mop' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('tab', { name: 'AI SmartPlan' })).not.toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Prepare upstairs' }));
+    await waitFor(() => expect(calls.at(-1)).toEqual({
+      domain: 'script',
+      service: 'turn_on',
+      data: {},
+      target: { entity_id: 'script.assisted_carry_prepare' },
+    }));
+    expect(calls[0]).toMatchObject({ domain: 'input_text', service: 'set_value', target: { entity_id: 'input_text.assisted_carry_job' } });
+    expect(calls[1]).toMatchObject({ domain: 'input_select', service: 'select_option', data: { option: 'preparing' } });
+  });
+
+  it('restores a carried job from helpers and starts it upstairs', async () => {
+    const hass = createHass();
+    hass.states['input_select.assisted_carry_stage'].state = 'carry_upstairs';
+    hass.states['input_text.assisted_carry_job'].state = '{"s":[1,3],"f":"balanced","m":"standard","w":"medium","c":1}';
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown>; target?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => { calls.push({ domain, service, data, target }); });
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Start upstairs' }));
+    await waitFor(() => expect(calls).toContainEqual({
+      domain: 'script',
+      service: 'turn_on',
+      data: { variables: { cleaning_area_id: ['office', 'overloop'], fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 } },
+      target: { entity_id: 'script.assisted_carry_start' },
+    }));
   });
 
   it('prevents duplicate starts while the first submission is pending', async () => {

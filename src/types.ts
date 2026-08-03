@@ -11,6 +11,15 @@ export type DockSettingKey =
   | 'auto_dry'
   | 'dry_duration';
 export type DockAction = 'empty' | 'wash' | 'dry' | 'drain';
+export type AssistedCarryStage =
+  | 'idle'
+  | 'preparing'
+  | 'carry_upstairs'
+  | 'cleaning_upstairs'
+  | 'carry_downstairs'
+  | 'finishing'
+  | 'complete'
+  | 'error';
 
 export interface HassEntity {
   entity_id: string;
@@ -65,6 +74,15 @@ export interface RoborockEntityConfig {
   dock_empty_mode?: string;
   dock_auto_dry?: string;
   dock_dry_duration?: string;
+  assisted_carry_stage?: string;
+  assisted_carry_job?: string;
+  assisted_carry_prepare_script?: string;
+  assisted_carry_start_script?: string;
+  assisted_carry_finish_script?: string;
+  water_shortage?: string;
+  mop_attached?: string;
+  water_box_attached?: string;
+  do_not_disturb?: string;
   battery?: string;
   current_room?: string;
   cleaning_area?: string;
@@ -89,7 +107,16 @@ export interface FloorConfig {
   map_entity: string;
   map_select_option?: string;
   rooms: RoomConfig[];
+  assisted_carry?: boolean;
   [key: string]: unknown;
+}
+
+export interface AssistedCarryJob {
+  segment_ids: number[];
+  fan_speed: string;
+  mop_mode: string;
+  mop_intensity: string;
+  cleaning_count: CleaningCount;
 }
 
 export interface PresetConfig {

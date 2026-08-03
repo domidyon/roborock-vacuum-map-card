@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 — 2026-08-03
+
+- Add a durable assisted-carry workflow for cleaning a floor without its dock.
+- Persist the selected rooms and Vac & Mop settings in Home Assistant helpers so the workflow survives browser and iPhone reloads.
+- Guide mop preparation, the upstairs carry, cleaning, the return carry, docking, emptying, mop washing, and verified auto-drying through one contextual card panel.
+- Restrict assisted jobs to explicit Vac & Mop settings instead of dock-dependent SmartPlan or Vac followed by Mop modes.
+- Add mobile-first progress, cancellation, recovery, and completion states plus visual-editor configuration for the workflow entities and assisted floor.
+
 ## 0.3.1 — 2026-08-03
 
 - Use Home Assistant's content-driven `rows: auto` grid sizing so the card cannot overflow into the following section on narrow iPhone layouts.

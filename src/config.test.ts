@@ -25,4 +25,12 @@ describe('card config', () => {
     expect(errors).toContain('Floor IDs must be unique');
     expect(errors).toContain('Preset IDs must be unique');
   });
+
+  it('requires durable helpers and scripts for assisted carry', () => {
+    const invalid = {
+      ...configFixture,
+      entities: { ...configFixture.entities, assisted_carry_start_script: undefined },
+    };
+    expect(validateConfig(invalid)).toContain('entities.assisted_carry_start_script: Assisted carry requires this entity');
+  });
 });

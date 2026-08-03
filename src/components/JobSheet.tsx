@@ -12,6 +12,7 @@ interface JobSheetProps {
   presets: AvailablePreset[];
   selectedRoomNames: string[];
   submitting: boolean;
+  assistedCarry?: boolean;
   onDraftChange: (draft: JobDraft) => void;
   onClose: () => void;
   onStart: () => void;
@@ -74,11 +75,13 @@ export function JobSheet({
   presets,
   selectedRoomNames,
   submitting,
+  assistedCarry = false,
   onDraftChange,
   onClose,
   onStart,
 }: JobSheetProps) {
-  const appModes = MODE_IDS.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
+  const modeIds = assistedCarry ? (['vacuum_and_mop'] as const) : MODE_IDS;
+  const appModes = modeIds.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
     (mode): mode is AvailablePreset => Boolean(mode),
   );
   const savedPresets = presets.filter(({ preset }) => !MODE_IDS.includes(preset.id as typeof MODE_IDS[number]));
@@ -102,7 +105,7 @@ export function JobSheet({
         <div className="sheet-handle" />
         <header>
           <div>
-            <h2 id="job-sheet-title">{t(language, 'configureTitle')}</h2>
+            <h2 id="job-sheet-title">{assistedCarry ? t(language, 'assistedCarryTitle') : t(language, 'configureTitle')}</h2>
             <p>{selectedRoomNames.join(' · ')}</p>
           </div>
           <button type="button" className="icon-button" aria-label={t(language, 'close')} onClick={onClose}><X /></button>
@@ -182,7 +185,7 @@ export function JobSheet({
             )}
           </section>
 
-          {savedPresets.length > 0 && (
+          {!assistedCarry && savedPresets.length > 0 && (
             <div className="saved-profiles">
               <span>{t(language, 'savedProfiles')}</span>
               <div>
@@ -206,7 +209,9 @@ export function JobSheet({
         <footer>
           <button type="button" className="secondary" disabled={submitting} onClick={onClose}>{t(language, 'cancel')}</button>
           <button type="button" className="primary" disabled={submitting} onClick={onStart}>
-            {submitting ? t(language, 'starting') : t(language, 'start')}
+            {submitting
+              ? assistedCarry ? t(language, 'preparingUpstairs') : t(language, 'starting')
+              : assistedCarry ? t(language, 'prepareUpstairs') : t(language, 'start')}
           </button>
         </footer>
       </section>

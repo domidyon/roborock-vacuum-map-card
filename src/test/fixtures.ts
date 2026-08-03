@@ -41,6 +41,15 @@ export const configFixture: RoborockVacuumMapCardConfig = {
     dock_empty_mode: 'input_select.dock_empty_mode',
     dock_auto_dry: 'input_boolean.dock_auto_dry',
     dock_dry_duration: 'input_select.dock_dry_duration',
+    assisted_carry_stage: 'input_select.assisted_carry_stage',
+    assisted_carry_job: 'input_text.assisted_carry_job',
+    assisted_carry_prepare_script: 'script.assisted_carry_prepare',
+    assisted_carry_start_script: 'script.assisted_carry_start',
+    assisted_carry_finish_script: 'script.assisted_carry_finish',
+    water_shortage: 'binary_sensor.water_shortage',
+    mop_attached: 'binary_sensor.mop_attached',
+    water_box_attached: 'binary_sensor.water_box_attached',
+    do_not_disturb: 'switch.do_not_disturb',
     battery: 'sensor.battery',
     current_room: 'sensor.current_room',
     cleaning_area: 'sensor.area',
@@ -65,6 +74,7 @@ export const configFixture: RoborockVacuumMapCardConfig = {
       name: 'Upstairs',
       map_entity: 'image.upstairs',
       map_select_option: 'Upstairs',
+      assisted_carry: true,
       rooms: [
         { segment_id: 1, area_id: 'office', name: 'Office', icon: 'mdi:desk', include_in_floor_clean: true },
         { segment_id: 2, area_id: 'bathroom', name: 'Bathroom', icon: 'mdi:shower', include_in_floor_clean: false },
@@ -86,6 +96,10 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
     if (domain === 'input_select' && service === 'select_option') {
       const id = String(target?.entity_id);
       hass.states[id].state = String(data?.option);
+    }
+    if (domain === 'input_text' && service === 'set_value') {
+      const id = String(target?.entity_id);
+      hass.states[id].state = String(data?.value ?? '');
     }
     if (['input_boolean', 'switch'].includes(domain) && ['turn_on', 'turn_off'].includes(service)) {
       const id = String(target?.entity_id);
@@ -115,6 +129,15 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
       'input_select.dock_empty_mode': { entity_id: 'input_select.dock_empty_mode', state: 'smart', attributes: { options: ['smart', 'light', 'balanced', 'max'] } },
       'input_boolean.dock_auto_dry': { entity_id: 'input_boolean.dock_auto_dry', state: 'on', attributes: {} },
       'input_select.dock_dry_duration': { entity_id: 'input_select.dock_dry_duration', state: '3h', attributes: { options: ['2h', '3h', '4h'] } },
+      'input_select.assisted_carry_stage': { entity_id: 'input_select.assisted_carry_stage', state: 'idle', attributes: { options: ['idle', 'preparing', 'carry_upstairs', 'cleaning_upstairs', 'carry_downstairs', 'finishing', 'complete', 'error'] } },
+      'input_text.assisted_carry_job': { entity_id: 'input_text.assisted_carry_job', state: '', attributes: { max: 255 } },
+      'script.assisted_carry_prepare': { entity_id: 'script.assisted_carry_prepare', state: 'off', attributes: {} },
+      'script.assisted_carry_start': { entity_id: 'script.assisted_carry_start', state: 'off', attributes: {} },
+      'script.assisted_carry_finish': { entity_id: 'script.assisted_carry_finish', state: 'off', attributes: {} },
+      'binary_sensor.water_shortage': { entity_id: 'binary_sensor.water_shortage', state: 'off', attributes: {} },
+      'binary_sensor.mop_attached': { entity_id: 'binary_sensor.mop_attached', state: 'on', attributes: {} },
+      'binary_sensor.water_box_attached': { entity_id: 'binary_sensor.water_box_attached', state: 'on', attributes: {} },
+      'switch.do_not_disturb': { entity_id: 'switch.do_not_disturb', state: 'off', attributes: {} },
       'sensor.battery': { entity_id: 'sensor.battery', state: '100', attributes: { unit_of_measurement: '%' } },
       'sensor.current_room': { entity_id: 'sensor.current_room', state: 'Living room', attributes: {} },
       'sensor.area': { entity_id: 'sensor.area', state: '40.9', attributes: { unit_of_measurement: 'm²' } },

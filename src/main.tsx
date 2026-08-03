@@ -5,7 +5,7 @@ import { getStubConfig, normalizeConfig } from './config';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from './types';
 import styles from './styles/main.scss?inline';
 
-const VERSION = '0.3.1';
+const VERSION = '0.4.0';
 
 abstract class ReactElement extends HTMLElement {
   protected root?: ReactDOM.Root;

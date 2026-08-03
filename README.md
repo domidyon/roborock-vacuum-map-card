@@ -20,6 +20,7 @@ A Roborock-native Home Assistant Dashboard card for selecting multiple rooms and
 - Visual Lovelace editor with room discovery, HA-area mapping, floor/preset reordering, and lossless YAML round-tripping
 - Responsive mobile bottom sheet, desktop dialog, light/dark HA themes, keyboard support, English, and Dutch
 - One HACS-installable JavaScript bundle
+- Optional assisted-carry workflow for a floor without its dock, with durable HA-backed progress across phone reloads
 
 ## Requirements
 
@@ -76,6 +77,15 @@ entities:
   dock_empty_mode: input_select.qrevo_dock_empty_mode
   dock_auto_dry: input_boolean.qrevo_dock_auto_dry
   dock_dry_duration: input_select.qrevo_dock_drying_duration
+  assisted_carry_stage: input_select.qrevo_upstairs_stage
+  assisted_carry_job: input_text.qrevo_upstairs_job
+  assisted_carry_prepare_script: script.qrevo_upstairs_prepare
+  assisted_carry_start_script: script.qrevo_upstairs_start
+  assisted_carry_finish_script: script.qrevo_upstairs_finish
+  water_shortage: binary_sensor.qrevo_curv_2_flow_water_shortage
+  mop_attached: binary_sensor.qrevo_curv_2_flow_mop_attached
+  water_box_attached: binary_sensor.qrevo_curv_2_flow_water_box_attached
+  do_not_disturb: switch.qrevo_curv_2_flow_do_not_disturb
   battery: sensor.qrevo_curv_2_flow_battery
   current_room: sensor.qrevo_curv_2_flow_current_room
   cleaning_area: sensor.qrevo_curv_2_flow_cleaning_area
@@ -111,7 +121,8 @@ floors:
   - id: upstairs
     name: Boven
     map_entity: image.woonkamer_qrevo_curv_2_flow_boven_custom
-    map_select_option: Boven
+    map_select_option: Bovenverdieping
+    assisted_carry: true
     rooms:
       - segment_id: 1
         area_id: office
@@ -173,10 +184,15 @@ default_preset: vacuum_only
 | `entities.dock_empty_mode` | No | Persistent `input_select` with `smart`, `light`, `balanced`, and `max` |
 | `entities.dock_auto_dry` | No | Persistent `input_boolean` reflecting the last accepted auto-drying setting |
 | `entities.dock_dry_duration` | No | Persistent `input_select` with `2h`, `3h`, and `4h` |
+| `entities.assisted_carry_stage` | For assisted carry | Persistent `input_select` with `idle`, `preparing`, `carry_upstairs`, `cleaning_upstairs`, `carry_downstairs`, `finishing`, `complete`, and `error` |
+| `entities.assisted_carry_job` | For assisted carry | Persistent `input_text` used for the compact saved room/settings payload |
+| `entities.assisted_carry_*_script` | For assisted carry | Prepare, start, and finish scripts that own the long-running dock and cleaning steps |
+| `entities.water_shortage`, `mop_attached`, `water_box_attached`, `do_not_disturb` | No | Safety and quiet-mode inputs used by the assisted scripts |
 | `entities.*` status fields | No | Compact values shown only when configured and available |
 | `floors` | Yes | One or more floor mappings |
 | `floor.map_entity` | Yes | Calibrated Roborock Custom Map image |
 | `floor.rooms` | Yes | Segment-to-area mappings and floor-clean membership |
+| `floor.assisted_carry` | No | Makes this the single floor that uses the guided no-dock carry workflow |
 | `presets` | No | Structured additional presets with optional `cleaning_count: 1` or `2`; arbitrary service YAML is intentionally unsupported |
 | `default_preset` | No | Built-in or configured preset ID |
 | `vacuum_mode_fallback` | No | `set_clean_motor_mode` enables true Vacuum mode on HA 2026.7 and older with one atomic Roborock command |
@@ -196,6 +212,8 @@ Vac followed by Mop uses `entities.vacuum_then_mop_script` because the Roborock 
 A complete, commented starting point is provided in [`docs/vacuum-then-mop-script.yaml`](docs/vacuum-then-mop-script.yaml). Replace its five Roborock entity IDs with your own, create or import the script, and select that script in the card editor.
 
 SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. Entire-floor jobs always use their configured room list rather than `vacuum.start`, so excluded rooms stay excluded.
+
+Assisted carry is designed for a saved floor that has no dock. Its HA scripts prepare and pre-wet the mop at the dock, optionally drive to a configured safe pickup coordinate, run one explicit Vac & Mop area job on the remote floor, and finish with docking, emptying outside do-not-disturb mode, mop washing, and verified auto-drying. The card stores only a compact room/settings payload in `input_text`; the scripts and stage helper remain the source of truth if the dashboard closes.
 
 Pause, resume, stop, and dock use `vacuum.pause`, `vacuum.start`, `vacuum.stop`, and `vacuum.return_to_base`. `vacuum.start` is exposed only as Resume while paused. Stop and Dock also cancel the configured Vac followed by Mop script before controlling the vacuum.
 

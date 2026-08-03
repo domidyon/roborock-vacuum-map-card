@@ -127,6 +127,15 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
           ['dock_empty_mode', 'input_select', 'Dock empty mode'],
           ['dock_auto_dry', 'input_boolean', 'Dock auto-drying'],
           ['dock_dry_duration', 'input_select', 'Dock drying duration'],
+          ['assisted_carry_stage', 'input_select', 'Assisted carry stage'],
+          ['assisted_carry_job', 'input_text', 'Assisted carry saved job'],
+          ['assisted_carry_prepare_script', 'script', 'Assisted carry prepare script'],
+          ['assisted_carry_start_script', 'script', 'Assisted carry start script'],
+          ['assisted_carry_finish_script', 'script', 'Assisted carry finish script'],
+          ['water_shortage', 'binary_sensor', 'Water shortage'],
+          ['mop_attached', 'binary_sensor', 'Mop attached'],
+          ['water_box_attached', 'binary_sensor', 'Water box attached'],
+          ['do_not_disturb', 'switch', 'Do not disturb'],
           ['battery', 'sensor', 'Battery'],
           ['current_room', 'sensor', 'Current room'],
           ['cleaning_area', 'sensor', 'Cleaning area'],
@@ -168,6 +177,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
                 updateFloor(floorIndex, { ...floor, map_entity, rooms });
               }} /></label>
               <label>Selector option<select value={floor.map_select_option ?? ''} onChange={(event) => updateFloor(floorIndex, { ...floor, map_select_option: event.target.value || undefined })}><option value="">Not configured</option>{mapOptions.map((option) => <option key={option}>{option}</option>)}</select></label>
+              <label className="checkbox"><input type="checkbox" checked={floor.assisted_carry === true} onChange={(event) => updateFloor(floorIndex, { ...floor, assisted_carry: event.target.checked })} /> Guide this floor without its dock</label>
             </div>
 
             <h4>Discovered rooms</h4>

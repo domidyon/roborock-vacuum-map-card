@@ -20,6 +20,7 @@ const floorSchema = z
     name: z.string().min(1),
     map_entity: entityId,
     map_select_option: z.string().min(1).optional(),
+    assisted_carry: z.boolean().optional().default(false),
     rooms: z.array(roomSchema).min(1),
   })
   .passthrough();
@@ -61,6 +62,15 @@ export const cardConfigSchema = z
         dock_empty_mode: optionalEntityId,
         dock_auto_dry: optionalEntityId,
         dock_dry_duration: optionalEntityId,
+        assisted_carry_stage: optionalEntityId,
+        assisted_carry_job: optionalEntityId,
+        assisted_carry_prepare_script: optionalEntityId,
+        assisted_carry_start_script: optionalEntityId,
+        assisted_carry_finish_script: optionalEntityId,
+        water_shortage: optionalEntityId,
+        mop_attached: optionalEntityId,
+        water_box_attached: optionalEntityId,
+        do_not_disturb: optionalEntityId,
         battery: optionalEntityId,
         current_room: optionalEntityId,
         cleaning_area: optionalEntityId,
@@ -81,6 +91,24 @@ export const cardConfigSchema = z
   .superRefine((config, ctx) => {
     if (config.floors.length > 1 && !config.entities.map_select) {
       ctx.addIssue({ code: 'custom', path: ['entities', 'map_select'], message: 'Multiple floors require a map-select entity' });
+    }
+    const assistedFloors = config.floors.filter((floor) => floor.assisted_carry);
+    if (assistedFloors.length > 1) {
+      ctx.addIssue({ code: 'custom', path: ['floors'], message: 'Only one floor can use assisted carry' });
+    }
+    if (assistedFloors.length === 1) {
+      const required = [
+        'assisted_carry_stage',
+        'assisted_carry_job',
+        'assisted_carry_prepare_script',
+        'assisted_carry_start_script',
+        'assisted_carry_finish_script',
+      ] as const;
+      for (const key of required) {
+        if (!config.entities[key]) {
+          ctx.addIssue({ code: 'custom', path: ['entities', key], message: 'Assisted carry requires this entity' });
+        }
+      }
     }
     const floorIds = new Set<string>();
     for (const [floorIndex, floor] of config.floors.entries()) {
