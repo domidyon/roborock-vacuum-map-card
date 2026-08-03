@@ -100,7 +100,7 @@ floors:
         include_in_floor_clean: true
   - id: upstairs
     name: Boven
-    map_entity: image.woonkamer_qrevo_curv_2_flow_map_1_custom
+    map_entity: image.woonkamer_qrevo_curv_2_flow_boven_custom
     map_select_option: Boven
     rooms:
       - segment_id: 1
