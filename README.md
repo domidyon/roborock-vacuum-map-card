@@ -120,7 +120,7 @@ floors:
         include_in_floor_clean: true
   - id: upstairs
     name: Boven
-    map_entity: image.woonkamer_qrevo_curv_2_flow_boven_custom
+    map_entity: image.woonkamer_qrevo_curv_2_flow_bovenverdieping_custom
     map_select_option: Bovenverdieping
     assisted_carry: true
     rooms:
@@ -130,21 +130,16 @@ floors:
         icon: mdi:desk
         include_in_floor_clean: true
       - segment_id: 2
-        area_id: bathroom
-        name: Badkamer
-        icon: mdi:shower
-        include_in_floor_clean: false
-      - segment_id: 3
         area_id: overloop
         name: Overloop
         icon: mdi:stairs
         include_in_floor_clean: true
-      - segment_id: 4
+      - segment_id: 3
         area_id: bedroom
         name: Slaapkamer
         icon: mdi:bed-king
         include_in_floor_clean: true
-      - segment_id: 5
+      - segment_id: 4
         area_id: waskamer
         name: Waskamer
         icon: mdi:washing-machine

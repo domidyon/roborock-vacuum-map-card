@@ -41,7 +41,7 @@ describe('vacuum card flows', () => {
     expect(screen.queryByRole('slider', { name: 'Water flow' })).not.toBeInTheDocument();
   });
 
-  it('clears selection on floor change and excludes bathroom from Entire upstairs', async () => {
+  it('clears selection on floor change and includes every current upstairs room', async () => {
     render(<VacuumCard hass={createHass()} config={configFixture} />);
     loadMap();
     await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
@@ -50,16 +50,15 @@ describe('vacuum card flows', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Entire floor' }));
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveTextContent('Office · Landing · Bedroom · Laundry');
-    expect(dialog).not.toHaveTextContent('Bathroom');
   });
 
-  it('allows selecting the upstairs bathroom individually', async () => {
+  it('allows selecting the upstairs landing individually', async () => {
     render(<VacuumCard hass={createHass()} config={configFixture} />);
     await userEvent.click(screen.getByRole('tab', { name: 'Upstairs' }));
     loadMap();
-    await userEvent.click(screen.getByRole('button', { name: 'Bathroom' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Landing' }));
     await userEvent.click(screen.getByRole('button', { name: 'Prepare upstairs' }));
-    expect(screen.getByRole('dialog')).toHaveTextContent('Bathroom');
+    expect(screen.getByRole('dialog')).toHaveTextContent('Landing');
   });
 
   it('persists an upstairs Vac & Mop draft and starts dock preparation', async () => {
@@ -100,7 +99,7 @@ describe('vacuum card flows', () => {
     await waitFor(() => expect(calls).toContainEqual({
       domain: 'script',
       service: 'turn_on',
-      data: { variables: { cleaning_area_id: ['office', 'overloop'], fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 } },
+      data: { variables: { cleaning_area_id: ['office', 'bedroom'], fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 } },
       target: { entity_id: 'script.assisted_carry_start' },
     }));
   });

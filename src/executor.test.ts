@@ -22,7 +22,7 @@ describe('job executor', () => {
       draft: { preset_id: 'custom', strategy: 'custom', cleaning_type: 'vacuum_and_mop', fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 },
       pollMs: 0,
     });
-    expect(result).toEqual(['office', 'overloop']);
+    expect(result).toEqual(['office', 'bedroom']);
     expect(calls).toEqual([
       'select.select_option:Upstairs',
       'select.select_option:custom',
@@ -30,7 +30,7 @@ describe('job executor', () => {
       'select.select_option:medium',
       'vacuum.set_fan_speed:balanced',
       'vacuum.send_command:set_clean_repeat_times',
-      'vacuum.clean_area:office,overloop',
+      'vacuum.clean_area:office,bedroom',
     ]);
   });
 

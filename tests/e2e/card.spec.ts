@@ -23,21 +23,20 @@ test('mirrors the Roborock General modes and contextual controls', async ({ page
   await expect(page.getByRole('dialog')).not.toContainText('deep plus');
 });
 
-test('Entire upstairs excludes the bathroom', async ({ page }) => {
+test('Entire upstairs includes every current room', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('tab', { name: 'Upstairs' }).click();
   await page.getByRole('button', { name: 'Entire floor' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Office · Landing · Bedroom · Laundry');
-  await expect(dialog).not.toContainText('Bathroom');
 });
 
-test('the upstairs bathroom remains individually selectable', async ({ page }) => {
+test('the upstairs landing remains individually selectable', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('tab', { name: 'Upstairs' }).click();
-  await page.getByRole('button', { name: 'Bathroom' }).click();
-  await page.getByRole('button', { name: 'Configure job' }).click();
-  await expect(page.getByRole('dialog')).toContainText('Bathroom');
+  await page.getByRole('button', { name: 'Landing' }).click();
+  await page.getByRole('button', { name: 'Prepare upstairs' }).click();
+  await expect(page.getByRole('dialog')).toContainText('Landing');
 });
 
 test('mobile uses a bottom sheet and desktop uses a centered dialog', async ({ page }) => {

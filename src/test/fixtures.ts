@@ -14,10 +14,9 @@ const downstairsRooms = {
 
 const upstairsRooms = {
   '1': { x0: 24200, y0: 22400, x1: 27550, y1: 25050, room_id: 1, name: 'Office' },
-  '2': { x0: 27900, y0: 22450, x1: 29650, y1: 24000, room_id: 2, name: 'Bathroom' },
-  '3': { x0: 27600, y0: 24050, x1: 29650, y1: 26100, room_id: 3, name: 'Landing' },
-  '4': { x0: 24200, y0: 25100, x1: 27650, y1: 28600, room_id: 4, name: 'Bedroom' },
-  '5': { x0: 27850, y0: 26150, x1: 29100, y1: 28600, room_id: 5, name: 'Laundry' },
+  '2': { x0: 27900, y0: 22450, x1: 29650, y1: 24000, room_id: 2, name: 'Landing' },
+  '3': { x0: 27600, y0: 24050, x1: 29650, y1: 26100, room_id: 3, name: 'Bedroom' },
+  '4': { x0: 24200, y0: 25100, x1: 27650, y1: 28600, room_id: 4, name: 'Laundry' },
 };
 
 export const configFixture: RoborockVacuumMapCardConfig = {
@@ -77,10 +76,9 @@ export const configFixture: RoborockVacuumMapCardConfig = {
       assisted_carry: true,
       rooms: [
         { segment_id: 1, area_id: 'office', name: 'Office', icon: 'mdi:desk', include_in_floor_clean: true },
-        { segment_id: 2, area_id: 'bathroom', name: 'Bathroom', icon: 'mdi:shower', include_in_floor_clean: false },
-        { segment_id: 3, area_id: 'overloop', name: 'Landing', icon: 'mdi:stairs', include_in_floor_clean: true },
-        { segment_id: 4, area_id: 'bedroom', name: 'Bedroom', icon: 'mdi:bed', include_in_floor_clean: true },
-        { segment_id: 5, area_id: 'waskamer', name: 'Laundry', icon: 'mdi:washing-machine', include_in_floor_clean: true },
+        { segment_id: 2, area_id: 'overloop', name: 'Landing', icon: 'mdi:stairs', include_in_floor_clean: true },
+        { segment_id: 3, area_id: 'bedroom', name: 'Bedroom', icon: 'mdi:bed', include_in_floor_clean: true },
+        { segment_id: 4, area_id: 'waskamer', name: 'Laundry', icon: 'mdi:washing-machine', include_in_floor_clean: true },
       ],
     },
   ],
@@ -150,7 +148,7 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
     areas: {
       kitchen: { area_id: 'kitchen', name: 'Kitchen' }, hallway: { area_id: 'hallway', name: 'Hallway' },
       living_room: { area_id: 'living_room', name: 'Living room' }, office: { area_id: 'office', name: 'Office' },
-      bathroom: { area_id: 'bathroom', name: 'Bathroom' }, overloop: { area_id: 'overloop', name: 'Landing' },
+      overloop: { area_id: 'overloop', name: 'Landing' },
       bedroom: { area_id: 'bedroom', name: 'Bedroom' }, waskamer: { area_id: 'waskamer', name: 'Laundry' },
     },
     callService,
