@@ -19,6 +19,11 @@ test('mirrors the Roborock General modes and contextual controls', async ({ page
   await expect(page.getByRole('slider', { name: 'Water flow' })).toHaveCount(0);
   await page.getByRole('tab', { name: 'Vac & Mop' }).click();
   await expect(page.getByRole('slider', { name: 'Water flow' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Vac followed by Mop' }).click();
+  await expect(page.getByRole('slider', { name: 'Water flow' })).toHaveCount(0);
+  await expect(page.getByRole('dialog')).not.toContainText('Suction');
+  await expect(page.getByRole('dialog')).not.toContainText('Cleaning passes');
+  await expect(page.getByRole('dialog')).not.toContainText('Mop route');
   await expect(page.getByRole('dialog')).not.toContainText('off raise main brush');
   await expect(page.getByRole('dialog')).not.toContainText('deep plus');
 });

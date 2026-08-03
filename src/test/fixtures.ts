@@ -62,6 +62,7 @@ export const configFixture: RoborockVacuumMapCardConfig = {
       name: 'Downstairs',
       map_entity: 'image.downstairs',
       map_select_option: 'Downstairs',
+      vacuum_then_mop_routine: 'button.downstairs_vacmop',
       rooms: [
         { segment_id: 1, area_id: 'kitchen', name: 'Kitchen', icon: 'mdi:countertop', include_in_floor_clean: true },
         { segment_id: 2, area_id: 'hallway', name: 'Hallway', icon: 'mdi:coat-rack', include_in_floor_clean: true },
@@ -73,6 +74,7 @@ export const configFixture: RoborockVacuumMapCardConfig = {
       name: 'Upstairs',
       map_entity: 'image.upstairs',
       map_select_option: 'Upstairs',
+      vacuum_then_mop_routine: 'button.upstairs_vacmop',
       assisted_carry: true,
       rooms: [
         { segment_id: 1, area_id: 'office', name: 'Office', icon: 'mdi:desk', include_in_floor_clean: true },
@@ -115,6 +117,8 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
       'select.map': { entity_id: 'select.map', state: 'Downstairs', attributes: { options: ['Downstairs', 'Upstairs'] } },
       'select.cleaning_mode': { entity_id: 'select.cleaning_mode', state: 'vac_and_mop', attributes: { options: ['vacuum', 'vac_and_mop', 'mop'] } },
       'script.roborock_vacuum_then_mop': { entity_id: 'script.roborock_vacuum_then_mop', state: 'off', attributes: { mode: 'single' } },
+      'button.downstairs_vacmop': { entity_id: 'button.downstairs_vacmop', state: 'unknown', attributes: {} },
+      'button.upstairs_vacmop': { entity_id: 'button.upstairs_vacmop', state: 'unknown', attributes: {} },
       'select.mop_mode': { entity_id: 'select.mop_mode', state: 'custom', attributes: { options: ['standard', 'deep', 'deep_plus', 'fast', 'smart_mode', 'custom'] } },
       'select.mop_intensity': { entity_id: 'select.mop_intensity', state: 'medium', attributes: { options: ['off', 'slight', 'low', 'medium', 'moderate', 'high', 'extreme'] } },
       'binary_sensor.mop_drying': { entity_id: 'binary_sensor.mop_drying', state: 'off', attributes: {} },

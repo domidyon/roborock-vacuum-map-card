@@ -69,6 +69,7 @@ entities:
   map_select: select.qrevo_curv_2_flow_selected_map
   # Home Assistant 2026.8+.
   cleaning_mode: select.woonkamer_qrevo_curv_2_flow_cleaning_mode
+  # Legacy fallback when a floor has no native Roborock routine.
   vacuum_then_mop_script: script.roborock_vacuum_then_mop
   mop_mode: select.qrevo_curv_2_flow_mop_mode
   mop_intensity: select.qrevo_curv_2_flow_mop_intensity
@@ -99,14 +100,12 @@ entities:
   status: sensor.qrevo_curv_2_flow_status
   error: sensor.qrevo_curv_2_flow_vacuum_error
 
-# Explicit stable-channel fallback until Home Assistant 2026.8 is installed.
-vacuum_mode_fallback: set_clean_motor_mode
-
 floors:
   - id: downstairs
     name: Beneden
     map_entity: image.woonkamer_qrevo_curv_2_flow_beneden_custom
     map_select_option: Beneden
+    vacuum_then_mop_routine: button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop
     rooms:
       - segment_id: 1
         area_id: kitchen
@@ -127,6 +126,7 @@ floors:
     name: Boven
     map_entity: image.woonkamer_qrevo_curv_2_flow_bovenverdieping_custom
     map_select_option: Bovenverdieping
+    vacuum_then_mop_routine: button.woonkamer_qrevo_curv_2_flow_boven_vacmop
     assisted_carry: true
     rooms:
       - segment_id: 1
@@ -171,7 +171,7 @@ default_preset: vacuum_only
 | `language` | No | `en` (default) or `nl` |
 | `entities.map_select` | For 2+ floors | Select entity and live floor options |
 | `entities.cleaning_mode` | Recommended | High-level Roborock mode select (`vacuum`, `vac_and_mop`, and optionally `mop`) from Home Assistant 2026.8+ |
-| `entities.vacuum_then_mop_script` | For Vac followed by Mop | Cancellable two-phase HA script; receives `cleaning_area_id`, `fan_speed`, `mop_mode`, and `mop_intensity` variables |
+| `entities.vacuum_then_mop_script` | Legacy fallback | Cancellable two-phase HA script used only when the active floor has no native routine |
 | `entities.mop_mode` | No | Roborock mop route/mode select |
 | `entities.mop_intensity` | No | Roborock mop intensity select |
 | `entities.dock_mop_drying` | No | Binary sensor that adds the active mop-drying state beside the docked state |
@@ -191,6 +191,7 @@ default_preset: vacuum_only
 | `entities.*` status fields | No | Compact values shown only when configured and available |
 | `floors` | Yes | One or more floor mappings |
 | `floor.map_entity` | Yes | Calibrated Roborock Custom Map image |
+| `floor.vacuum_then_mop_routine` | Recommended | Native Roborock routine button for the whole floor; the routine owns rooms, suction, water, passes, and route |
 | `floor.rooms` | Yes | Segment-to-area mappings and floor-clean membership |
 | `floor.assisted_carry` | No | Makes this the single floor that uses the guided no-dock carry workflow |
 | `presets` | No | Structured additional presets with optional `cleaning_count: 1` or `2`; arbitrary service YAML is intentionally unsupported |
@@ -209,13 +210,13 @@ Start validates every requested option against live entity options. It then:
    room is selected. Partial or exclusion-based jobs use one
    `vacuum.clean_area` call with the selected HA area IDs.
 
-Vac followed by Mop uses `entities.vacuum_then_mop_script` because the Roborock command exposed through Home Assistant does not reliably activate this app-only one-time sequence. The card validates both `vacuum` and `mop` cleaning modes, then starts the script with the selected areas and settings. Configure that script to run a Vacuum `vacuum.clean_area` phase, wait for it to finish and return, then run a Mop `vacuum.clean_area` phase over the same areas. Stop and Dock first turn off this script, preventing a cancelled vacuum phase from starting a later mop phase.
+Vac followed by Mop presses the active floor's `floor.vacuum_then_mop_routine`. It is always treated as a whole-floor job, and the card deliberately hides suction, water flow, cleaning count, and route because those settings belong to the saved Roborock routine. If a floor has no native routine configured, the older `entities.vacuum_then_mop_script` two-phase orchestration remains available as a compatibility fallback.
 
 A complete, commented starting point is provided in [`docs/vacuum-then-mop-script.yaml`](docs/vacuum-then-mop-script.yaml). Replace its five Roborock entity IDs with your own, create or import the script, and select that script in the card editor.
 
 SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. An Entire-floor selection that excludes configured rooms stays on `vacuum.clean_area`; only a true all-room selection uses `vacuum.start`.
 
-Assisted carry is designed for a saved floor that has no dock and exposes the same four app-style modes. The compact `input_text` payload persists rooms, strategy, cleaning type, and applicable manual settings, while old payloads decode as Vac & Mop. Vacuum-only skips mop hardware checks, pre-wetting, manual mop settings, washing, and drying. SmartPlan uses its atomic AI bundle and conservatively prepares/services the mop. Vac followed by Mop runs a no-dock Vacuum phase and then a Mop phase over the same whole floor or HA areas; cancelling the assisted start script prevents phase two. The scripts and stage helper remain the durable source of truth if the dashboard closes.
+Assisted carry is designed for a saved floor that has no dock and exposes the same four app-style modes. The compact `input_text` payload persists rooms, strategy, cleaning type, and applicable manual settings, while old payloads decode as Vac & Mop. Vacuum-only skips mop hardware checks, pre-wetting, manual mop settings, washing, and drying. SmartPlan uses its atomic AI bundle and conservatively prepares/services the mop. A floor-native Vac followed by Mop routine is stored without manual overrides and launched by the assisted start script after the carry handoff. The scripts and stage helper remain the durable source of truth if the dashboard closes.
 
 Pause, resume, stop, and dock use `vacuum.pause`, `vacuum.start`, `vacuum.stop`, and `vacuum.return_to_base`. `vacuum.start` is exposed only as Resume while paused. Stop and Dock also cancel the configured Vac followed by Mop script and any active assisted upstairs start script before controlling the vacuum.
 
@@ -227,7 +228,7 @@ Dock settings use `vacuum.send_command` with the device-native Roborock payload 
 - **Room disabled:** assign an HA `area_id` in the visual editor and make sure that segment is mapped in Roborock entity settings.
 - **Preset unavailable:** its fan speed, mop mode, or intensity is absent from the live entity options. Use a supported value or another preset.
 - **Vacuum only is unavailable:** configure the Roborock high-level Cleaning mode select on Home Assistant 2026.8+, or set `vacuum_mode_fallback: set_clean_motor_mode` on older stable releases. The fallback is atomic and does not call the incompatible mop-intensity `off` select.
-- **Vac followed by Mop is unavailable:** configure `entities.vacuum_then_mop_script` and a Cleaning mode entity that offers both `vacuum` and `mop`.
+- **Vac followed by Mop is unavailable:** configure `floor.vacuum_then_mop_routine`; for legacy two-phase orchestration, configure `entities.vacuum_then_mop_script` and a Cleaning mode entity that offers both `vacuum` and `mop`.
 - **Floor timeout:** verify `map_select_option` exactly matches a live option on `entities.map_select`.
 - **Card not found after install:** hard-refresh the browser and verify the HACS resource is loaded as a JavaScript module.
 - **Cleaning does not start:** the error toast names the failed operation. The card deliberately does not fall back or roll back device settings automatically.

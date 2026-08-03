@@ -106,6 +106,7 @@ export interface FloorConfig {
   name: string;
   map_entity: string;
   map_select_option?: string;
+  vacuum_then_mop_routine?: string;
   rooms: RoomConfig[];
   assisted_carry?: boolean;
   [key: string]: unknown;

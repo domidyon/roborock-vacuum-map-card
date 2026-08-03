@@ -131,7 +131,7 @@ export function JobSheet({
 
           <section className="mode-settings">
             <p className="mode-description">{description}</p>
-            {draft.strategy !== 'smartplan' && (
+            {draft.strategy !== 'smartplan' && draft.cleaning_type !== 'vacuum_then_mop' && (
               <>
                 <ChoiceButtons
                   title={t(language, 'suction')}
@@ -166,7 +166,7 @@ export function JobSheet({
                 <ChoiceButtons
                   title={t(language, 'cleaningCount')}
                   value={String(draft.cleaning_count) as '1' | '2'}
-                  options={(draft.cleaning_type === 'vacuum_then_mop' ? ['1'] : ['1', '2']) as Array<'1' | '2'>}
+                  options={['1', '2'] as Array<'1' | '2'>}
                   onChange={(cleaning_count) => onDraftChange({
                     ...draft,
                     preset_id: 'custom_draft',

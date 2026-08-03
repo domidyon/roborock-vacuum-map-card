@@ -40,19 +40,20 @@ export function assistedStage(hass: HomeAssistant, config: RoborockVacuumMapCard
 }
 
 export function createAssistedJob(segmentIds: number[], draft: JobDraft): AssistedCarryJob {
-  if (draft.strategy !== 'smartplan' && !draft.fan_speed) {
+  const nativeRoutine = draft.cleaning_type === 'vacuum_then_mop';
+  if (draft.strategy !== 'smartplan' && !nativeRoutine && !draft.fan_speed) {
     throw new AssistedCarryError('prepare', 'Suction is required');
   }
-  if (draft.strategy !== 'smartplan' && draft.cleaning_type !== 'vacuum' && (!draft.mop_mode || !draft.mop_intensity)) {
+  if (draft.strategy !== 'smartplan' && !nativeRoutine && draft.cleaning_type !== 'vacuum' && (!draft.mop_mode || !draft.mop_intensity)) {
     throw new AssistedCarryError('prepare', 'Water flow and route are required');
   }
   return {
     segment_ids: [...new Set(segmentIds)],
     strategy: draft.strategy,
     cleaning_type: draft.cleaning_type,
-    fan_speed: draft.strategy === 'smartplan' ? undefined : draft.fan_speed,
-    mop_mode: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' ? undefined : draft.mop_mode,
-    mop_intensity: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' ? undefined : draft.mop_intensity,
+    fan_speed: draft.strategy === 'smartplan' || nativeRoutine ? undefined : draft.fan_speed,
+    mop_mode: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' || nativeRoutine ? undefined : draft.mop_mode,
+    mop_intensity: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' || nativeRoutine ? undefined : draft.mop_intensity,
     cleaning_count: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum_then_mop' ? 1 : draft.cleaning_count,
   };
 }
@@ -82,8 +83,9 @@ export function decodeAssistedJob(value: string | undefined): AssistedCarryJob |
     const fanSpeed = typeof raw.f === 'string' ? raw.f : undefined;
     const mopMode = typeof raw.m === 'string' ? raw.m : undefined;
     const mopIntensity = typeof raw.w === 'string' ? raw.w : undefined;
-    if (strategy === 'custom' && !fanSpeed) return undefined;
-    if (strategy === 'custom' && cleaningType !== 'vacuum' && (!mopMode || !mopIntensity)) return undefined;
+    const nativeRoutine = cleaningType === 'vacuum_then_mop';
+    if (strategy === 'custom' && !nativeRoutine && !fanSpeed) return undefined;
+    if (strategy === 'custom' && !nativeRoutine && cleaningType !== 'vacuum' && (!mopMode || !mopIntensity)) return undefined;
     return {
       segment_ids: raw.s as number[],
       strategy: strategy as AssistedCarryJob['strategy'],

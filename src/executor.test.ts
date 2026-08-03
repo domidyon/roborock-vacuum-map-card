@@ -229,7 +229,7 @@ describe('job executor', () => {
     });
   });
 
-  it('launches Vac followed by Mop through the configured two-phase script', async () => {
+  it('launches Vac followed by Mop through the floor native routine', async () => {
     const hass = createHass();
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
     hass.callService = vi.fn(async (domain, service, data, target) => {
@@ -245,16 +245,9 @@ describe('job executor', () => {
       pollMs: 0,
     });
     expect(calls.at(-1)).toEqual({
-      domain: 'script',
-      service: 'turn_on',
-      data: {
-        variables: {
-          cleaning_area_id: ['hallway', 'living_room'],
-          fan_speed: 'turbo',
-          mop_mode: 'fast',
-          mop_intensity: 'medium',
-        },
-      },
+      domain: 'button',
+      service: 'press',
+      data: {},
     });
     expect(calls.some(({ service }) => service === 'clean_area')).toBe(false);
     expect(calls.some(({ data }) => data?.command === 'app_segment_clean')).toBe(false);
@@ -262,11 +255,12 @@ describe('job executor', () => {
 
   it('rejects Vac followed by Mop when the orchestration script is missing', async () => {
     const hass = createHass();
+    const floor = { ...configFixture.floors[0], vacuum_then_mop_routine: undefined };
     await expect(executeJob({
       getHass: () => hass,
       config: { ...configFixture, entities: { ...configFixture.entities, vacuum_then_mop_script: undefined } },
-      floor: configFixture.floors[0],
-      rooms: [configFixture.floors[0].rooms[1]],
+      floor,
+      rooms: [floor.rooms[1]],
       draft: { preset_id: 'vacuum_then_mop', strategy: 'custom', cleaning_type: 'vacuum_then_mop', fan_speed: 'quiet', mop_mode: 'fast', mop_intensity: 'medium', cleaning_count: 1 },
     })).rejects.toMatchObject({ operation: 'start_vacuum_then_mop' });
   });

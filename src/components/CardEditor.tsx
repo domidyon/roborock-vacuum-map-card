@@ -114,7 +114,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
         {([
           ['map_select', 'select', 'Floor selector'],
           ['cleaning_mode', 'select', 'Cleaning mode'],
-          ['vacuum_then_mop_script', 'script', 'Vac followed by Mop script'],
+          ['vacuum_then_mop_script', 'script', 'Legacy Vac followed by Mop script'],
           ['mop_mode', 'select', 'Mop mode'],
           ['mop_intensity', 'select', 'Mop intensity'],
           ['dock_mop_drying', 'binary_sensor', 'Dock mop drying'],
@@ -177,6 +177,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
                 updateFloor(floorIndex, { ...floor, map_entity, rooms });
               }} /></label>
               <label>Selector option<select value={floor.map_select_option ?? ''} onChange={(event) => updateFloor(floorIndex, { ...floor, map_select_option: event.target.value || undefined })}><option value="">Not configured</option>{mapOptions.map((option) => <option key={option}>{option}</option>)}</select></label>
+              <label>Vac followed by Mop routine<SelectEntity hass={hass} domain="button" optional value={floor.vacuum_then_mop_routine} onChange={(vacuum_then_mop_routine) => updateFloor(floorIndex, { ...floor, vacuum_then_mop_routine })} /></label>
               <label className="checkbox"><input type="checkbox" checked={floor.assisted_carry === true} onChange={(event) => updateFloor(floorIndex, { ...floor, assisted_carry: event.target.checked })} /> Guide this floor without its dock</label>
             </div>
 

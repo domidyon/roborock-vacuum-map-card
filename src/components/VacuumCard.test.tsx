@@ -37,6 +37,12 @@ describe('vacuum card flows', () => {
     expect(dialog).not.toHaveTextContent('Off Raise Main Brush');
     await userEvent.click(screen.getByRole('tab', { name: 'Vac & Mop' }));
     expect(screen.getByRole('slider', { name: 'Water flow' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Vac followed by Mop' }));
+    expect(screen.queryByRole('slider', { name: 'Water flow' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Suction')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cleaning passes')).not.toBeInTheDocument();
+    expect(screen.queryByText('Mop route')).not.toBeInTheDocument();
+    expect(dialog).toHaveTextContent('Rooms, suction, water flow, passes, and route are defined in the Roborock app.');
     await userEvent.click(screen.getByRole('tab', { name: 'Vacuum only' }));
     expect(screen.queryByRole('slider', { name: 'Water flow' })).not.toBeInTheDocument();
   });

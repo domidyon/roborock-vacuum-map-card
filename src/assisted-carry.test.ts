@@ -63,5 +63,8 @@ describe('assisted carry payload', () => {
     expect(JSON.parse(encodeAssistedJob(createAssistedJob([1], drafts[0])))).toEqual({
       s: [1], g: 'smartplan', t: 'vacuum_and_mop', c: 1,
     });
+    expect(JSON.parse(encodeAssistedJob(createAssistedJob([1], drafts[1])))).toEqual({
+      s: [1], g: 'custom', t: 'vacuum_then_mop', c: 1,
+    });
   });
 });

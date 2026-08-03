@@ -160,6 +160,22 @@ export async function executeJob({
   await ensureFloorSelected();
 
   if (draft.cleaning_type === 'vacuum_then_mop' && draft.strategy !== 'smartplan') {
+    const routine = floor.vacuum_then_mop_routine;
+    if (routine) {
+      const routineState = getHass().states[routine];
+      if (!routineState || routineState.state === 'unavailable') {
+        throw new JobExecutionError('start_vacuum_then_mop', `${routine} is unavailable`);
+      }
+      try {
+        await getHass().callService('button', 'press', {}, { entity_id: routine });
+      } catch (error) {
+        throw new JobExecutionError('start_vacuum_then_mop', error instanceof Error ? error.message : String(error), { cause: error });
+      }
+      return floor.rooms
+        .filter((room) => room.include_in_floor_clean !== false)
+        .map((room) => room.area_id)
+        .filter((areaId): areaId is string => Boolean(areaId));
+    }
     const script = config.entities?.vacuum_then_mop_script;
     const scriptState = script ? getHass().states[script] : undefined;
     if (!script || !scriptState || scriptState.state === 'unavailable') {

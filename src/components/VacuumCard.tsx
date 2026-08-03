@@ -92,7 +92,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const [toast, setToast] = useState<string>();
   const [execution, setExecution] = useState<JobExecutionState>({ phase: 'idle' });
   const capabilities = useMemo(() => detectCapabilities(hass, config), [hass, config]);
-  const presets = useMemo(() => getAvailablePresets(config, capabilities), [config, capabilities]);
+  const presets = useMemo(() => getAvailablePresets(config, capabilities, floor), [config, capabilities, floor]);
   const defaultPreset = presets.find(({ preset, available }) => preset.id === config.default_preset && available)?.preset
     ?? presets.find(({ available }) => available)?.preset;
   const [draft, setDraft] = useState<JobDraft>(() =>
@@ -184,6 +184,12 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       }
       setDraft(draftFromPreset(assistedPreset));
     }
+    if (!assisted && draft.cleaning_type === 'vacuum_then_mop' && floor.vacuum_then_mop_routine) {
+      const included = floor.rooms
+        .filter((room) => room.include_in_floor_clean !== false && room.area_id)
+        .map((room) => room.segment_id);
+      setSelected(new Set(included));
+    }
     setAssistedConfiguring(assisted);
     setSheetOpen(true);
   };
@@ -194,6 +200,16 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       .map((room) => room.segment_id);
     setSelected(new Set(included));
     openJobSheet(Boolean(floor.assisted_carry));
+  };
+
+  const changeDraft = (nextDraft: JobDraft) => {
+    if (nextDraft.cleaning_type === 'vacuum_then_mop' && floor.vacuum_then_mop_routine) {
+      const included = floor.rooms
+        .filter((room) => room.include_in_floor_clean !== false && room.area_id)
+        .map((room) => room.segment_id);
+      setSelected(new Set(included));
+    }
+    setDraft(nextDraft);
   };
 
   const assistantMessage = (error: unknown): string => {
@@ -485,7 +501,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           selectedRoomNames={selectedNames}
           submitting={execution.phase === 'submitting' || assistedPending}
           assistedCarry={assistedConfiguring}
-          onDraftChange={setDraft}
+          onDraftChange={changeDraft}
           onClose={() => execution.phase !== 'submitting' && !assistedPending && setSheetOpen(false)}
           onStart={submit}
         />

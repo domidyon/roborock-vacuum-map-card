@@ -20,6 +20,7 @@ const floorSchema = z
     name: z.string().min(1),
     map_entity: entityId,
     map_select_option: z.string().min(1).optional(),
+    vacuum_then_mop_routine: entityId.refine((value) => value.startsWith('button.'), 'Routine must be a button entity').optional(),
     assisted_carry: z.boolean().optional().default(false),
     rooms: z.array(roomSchema).min(1),
   })

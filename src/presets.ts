@@ -1,4 +1,4 @@
-import type { JobDraft, PresetConfig, RoborockCapabilities, RoborockVacuumMapCardConfig } from './types';
+import type { FloorConfig, JobDraft, PresetConfig, RoborockCapabilities, RoborockVacuumMapCardConfig } from './types';
 
 export interface AvailablePreset {
   preset: PresetConfig;
@@ -53,6 +53,7 @@ function missingOption(
   config: RoborockVacuumMapCardConfig,
   capabilities: RoborockCapabilities,
   preset: PresetConfig,
+  floor?: FloorConfig,
 ): string | undefined {
   const canSetVacuumMode = capabilities.cleaningModes.includes('vacuum')
     || config.vacuum_mode_fallback === 'set_clean_motor_mode';
@@ -60,6 +61,7 @@ function missingOption(
     return 'cleaning mode “vacuum”';
   }
   if (preset.cleaning_type === 'vacuum_then_mop') {
+    if (floor?.vacuum_then_mop_routine) return undefined;
     if (!config.entities?.vacuum_then_mop_script) return 'Vac followed by Mop script';
     if (!capabilities.cleaningModes.includes('vacuum') || !capabilities.cleaningModes.includes('mop')) {
       return 'cleaning modes “vacuum” and “mop”';
@@ -78,9 +80,10 @@ function missingOption(
 export function getAvailablePresets(
   config: RoborockVacuumMapCardConfig,
   capabilities: RoborockCapabilities,
+  floor?: FloorConfig,
 ): AvailablePreset[] {
   return [...BUILT_IN_PRESETS, ...(config.presets ?? [])].map((preset) => {
-    const missing = missingOption(config, capabilities, preset);
+    const missing = missingOption(config, capabilities, preset, floor);
     return {
       preset,
       available: !missing,

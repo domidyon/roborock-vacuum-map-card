@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 — 2026-08-03
+
+- Run each floor's saved native Roborock routine for Vac followed by Mop jobs.
+- Treat the routine as a whole-floor job and hide suction, water flow, cleaning count, and route controls that are owned by the Roborock app.
+- Preserve the durable assisted-carry handoff while allowing the upstairs start script to launch the saved routine.
+- Keep the older cancellable Home Assistant two-phase script as a compatibility fallback for cards without a configured routine.
+
 ## 0.4.0 — 2026-08-03
 
 - Add a durable assisted-carry workflow for cleaning a floor without its dock.
