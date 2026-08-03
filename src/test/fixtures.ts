@@ -33,6 +33,14 @@ export const configFixture: RoborockVacuumMapCardConfig = {
     mop_intensity: 'select.mop_intensity',
     dock_mop_drying: 'binary_sensor.mop_drying',
     dock_mop_drying_remaining_time: 'sensor.mop_drying_remaining',
+    dock_child_lock: 'switch.dock_child_lock',
+    dock_mop_wash_frequency: 'input_select.dock_mop_wash_frequency',
+    dock_wash_mode: 'input_select.dock_wash_mode',
+    dock_wash_temperature: 'input_select.dock_wash_temperature',
+    dock_auto_empty: 'input_boolean.dock_auto_empty',
+    dock_empty_mode: 'input_select.dock_empty_mode',
+    dock_auto_dry: 'input_boolean.dock_auto_dry',
+    dock_dry_duration: 'input_select.dock_dry_duration',
     battery: 'sensor.battery',
     current_room: 'sensor.current_room',
     cleaning_area: 'sensor.area',
@@ -75,6 +83,14 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
       const id = String(target?.entity_id);
       hass.states[id].state = String(data?.option);
     }
+    if (domain === 'input_select' && service === 'select_option') {
+      const id = String(target?.entity_id);
+      hass.states[id].state = String(data?.option);
+    }
+    if (['input_boolean', 'switch'].includes(domain) && ['turn_on', 'turn_off'].includes(service)) {
+      const id = String(target?.entity_id);
+      hass.states[id].state = service === 'turn_on' ? 'on' : 'off';
+    }
   };
   const calibration = [
     { vacuum: { x: 25500, y: 25500 }, map: { x: 600, y: 300 } },
@@ -91,6 +107,14 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
       'select.mop_intensity': { entity_id: 'select.mop_intensity', state: 'medium', attributes: { options: ['off', 'slight', 'low', 'medium', 'moderate', 'high', 'extreme'] } },
       'binary_sensor.mop_drying': { entity_id: 'binary_sensor.mop_drying', state: 'off', attributes: {} },
       'sensor.mop_drying_remaining': { entity_id: 'sensor.mop_drying_remaining', state: '0', attributes: { unit_of_measurement: 'h' } },
+      'switch.dock_child_lock': { entity_id: 'switch.dock_child_lock', state: 'off', attributes: {} },
+      'input_select.dock_mop_wash_frequency': { entity_id: 'input_select.dock_mop_wash_frequency', state: 'smart', attributes: { options: ['smart', '10_min', '15_min', '20_min', '25_min', '30_min'] } },
+      'input_select.dock_wash_mode': { entity_id: 'input_select.dock_wash_mode', state: 'smart', attributes: { options: ['smart', 'light', 'balanced', 'deep'] } },
+      'input_select.dock_wash_temperature': { entity_id: 'input_select.dock_wash_temperature', state: 'hot', attributes: { options: ['normal', 'warm', 'hot'] } },
+      'input_boolean.dock_auto_empty': { entity_id: 'input_boolean.dock_auto_empty', state: 'off', attributes: {} },
+      'input_select.dock_empty_mode': { entity_id: 'input_select.dock_empty_mode', state: 'smart', attributes: { options: ['smart', 'light', 'balanced', 'max'] } },
+      'input_boolean.dock_auto_dry': { entity_id: 'input_boolean.dock_auto_dry', state: 'on', attributes: {} },
+      'input_select.dock_dry_duration': { entity_id: 'input_select.dock_dry_duration', state: '3h', attributes: { options: ['2h', '3h', '4h'] } },
       'sensor.battery': { entity_id: 'sensor.battery', state: '100', attributes: { unit_of_measurement: '%' } },
       'sensor.current_room': { entity_id: 'sensor.current_room', state: 'Living room', attributes: {} },
       'sensor.area': { entity_id: 'sensor.area', state: '40.9', attributes: { unit_of_measurement: 'm²' } },

@@ -73,6 +73,25 @@ test('shows dock mop drying with its remaining time', async ({ page }) => {
   await expect(page.locator('.state-line')).toContainText('docked · Drying mop · 3 h 54 min remaining');
 });
 
+test('opens dock controls, persists settings, and guards physical actions', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Dock station' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Dock station' });
+  await expect(dialog).toContainText('Mop wash frequency');
+  await expect(dialog).toContainText('Water temperature');
+  await expect(dialog).toContainText('Auto-empty');
+  await expect(dialog).toContainText('Auto-drying');
+  await expect(dialog).toContainText('Drain onboard water tank');
+  await page.getByRole('combobox', { name: 'Washing mode' }).selectOption('deep');
+  const settingsCalls = await page.evaluate(() => window.__serviceCalls);
+  expect(settingsCalls.some((call) => call.data?.command === 'set_wash_towel_mode')).toBe(true);
+
+  page.once('dialog', (confirmation) => confirmation.dismiss());
+  await page.getByRole('button', { name: /Empty/ }).click();
+  const afterDismiss = await page.evaluate(() => window.__serviceCalls);
+  expect(afterDismiss.some((call) => call.data?.command === 'app_start_collect_dust')).toBe(false);
+});
+
 test('retains the draft and never starts cleaning after a settings error', async ({ page }) => {
   await page.goto('/?scenario=service-error');
   await page.getByRole('button', { name: 'Kitchen' }).click();

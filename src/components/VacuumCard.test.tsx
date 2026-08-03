@@ -100,6 +100,43 @@ describe('vacuum card flows', () => {
     expect(stateLine).toHaveTextContent('docked · Washing mop');
   });
 
+  it('opens an app-style dock panel and saves a setting through the raw API', async () => {
+    const hass = createHass();
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data });
+      if (domain === 'input_select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Dock station' }));
+    const dialog = screen.getByRole('dialog', { name: 'Dock station' });
+    expect(dialog).toHaveTextContent('Empty');
+    expect(dialog).toHaveTextContent('Wash');
+    expect(dialog).toHaveTextContent('Dry');
+    expect(screen.getByRole('switch', { name: 'Auto-empty' })).not.toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Auto-drying' })).toBeChecked();
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Washing mode' }), 'deep');
+    await waitFor(() => expect(calls).toEqual([
+      { domain: 'vacuum', service: 'send_command', data: { command: 'set_wash_towel_mode', params: { wash_mode: 2 } } },
+      { domain: 'input_select', service: 'select_option', data: { option: 'deep' } },
+    ]));
+  });
+
+  it('requires confirmation before every noisy dock start action', async () => {
+    const hass = createHass();
+    hass.callService = vi.fn();
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Dock station' }));
+    await userEvent.click(screen.getByRole('button', { name: /Empty/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Wash/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Dry/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Drain onboard water tank/ }));
+    expect(window.confirm).toHaveBeenCalledTimes(4);
+    expect(hass.callService).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+  });
+
   it('cancels two-phase orchestration before stopping or docking', async () => {
     const hass = createHass();
     const calls: string[] = [];

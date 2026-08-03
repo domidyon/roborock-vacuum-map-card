@@ -2,6 +2,15 @@ export type Language = 'en' | 'nl';
 export type CleaningStrategy = 'custom' | 'smartplan';
 export type CleaningType = 'vacuum' | 'vacuum_and_mop' | 'vacuum_then_mop';
 export type CleaningCount = 1 | 2;
+export type DockSettingKey =
+  | 'mop_wash_frequency'
+  | 'wash_mode'
+  | 'wash_temperature'
+  | 'auto_empty'
+  | 'empty_mode'
+  | 'auto_dry'
+  | 'dry_duration';
+export type DockAction = 'empty' | 'wash' | 'dry' | 'drain';
 
 export interface HassEntity {
   entity_id: string;
@@ -48,6 +57,14 @@ export interface RoborockEntityConfig {
   mop_intensity?: string;
   dock_mop_drying?: string;
   dock_mop_drying_remaining_time?: string;
+  dock_child_lock?: string;
+  dock_mop_wash_frequency?: string;
+  dock_wash_mode?: string;
+  dock_wash_temperature?: string;
+  dock_auto_empty?: string;
+  dock_empty_mode?: string;
+  dock_auto_dry?: string;
+  dock_dry_duration?: string;
   battery?: string;
   current_room?: string;
   cleaning_area?: string;

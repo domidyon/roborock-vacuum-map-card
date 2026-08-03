@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Battery, Clock3, Home, MapPin, Pause, Play, ScanLine, Square, Timer, X } from 'lucide-react';
+import { Battery, Clock3, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Square, Timer, X } from 'lucide-react';
 import { detectCapabilities, isVacuumActive } from '../capabilities';
+import { DockExecutionError, executeDockAction, executeDockSetting } from '../dock-executor';
 import { executeJob, JobExecutionError } from '../executor';
 import { t } from '../i18n';
 import { draftFromPreset, getAvailablePresets } from '../presets';
 import type {
   FloorConfig,
+  DockAction,
+  DockSettingKey,
   HomeAssistant,
   JobDraft,
   JobExecutionState,
   RoborockVacuumMapCardConfig,
 } from '../types';
+import { DockSheet } from './DockSheet';
 import { JobSheet } from './JobSheet';
 import { MapView } from './MapView';
 
@@ -68,6 +72,8 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const floor = config.floors.find((item) => item.id === floorId) ?? config.floors[0];
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [dockOpen, setDockOpen] = useState(false);
+  const [dockPending, setDockPending] = useState<string>();
   const [toast, setToast] = useState<string>();
   const [execution, setExecution] = useState<JobExecutionState>({ phase: 'idle' });
   const capabilities = useMemo(() => detectCapabilities(hass, config), [hass, config]);
@@ -84,7 +90,9 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   }, [hass]);
 
   const detailedStatus = config.entities?.status ? hass.states[config.entities.status]?.state : undefined;
-  const jobActive = isVacuumActive(vacuum?.state) || detailedStatus === 'washing_the_mop';
+  const washing = ['washing_the_mop', 'washing_the_mop_2'].includes(detailedStatus ?? '');
+  const emptying = [vacuum?.state, detailedStatus].includes('emptying_the_bin');
+  const jobActive = isVacuumActive(vacuum?.state) || washing;
 
   useEffect(() => {
     if (execution.phase === 'starting' && jobActive) {
@@ -103,10 +111,13 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const mopDrying = config.entities?.dock_mop_drying
     ? hass.states[config.entities.dock_mop_drying]?.state === 'on'
     : false;
+  const dryingRemaining = mopDrying
+    ? formatRemainingTime(hass, config.entities?.dock_mop_drying_remaining_time, language)
+    : undefined;
   const headerDetails = [
     detailedActivity(language, detailedStatus),
     mopDrying ? t(language, 'dryingMop') : undefined,
-    mopDrying ? formatRemainingTime(hass, config.entities?.dock_mop_drying_remaining_time, language) : undefined,
+    dryingRemaining,
   ].filter((value): value is string => Boolean(value));
   const statusItems = [
     { icon: <Battery />, label: t(language, 'battery'), value: stateText(hass, config.entities?.battery) },
@@ -159,6 +170,58 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       await hassRef.current.callService('vacuum', service, {}, { entity_id: config.entity });
     } catch (error) {
       setToast(`${service}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  const changeDockSetting = async (setting: DockSettingKey, value: string | boolean) => {
+    if (dockPending) return;
+    setDockPending(t(language, 'settingSaved'));
+    try {
+      await executeDockSetting(hassRef.current, config, setting, value);
+      setToast(t(language, 'settingSaved'));
+    } catch (error) {
+      const message = error instanceof DockExecutionError ? `${error.operation}: ${error.message}` : String(error);
+      setToast(message);
+    } finally {
+      setDockPending(undefined);
+    }
+  };
+
+  const runDockAction = async (action: DockAction, active: boolean) => {
+    if (dockPending) return;
+    if (!active) {
+      const prompt = action === 'empty'
+        ? t(language, 'confirmEmpty')
+        : action === 'wash'
+          ? t(language, 'confirmWash')
+          : action === 'dry'
+            ? t(language, 'confirmDry')
+            : t(language, 'confirmDrain');
+      if (!window.confirm(prompt)) return;
+    }
+    setDockPending(t(language, 'dockActionSent'));
+    try {
+      await executeDockAction(hassRef.current, config, action, active);
+      setToast(t(language, 'dockActionSent'));
+    } catch (error) {
+      const message = error instanceof DockExecutionError ? `${error.operation}: ${error.message}` : String(error);
+      setToast(message);
+    } finally {
+      setDockPending(undefined);
+    }
+  };
+
+  const changeChildLock = async (enabled: boolean) => {
+    const entityId = config.entities?.dock_child_lock;
+    if (!entityId || dockPending) return;
+    setDockPending(t(language, 'settingSaved'));
+    try {
+      await hassRef.current.callService('switch', enabled ? 'turn_on' : 'turn_off', {}, { entity_id: entityId });
+      setToast(t(language, 'settingSaved'));
+    } catch (error) {
+      setToast(`child_lock: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setDockPending(undefined);
     }
   };
 
@@ -246,6 +309,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         {capabilities.canDock && (
           <button type="button" onClick={() => transport('return_to_base')}><Home />{t(language, 'dock')}</button>
         )}
+        <button type="button" onClick={() => setDockOpen(true)}><SlidersHorizontal />{t(language, 'dockStation')}</button>
       </div>
 
       {sheetOpen && (
@@ -259,6 +323,23 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           onDraftChange={setDraft}
           onClose={() => execution.phase !== 'submitting' && setSheetOpen(false)}
           onStart={submit}
+        />
+      )}
+
+      {dockOpen && (
+        <DockSheet
+          hass={hass}
+          config={config}
+          language={language}
+          washing={washing}
+          emptying={emptying}
+          drying={mopDrying}
+          dryingRemaining={dryingRemaining}
+          pending={dockPending}
+          onClose={() => !dockPending && setDockOpen(false)}
+          onAction={runDockAction}
+          onSetting={changeDockSetting}
+          onChildLock={changeChildLock}
         />
       )}
 

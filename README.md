@@ -13,6 +13,8 @@ A Roborock-native Home Assistant Dashboard card for selecting multiple rooms and
 - App-facing suction, water-flow, cleaning-count, and route controls; internal Roborock modes are filtered out
 - Live capability detection for fan speeds, mop routes, mop intensity, transport controls, and floor options
 - Dock-aware mop washing/drying status with formatted drying time remaining
+- App-style dock panel for Empty, Wash, Dry, wash frequency/mode/temperature, auto-empty, empty mode, auto-drying, drying duration, child lock, and onboard-tank drain
+- Confirmation gates before every noisy dock start/drain action, with persistent HA helper-backed setting state
 - Atomic SmartPlan control of suction, water, and route, plus native one-pass/two-pass cleaning
 - Draft-only settings until Start is pressed; service failures abort before cleaning and retain the draft
 - Visual Lovelace editor with room discovery, HA-area mapping, floor/preset reordering, and lossless YAML round-tripping
@@ -66,6 +68,14 @@ entities:
   mop_intensity: select.qrevo_curv_2_flow_mop_intensity
   dock_mop_drying: binary_sensor.qrevo_curv_2_flow_dock_mop_drying
   dock_mop_drying_remaining_time: sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time
+  dock_child_lock: switch.qrevo_curv_2_flow_dock_child_lock
+  dock_mop_wash_frequency: input_select.qrevo_dock_mop_wash_frequency
+  dock_wash_mode: input_select.qrevo_dock_washing_mode
+  dock_wash_temperature: input_select.qrevo_dock_wash_temperature
+  dock_auto_empty: input_boolean.qrevo_dock_auto_empty
+  dock_empty_mode: input_select.qrevo_dock_empty_mode
+  dock_auto_dry: input_boolean.qrevo_dock_auto_dry
+  dock_dry_duration: input_select.qrevo_dock_drying_duration
   battery: sensor.qrevo_curv_2_flow_battery
   current_room: sensor.qrevo_curv_2_flow_current_room
   cleaning_area: sensor.qrevo_curv_2_flow_cleaning_area
@@ -155,6 +165,14 @@ default_preset: vacuum_only
 | `entities.mop_intensity` | No | Roborock mop intensity select |
 | `entities.dock_mop_drying` | No | Binary sensor that adds the active mop-drying state beside the docked state |
 | `entities.dock_mop_drying_remaining_time` | No | Duration sensor shown while mop drying is active |
+| `entities.dock_child_lock` | No | Native Roborock dock child-lock switch |
+| `entities.dock_mop_wash_frequency` | No | Persistent `input_select` with `smart`, `10_min`, `15_min`, `20_min`, `25_min`, and `30_min` |
+| `entities.dock_wash_mode` | No | Persistent `input_select` with `smart`, `light`, `balanced`, and `deep` |
+| `entities.dock_wash_temperature` | No | Persistent `input_select` with `normal`, `warm`, and `hot` |
+| `entities.dock_auto_empty` | No | Persistent `input_boolean` reflecting the last accepted auto-empty setting |
+| `entities.dock_empty_mode` | No | Persistent `input_select` with `smart`, `light`, `balanced`, and `max` |
+| `entities.dock_auto_dry` | No | Persistent `input_boolean` reflecting the last accepted auto-drying setting |
+| `entities.dock_dry_duration` | No | Persistent `input_select` with `2h`, `3h`, and `4h` |
 | `entities.*` status fields | No | Compact values shown only when configured and available |
 | `floors` | Yes | One or more floor mappings |
 | `floor.map_entity` | Yes | Calibrated Roborock Custom Map image |
@@ -180,6 +198,8 @@ A complete, commented starting point is provided in [`docs/vacuum-then-mop-scrip
 SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. Entire-floor jobs always use their configured room list rather than `vacuum.start`, so excluded rooms stay excluded.
 
 Pause, resume, stop, and dock use `vacuum.pause`, `vacuum.start`, `vacuum.stop`, and `vacuum.return_to_base`. `vacuum.start` is exposed only as Resume while paused. Stop and Dock also cancel the configured Vac followed by Mop script before controlling the vacuum.
+
+Dock settings use `vacuum.send_command` with the device-native Roborock payload and update the configured HA helper only after the device accepts the command. This avoids displaying a successful value after a rejected setting. The helpers are optional; without them, the panel uses the documented defaults for its initial display. Empty, Wash, Dry, and Drain are deliberately separate from settings and always require confirmation before starting. The dryer setting command cannot start the dryer; the guarded Dry action uses the distinct dryer-status command.
 
 ## Troubleshooting
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 — 2026-08-03
+
+- Add an app-style dock panel with Empty, Wash, Dry, and onboard-water-tank drain controls.
+- Require explicit confirmation before every noisy dock start or drain action; stopping an active dock process remains immediate.
+- Add mop-wash frequency, washing mode, wash-water temperature, auto-empty, empty mode, auto-drying, drying duration, and dock child-lock settings.
+- Use the Qrevo's accepted native Roborock payloads for every dock setting, including separate dryer configuration and dryer-start commands.
+- Support optional Home Assistant input helpers so dock settings persist across browser reloads and stay synchronized across dashboard clients.
+- Add unit and browser coverage for all setting payloads, accepted-helper updates, rejected-setting behavior, and physical-action confirmation guards.
+
 ## 0.2.0 — 2026-08-03
 
 - Match the Roborock app's four General modes: SmartPlan, Vac followed by Mop, Vac & Mop, and Vacuum.
