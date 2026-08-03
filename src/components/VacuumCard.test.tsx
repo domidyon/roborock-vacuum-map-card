@@ -21,6 +21,26 @@ describe('vacuum card flows', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('Kitchen · Hallway');
   });
 
+  it('shows the four app modes and only app-facing manual options', async () => {
+    render(<VacuumCard hass={createHass()} config={configFixture} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    expect(screen.getByRole('tab', { name: 'AI SmartPlan' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Vac followed by Mop' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Vac & Mop' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Vacuum only' })).toBeInTheDocument();
+    expect(dialog).not.toHaveTextContent('smart mode');
+    expect(dialog).not.toHaveTextContent('deep plus');
+    expect(dialog).not.toHaveTextContent('custom');
+    expect(dialog).not.toHaveTextContent('Off Raise Main Brush');
+    await userEvent.click(screen.getByRole('tab', { name: 'Vac & Mop' }));
+    expect(screen.getByRole('slider', { name: 'Water flow' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Vacuum only' }));
+    expect(screen.queryByRole('slider', { name: 'Water flow' })).not.toBeInTheDocument();
+  });
+
   it('clears selection on floor change and excludes bathroom from Entire upstairs', async () => {
     render(<VacuumCard hass={createHass()} config={configFixture} />);
     loadMap();
@@ -78,5 +98,17 @@ describe('vacuum card flows', () => {
     render(<VacuumCard hass={hass} config={{ ...configFixture, entities: { ...configFixture.entities, status: 'sensor.status' } }} />);
     const stateLine = screen.getByText('docked').closest('.state-line');
     expect(stateLine).toHaveTextContent('docked · Washing mop');
+  });
+
+  it('cancels two-phase orchestration before stopping or docking', async () => {
+    const hass = createHass();
+    const calls: string[] = [];
+    hass.callService = vi.fn(async (domain, service) => { calls.push(`${domain}.${service}`); });
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+    await waitFor(() => expect(calls).toEqual(['script.turn_off', 'vacuum.stop']));
+    calls.length = 0;
+    await userEvent.click(screen.getByRole('button', { name: 'Dock' }));
+    await waitFor(() => expect(calls).toEqual(['script.turn_off', 'vacuum.return_to_base']));
   });
 });

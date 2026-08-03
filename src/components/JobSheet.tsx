@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import type { AvailablePreset } from '../presets';
 import { draftFromPreset } from '../presets';
 import { t } from '../i18n';
-import type { JobDraft, Language, RoborockCapabilities } from '../types';
+import type { CleaningCount, JobDraft, Language, RoborockCapabilities } from '../types';
 import { HaIcon } from './HaIcon';
 
 interface JobSheetProps {
@@ -17,26 +17,54 @@ interface JobSheetProps {
   onStart: () => void;
 }
 
-function Choice<T extends string>({
+const MODE_IDS = ['smartplan', 'vacuum_then_mop', 'vacuum_and_mop', 'vacuum_only'] as const;
+const VACUUM_SUCTION = ['quiet', 'balanced', 'turbo', 'max', 'max_plus'];
+const MOP_SUCTION = ['quiet', 'balanced', 'turbo', 'max'];
+const APP_ROUTES = ['fast', 'standard', 'deep'];
+const WATER_FLOW = ['slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
+const WATER_LEVEL: Record<string, number> = { slight: 1, low: 5, medium: 15, moderate: 25, high: 28, extreme: 30 };
+
+function label(value: string): string {
+  return value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function ChoiceButtons<T extends string>({
   value,
   options,
   onChange,
-  label,
+  title,
 }: {
   value?: T;
   options: T[];
   onChange: (value: T) => void;
-  label: string;
+  title: string;
 }) {
   if (options.length === 0) return null;
   return (
-    <label className="field">
-      <span>{label}</span>
-      <select value={value ?? ''} onChange={(event) => onChange(event.target.value as T)}>
-        {options.map((option) => <option key={option} value={option}>{option.replaceAll('_', ' ')}</option>)}
-      </select>
-    </label>
+    <div className="field app-field">
+      <span>{title}</span>
+      <div className="option-strip">
+        {options.map((option) => (
+          <button
+            type="button"
+            key={option}
+            className={value === option ? 'active' : ''}
+            onClick={() => onChange(option)}
+          >
+            {label(option)}
+          </button>
+        ))}
+      </div>
+    </div>
   );
+}
+
+function activeMode(draft: JobDraft, id: typeof MODE_IDS[number]): boolean {
+  if (id === 'smartplan') return draft.strategy === 'smartplan';
+  if (draft.strategy === 'smartplan') return false;
+  if (id === 'vacuum_only') return draft.cleaning_type === 'vacuum';
+  if (id === 'vacuum_and_mop') return draft.cleaning_type === 'vacuum_and_mop';
+  return draft.cleaning_type === 'vacuum_then_mop';
 }
 
 export function JobSheet({
@@ -50,7 +78,22 @@ export function JobSheet({
   onClose,
   onStart,
 }: JobSheetProps) {
-  const vacuumOnlyAvailable = presets.find(({ preset }) => preset.id === 'vacuum_only')?.available ?? false;
+  const appModes = MODE_IDS.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
+    (mode): mode is AvailablePreset => Boolean(mode),
+  );
+  const savedPresets = presets.filter(({ preset }) => !MODE_IDS.includes(preset.id as typeof MODE_IDS[number]));
+  const fanAllowList = draft.cleaning_type === 'vacuum' ? VACUUM_SUCTION : MOP_SUCTION;
+  const fanSpeeds = fanAllowList.filter((option) => capabilities.fanSpeeds.includes(option));
+  const routes = APP_ROUTES.filter((option) => capabilities.mopModes.includes(option));
+  const waterOptions = WATER_FLOW.filter((option) => capabilities.mopIntensities.includes(option));
+  const waterIndex = Math.max(0, waterOptions.indexOf(draft.mop_intensity ?? 'medium'));
+  const description = draft.strategy === 'smartplan'
+    ? t(language, 'smartPlanDescription')
+    : draft.cleaning_type === 'vacuum'
+      ? t(language, 'vacuumDescription')
+      : draft.cleaning_type === 'vacuum_then_mop'
+        ? t(language, 'vacuumThenMopDescription')
+        : t(language, 'vacuumAndMopDescription');
 
   return (
     <div className="sheet-layer" role="presentation">
@@ -66,72 +109,96 @@ export function JobSheet({
         </header>
 
         <div className="sheet-body">
-          <h3>{t(language, 'presets')}</h3>
-          <div className="preset-grid">
-            {presets.map(({ preset, available, reason }) => (
+          <div className="cleaning-mode-tabs" role="tablist" aria-label={t(language, 'cleaningType')}>
+            {appModes.map(({ preset, available, reason }) => (
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeMode(draft, preset.id as typeof MODE_IDS[number])}
                 key={preset.id}
-                className={draft.preset_id === preset.id ? 'active' : ''}
+                className={activeMode(draft, preset.id as typeof MODE_IDS[number]) ? 'active' : ''}
                 disabled={!available || submitting}
                 title={reason}
                 onClick={() => onDraftChange(draftFromPreset(preset))}
               >
                 <HaIcon icon={preset.icon} />
-                <span>{preset.name}</span>
-                {!available && <small>{reason ?? t(language, 'unsupported')}</small>}
+                <span>{preset.id === 'smartplan' ? 'AI SmartPlan' : preset.name}</span>
               </button>
             ))}
           </div>
 
-          {draft.strategy !== 'smartplan' && (
-            <div className="job-fields">
-              <div className="field">
-                <span>{t(language, 'cleaningType')}</span>
-                <div className="segmented">
-                  {(['vacuum', 'vacuum_and_mop'] as const).map((type) => (
-                    <button
-                      type="button"
-                      key={type}
-                      className={draft.cleaning_type === type ? 'active' : ''}
-                      disabled={submitting || (type === 'vacuum' && !vacuumOnlyAvailable)}
-                      title={type === 'vacuum' && !vacuumOnlyAvailable ? t(language, 'unsupported') : undefined}
-                      onClick={() =>
-                        onDraftChange({
-                          ...draft,
-                          preset_id: 'custom_draft',
-                          cleaning_type: type,
-                          mop_mode: type === 'vacuum' && capabilities.mopModes.includes('standard') ? 'standard' : draft.mop_mode,
-                        })
-                      }
-                    >
-                      {t(language, type === 'vacuum' ? 'vacuumOnly' : 'vacuumAndMop')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Choice
-                label={t(language, 'suction')}
-                value={draft.fan_speed}
-                options={capabilities.fanSpeeds}
-                onChange={(fan_speed) => onDraftChange({ ...draft, preset_id: 'custom_draft', fan_speed })}
-              />
-              {capabilities.hasMopMode && (
-                <Choice
-                  label={t(language, 'mopRoute')}
+          <section className="mode-settings">
+            <p className="mode-description">{description}</p>
+            {draft.strategy !== 'smartplan' && (
+              <>
+                <ChoiceButtons
+                  title={t(language, 'suction')}
+                  value={draft.fan_speed}
+                  options={fanSpeeds}
+                  onChange={(fan_speed) => onDraftChange({ ...draft, preset_id: 'custom_draft', fan_speed })}
+                />
+
+                {draft.cleaning_type !== 'vacuum' && waterOptions.length > 0 && (
+                  <label className="field app-field water-flow">
+                    <span>{t(language, 'waterFlow')}</span>
+                    <div className="range-heading">
+                      <strong>{label(waterOptions[waterIndex])}</strong>
+                      <output>{WATER_LEVEL[waterOptions[waterIndex]]}</output>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max={waterOptions.length - 1}
+                      step="1"
+                      value={waterIndex}
+                      aria-label={t(language, 'waterFlow')}
+                      onChange={(event) => onDraftChange({
+                        ...draft,
+                        preset_id: 'custom_draft',
+                        mop_intensity: waterOptions[Number(event.target.value)],
+                      })}
+                    />
+                  </label>
+                )}
+
+                <ChoiceButtons
+                  title={t(language, 'cleaningCount')}
+                  value={String(draft.cleaning_count) as '1' | '2'}
+                  options={(draft.cleaning_type === 'vacuum_then_mop' ? ['1'] : ['1', '2']) as Array<'1' | '2'>}
+                  onChange={(cleaning_count) => onDraftChange({
+                    ...draft,
+                    preset_id: 'custom_draft',
+                    cleaning_count: Number(cleaning_count) as CleaningCount,
+                  })}
+                />
+
+                <ChoiceButtons
+                  title={t(language, 'mopRoute')}
                   value={draft.mop_mode}
-                  options={capabilities.mopModes}
+                  options={routes}
                   onChange={(mop_mode) => onDraftChange({ ...draft, preset_id: 'custom_draft', mop_mode })}
                 />
-              )}
-              {draft.cleaning_type !== 'vacuum' && capabilities.hasMopIntensity && (
-                <Choice
-                  label={t(language, 'mopIntensity')}
-                  value={draft.mop_intensity}
-                  options={capabilities.mopIntensities}
-                  onChange={(mop_intensity) => onDraftChange({ ...draft, preset_id: 'custom_draft', mop_intensity })}
-                />
-              )}
+              </>
+            )}
+          </section>
+
+          {savedPresets.length > 0 && (
+            <div className="saved-profiles">
+              <span>{t(language, 'savedProfiles')}</span>
+              <div>
+                {savedPresets.map(({ preset, available, reason }) => (
+                  <button
+                    type="button"
+                    key={preset.id}
+                    disabled={!available || submitting}
+                    title={reason}
+                    className={draft.preset_id === preset.id ? 'active' : ''}
+                    onClick={() => onDraftChange(draftFromPreset(preset))}
+                  >
+                    <HaIcon icon={preset.icon} /> {preset.name}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

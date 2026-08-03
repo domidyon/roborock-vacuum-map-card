@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-08-03
+
+- Match the Roborock app's four General modes: SmartPlan, Vac followed by Mop, Vac & Mop, and Vacuum.
+- Add app-style contextual suction, six-step water flow, one/two-pass cleaning, and fast/standard/deep route controls.
+- Filter internal values such as `custom`, `smart_mode`, `deep_plus`, and `off_raise_main_brush` from the job UI.
+- Use Home Assistant 2026.8's high-level Cleaning mode select when available.
+- Set SmartPlan as one atomic Roborock AI bundle instead of changing only the mop route.
+- Add tested native one/two-pass cleaning and a cancellable Home Assistant two-phase script for reliable Vac followed by Mop jobs.
+- Cancel any active two-phase orchestration before Stop or Dock so a later mop phase cannot start unexpectedly.
+
 ## 0.1.2 — 2026-08-03
 
 - Add configurable dock mop-drying state and formatted remaining-time display beside the vacuum state.

@@ -1,4 +1,4 @@
-import { entityAvailable, isVacuumBusy } from './capabilities';
+import { isVacuumBusy } from './capabilities';
 import type { FloorConfig, HomeAssistant, JobDraft, RoborockVacuumMapCardConfig, RoomConfig } from './types';
 
 const SAFE_SMARTPLAN_EXIT_MODES = new Set(['standard', 'deep', 'deep_plus', 'fast']);
@@ -43,7 +43,7 @@ async function waitForState(
 
 function requireOption(hass: HomeAssistant, entityId: string, option: string, operation: string): void {
   const entity = hass.states[entityId];
-  if (!entityAvailable(hass, entityId)) throw new JobExecutionError(operation, `${entityId} is unavailable`);
+  if (!entity || entity.state === 'unavailable') throw new JobExecutionError(operation, `${entityId} is unavailable`);
   const options = Array.isArray(entity.attributes.options) ? entity.attributes.options.map(String) : [];
   if (!options.includes(option)) throw new JobExecutionError(operation, `${entityId} does not support “${option}”`);
 }
@@ -87,6 +87,44 @@ async function setLegacyVacuumMode(hass: HomeAssistant, config: RoborockVacuumMa
   }
 }
 
+async function sendCommand(
+  hass: HomeAssistant,
+  config: RoborockVacuumMapCardConfig,
+  command: string,
+  params: unknown,
+  operation: string,
+): Promise<void> {
+  try {
+    await hass.callService('vacuum', 'send_command', { command, params }, { entity_id: config.entity });
+  } catch (error) {
+    throw new JobExecutionError(operation, error instanceof Error ? error.message : String(error), { cause: error });
+  }
+}
+
+async function setRepeat(hass: HomeAssistant, config: RoborockVacuumMapCardConfig, repeat: 1 | 2): Promise<void> {
+  // Newer Roborock models reject [] and [{ repeat }]. The command specifically
+  // expects a JSON object, even though most Roborock commands use an array.
+  await sendCommand(hass, config, 'set_clean_repeat_times', { repeat }, 'set_cleaning_count');
+}
+
+async function setSmartPlan(hass: HomeAssistant, config: RoborockVacuumMapCardConfig): Promise<void> {
+  await sendCommand(
+    hass,
+    config,
+    'set_clean_motor_mode',
+    [{ fan_power: 110, water_box_mode: 209, mop_mode: 306 }],
+    'set_smartplan',
+  );
+}
+
+function requireFanSpeed(hass: HomeAssistant, entityId: string, fanSpeed: string): void {
+  const rawFanSpeeds = hass.states[entityId]?.attributes.fan_speed_list;
+  const fanSpeeds = Array.isArray(rawFanSpeeds) ? rawFanSpeeds.map(String) : [];
+  if (!fanSpeeds.includes(fanSpeed)) {
+    throw new JobExecutionError('set_fan_speed', `${entityId} does not support “${fanSpeed}”`);
+  }
+}
+
 export async function executeJob({
   getHass,
   config,
@@ -114,15 +152,60 @@ export async function executeJob({
     await selectOption(getHass, mapSelect, floor.map_select_option, 'select_floor', timeoutMs, pollMs, sleep);
   }
 
+  if (draft.cleaning_type === 'vacuum_then_mop' && draft.strategy !== 'smartplan') {
+    const script = config.entities?.vacuum_then_mop_script;
+    const scriptState = script ? getHass().states[script] : undefined;
+    if (!script || !scriptState || scriptState.state === 'unavailable') {
+      throw new JobExecutionError('start_vacuum_then_mop', 'Vac followed by Mop requires an available orchestration script');
+    }
+    const cleaningMode = config.entities?.cleaning_mode;
+    if (!cleaningMode) {
+      throw new JobExecutionError('set_cleaning_mode', 'Vac followed by Mop requires a cleaning-mode entity');
+    }
+    requireOption(getHass(), cleaningMode, 'vacuum', 'set_cleaning_mode');
+    requireOption(getHass(), cleaningMode, 'mop', 'set_cleaning_mode');
+    if (draft.mop_mode) {
+      const mopMode = config.entities?.mop_mode;
+      if (!mopMode) throw new JobExecutionError('set_mop_mode', 'The selected profile requires a mop-mode entity');
+      requireOption(getHass(), mopMode, draft.mop_mode, 'set_mop_mode');
+    }
+    if (draft.mop_intensity) {
+      const mopIntensity = config.entities?.mop_intensity;
+      if (!mopIntensity) throw new JobExecutionError('set_mop_intensity', 'The selected profile requires a mop-intensity entity');
+      requireOption(getHass(), mopIntensity, draft.mop_intensity, 'set_mop_intensity');
+    }
+    if (draft.fan_speed) requireFanSpeed(getHass(), config.entity, draft.fan_speed);
+    try {
+      await getHass().callService(
+        'script',
+        'turn_on',
+        {
+          variables: {
+            cleaning_area_id: areaIds,
+            fan_speed: draft.fan_speed,
+            mop_mode: draft.mop_mode,
+            mop_intensity: draft.mop_intensity,
+          },
+        },
+        { entity_id: script },
+      );
+    } catch (error) {
+      throw new JobExecutionError('start_vacuum_then_mop', error instanceof Error ? error.message : String(error), { cause: error });
+    }
+    return areaIds;
+  }
+
   if (draft.strategy === 'smartplan') {
-    const mopMode = config.entities?.mop_mode;
-    if (!mopMode) throw new JobExecutionError('set_smartplan', 'SmartPlan requires a mop-mode entity');
-    await selectOption(getHass, mopMode, 'smart_mode', 'set_smartplan', timeoutMs, pollMs, sleep);
+    // SmartPlan is one atomic Roborock mode. Setting only mop_mode=smart_mode
+    // leaves suction and water in their previous manual states.
+    await setSmartPlan(getHass(), config);
+    await setRepeat(getHass(), config, 1);
   } else {
     const cleaningMode = config.entities?.cleaning_mode;
-    if (cleaningMode && entityAvailable(getHass(), cleaningMode)) {
-      const option = draft.cleaning_type === 'vacuum' ? 'vacuum' : 'vac_and_mop';
-      await selectOption(getHass, cleaningMode, option, 'set_cleaning_mode', timeoutMs, pollMs, sleep);
+    const targetCleaningMode = draft.cleaning_type === 'vacuum' ? 'vacuum' : 'vac_and_mop';
+    const cleaningModeOptions = cleaningMode && getHass().states[cleaningMode]?.attributes.options;
+    if (cleaningMode && Array.isArray(cleaningModeOptions) && cleaningModeOptions.map(String).includes(targetCleaningMode)) {
+      await selectOption(getHass, cleaningMode, targetCleaningMode, 'set_cleaning_mode', timeoutMs, pollMs, sleep);
     } else if (draft.cleaning_type === 'vacuum' && config.vacuum_mode_fallback === 'set_clean_motor_mode') {
       await setLegacyVacuumMode(getHass(), config);
     } else if (draft.cleaning_type === 'vacuum') {
@@ -147,17 +230,15 @@ export async function executeJob({
 
     if (draft.fan_speed) {
       const hass = getHass();
-      const rawFanSpeeds = hass.states[config.entity]?.attributes.fan_speed_list;
-      const fanSpeeds = Array.isArray(rawFanSpeeds) ? rawFanSpeeds.map(String) : [];
-      if (!fanSpeeds.includes(draft.fan_speed)) {
-        throw new JobExecutionError('set_fan_speed', `${config.entity} does not support “${draft.fan_speed}”`);
-      }
+      requireFanSpeed(hass, config.entity, draft.fan_speed);
       try {
         await hass.callService('vacuum', 'set_fan_speed', { fan_speed: draft.fan_speed }, { entity_id: config.entity });
       } catch (error) {
         throw new JobExecutionError('set_fan_speed', error instanceof Error ? error.message : String(error), { cause: error });
       }
     }
+
+    await setRepeat(getHass(), config, draft.cleaning_count);
   }
 
   try {

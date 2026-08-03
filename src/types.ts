@@ -1,6 +1,7 @@
 export type Language = 'en' | 'nl';
 export type CleaningStrategy = 'custom' | 'smartplan';
-export type CleaningType = 'vacuum' | 'vacuum_and_mop';
+export type CleaningType = 'vacuum' | 'vacuum_and_mop' | 'vacuum_then_mop';
+export type CleaningCount = 1 | 2;
 
 export interface HassEntity {
   entity_id: string;
@@ -42,6 +43,7 @@ export interface HomeAssistant {
 export interface RoborockEntityConfig {
   map_select?: string;
   cleaning_mode?: string;
+  vacuum_then_mop_script?: string;
   mop_mode?: string;
   mop_intensity?: string;
   dock_mop_drying?: string;
@@ -82,6 +84,7 @@ export interface PresetConfig {
   fan_speed?: string;
   mop_mode?: string;
   mop_intensity?: string;
+  cleaning_count?: CleaningCount;
   [key: string]: unknown;
 }
 
@@ -105,6 +108,7 @@ export interface JobDraft {
   fan_speed?: string;
   mop_mode?: string;
   mop_intensity?: string;
+  cleaning_count: CleaningCount;
 }
 
 export interface RoborockCapabilities {

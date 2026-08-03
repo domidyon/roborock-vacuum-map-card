@@ -7,7 +7,7 @@ describe('capability detection and presets', () => {
   it('derives transport and setting options from live entities', () => {
     const capabilities = detectCapabilities(createHass(), configFixture);
     expect(capabilities).toMatchObject({ canStart: true, canPause: true, canStop: true, canDock: true, hasCleaningMode: true, hasMopMode: true });
-    expect(capabilities.fanSpeeds).toEqual(['quiet', 'balanced', 'turbo']);
+    expect(capabilities.fanSpeeds).toEqual(['quiet', 'balanced', 'turbo', 'max', 'max_plus', 'off_raise_main_brush', 'smart_mode', 'custom']);
     expect(capabilities.cleaningModes).toEqual(['vacuum', 'vac_and_mop', 'mop']);
   });
 

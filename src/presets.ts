@@ -8,6 +8,36 @@ export interface AvailablePreset {
 
 export const BUILT_IN_PRESETS: PresetConfig[] = [
   {
+    id: 'smartplan',
+    name: 'SmartPlan',
+    icon: 'mdi:creation',
+    strategy: 'smartplan',
+    cleaning_type: 'vacuum_and_mop',
+    cleaning_count: 1,
+  },
+  {
+    id: 'vacuum_then_mop',
+    name: 'Vac followed by Mop',
+    icon: 'mdi:vacuum-outline',
+    strategy: 'custom',
+    cleaning_type: 'vacuum_then_mop',
+    fan_speed: 'balanced',
+    mop_mode: 'standard',
+    mop_intensity: 'medium',
+    cleaning_count: 1,
+  },
+  {
+    id: 'vacuum_and_mop',
+    name: 'Vac & Mop',
+    icon: 'mdi:water-plus',
+    strategy: 'custom',
+    cleaning_type: 'vacuum_and_mop',
+    fan_speed: 'balanced',
+    mop_mode: 'standard',
+    mop_intensity: 'medium',
+    cleaning_count: 1,
+  },
+  {
     id: 'vacuum_only',
     name: 'Vacuum only',
     icon: 'mdi:vacuum',
@@ -15,24 +45,7 @@ export const BUILT_IN_PRESETS: PresetConfig[] = [
     cleaning_type: 'vacuum',
     fan_speed: 'balanced',
     mop_mode: 'standard',
-  },
-  {
-    id: 'vacuum_and_mop',
-    name: 'Vacuum and mop',
-    icon: 'mdi:water-plus',
-    strategy: 'custom',
-    cleaning_type: 'vacuum_and_mop',
-    fan_speed: 'balanced',
-    mop_mode: 'standard',
-    mop_intensity: 'medium',
-  },
-  {
-    id: 'smartplan',
-    name: 'SmartPlan',
-    icon: 'mdi:creation',
-    strategy: 'smartplan',
-    cleaning_type: 'vacuum_and_mop',
-    mop_mode: 'smart_mode',
+    cleaning_count: 1,
   },
 ];
 
@@ -45,6 +58,12 @@ function missingOption(
     || config.vacuum_mode_fallback === 'set_clean_motor_mode';
   if (preset.cleaning_type === 'vacuum' && !canSetVacuumMode) {
     return 'cleaning mode “vacuum”';
+  }
+  if (preset.cleaning_type === 'vacuum_then_mop') {
+    if (!config.entities?.vacuum_then_mop_script) return 'Vac followed by Mop script';
+    if (!capabilities.cleaningModes.includes('vacuum') || !capabilities.cleaningModes.includes('mop')) {
+      return 'cleaning modes “vacuum” and “mop”';
+    }
   }
   if (preset.fan_speed && !capabilities.fanSpeeds.includes(preset.fan_speed)) return `fan speed “${preset.fan_speed}”`;
   if (preset.mop_mode && !capabilities.mopModes.includes(preset.mop_mode)) return `mop mode “${preset.mop_mode}”`;
@@ -76,5 +95,6 @@ export function draftFromPreset(preset: PresetConfig): JobDraft {
     fan_speed: preset.fan_speed,
     mop_mode: preset.mop_mode,
     mop_intensity: preset.mop_intensity,
+    cleaning_count: preset.cleaning_count ?? 1,
   };
 }

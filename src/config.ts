@@ -30,10 +30,11 @@ const presetSchema = z
     name: z.string().min(1),
     icon: z.string().optional(),
     strategy: z.enum(['custom', 'smartplan']),
-    cleaning_type: z.enum(['vacuum', 'vacuum_and_mop']).optional(),
+    cleaning_type: z.enum(['vacuum', 'vacuum_and_mop', 'vacuum_then_mop']).optional(),
     fan_speed: z.string().optional(),
     mop_mode: z.string().optional(),
     mop_intensity: z.string().optional(),
+    cleaning_count: z.union([z.literal(1), z.literal(2)]).optional(),
   })
   .passthrough();
 
@@ -47,6 +48,7 @@ export const cardConfigSchema = z
       .object({
         map_select: optionalEntityId,
         cleaning_mode: optionalEntityId,
+        vacuum_then_mop_script: optionalEntityId,
         mop_mode: optionalEntityId,
         mop_intensity: optionalEntityId,
         dock_mop_drying: optionalEntityId,
@@ -90,7 +92,7 @@ export const cardConfigSchema = z
         segments.add(room.segment_id);
       }
     }
-    const presetIds = new Set(['vacuum_only', 'vacuum_and_mop', 'smartplan']);
+    const presetIds = new Set(['vacuum_only', 'vacuum_and_mop', 'vacuum_then_mop', 'smartplan']);
     for (const [index, preset] of config.presets.entries()) {
       if (presetIds.has(preset.id)) {
         ctx.addIssue({ code: 'custom', path: ['presets', index, 'id'], message: 'Preset IDs must be unique' });

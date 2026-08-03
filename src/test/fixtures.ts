@@ -28,6 +28,7 @@ export const configFixture: RoborockVacuumMapCardConfig = {
   entities: {
     map_select: 'select.map',
     cleaning_mode: 'select.cleaning_mode',
+    vacuum_then_mop_script: 'script.roborock_vacuum_then_mop',
     mop_mode: 'select.mop_mode',
     mop_intensity: 'select.mop_intensity',
     dock_mop_drying: 'binary_sensor.mop_drying',
@@ -82,11 +83,12 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
   ];
   const hass: HomeAssistant = {
     states: {
-      'vacuum.roborock': { entity_id: 'vacuum.roborock', state: 'docked', attributes: { friendly_name: 'Roborock', fan_speed_list: ['quiet', 'balanced', 'turbo'], fan_speed: 'balanced', supported_features: 30524 } },
+      'vacuum.roborock': { entity_id: 'vacuum.roborock', state: 'docked', attributes: { friendly_name: 'Roborock', fan_speed_list: ['quiet', 'balanced', 'turbo', 'max', 'max_plus', 'off_raise_main_brush', 'smart_mode', 'custom'], fan_speed: 'balanced', supported_features: 30524 } },
       'select.map': { entity_id: 'select.map', state: 'Downstairs', attributes: { options: ['Downstairs', 'Upstairs'] } },
       'select.cleaning_mode': { entity_id: 'select.cleaning_mode', state: 'vac_and_mop', attributes: { options: ['vacuum', 'vac_and_mop', 'mop'] } },
+      'script.roborock_vacuum_then_mop': { entity_id: 'script.roborock_vacuum_then_mop', state: 'off', attributes: { mode: 'single' } },
       'select.mop_mode': { entity_id: 'select.mop_mode', state: 'custom', attributes: { options: ['standard', 'deep', 'deep_plus', 'fast', 'smart_mode', 'custom'] } },
-      'select.mop_intensity': { entity_id: 'select.mop_intensity', state: 'off', attributes: { options: ['off', 'medium', 'high'] } },
+      'select.mop_intensity': { entity_id: 'select.mop_intensity', state: 'medium', attributes: { options: ['off', 'slight', 'low', 'medium', 'moderate', 'high', 'extreme'] } },
       'binary_sensor.mop_drying': { entity_id: 'binary_sensor.mop_drying', state: 'off', attributes: {} },
       'sensor.mop_drying_remaining': { entity_id: 'sensor.mop_drying_remaining', state: '0', attributes: { unit_of_measurement: 'h' } },
       'sensor.battery': { entity_id: 'sensor.battery', state: '100', attributes: { unit_of_measurement: '%' } },

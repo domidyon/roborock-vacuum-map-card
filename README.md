@@ -1,6 +1,6 @@
 # Roborock Vacuum Map Card
 
-A Roborock-native Home Assistant Dashboard card for selecting multiple rooms, configuring one cleaning profile, and launching safe native `vacuum.clean_area` jobs.
+A Roborock-native Home Assistant Dashboard card for selecting multiple rooms and launching app-style Roborock cleaning jobs.
 
 ![Desktop job configuration](docs/screenshots/demo-desktop.png)
 
@@ -9,10 +9,11 @@ A Roborock-native Home Assistant Dashboard card for selecting multiple rooms, co
 - Calibrated Roborock maps with zoom, pan, accessible SVG room overlays, and room labels
 - Multiple room selection followed by an explicit **Configure job** step
 - Configurable **Entire floor** membership, including excluded-but-individually-selectable rooms
-- Built-in Vacuum only, Vacuum and mop, and SmartPlan presets plus user presets
+- Roborock-style SmartPlan, Vac followed by Mop, Vac & Mop, and Vacuum mode tabs
+- App-facing suction, water-flow, cleaning-count, and route controls; internal Roborock modes are filtered out
 - Live capability detection for fan speeds, mop routes, mop intensity, transport controls, and floor options
 - Dock-aware mop washing/drying status with formatted drying time remaining
-- SmartPlan-safe route changes through `custom` before `standard`, `deep`, `deep_plus`, or `fast`
+- Atomic SmartPlan control of suction, water, and route, plus native one-pass/two-pass cleaning
 - Draft-only settings until Start is pressed; service failures abort before cleaning and retain the draft
 - Visual Lovelace editor with room discovery, HA-area mapping, floor/preset reordering, and lossless YAML round-tripping
 - Responsive mobile bottom sheet, desktop dialog, light/dark HA themes, keyboard support, English, and Dutch
@@ -58,8 +59,9 @@ language: nl
 
 entities:
   map_select: select.qrevo_curv_2_flow_selected_map
-  # Home Assistant 2026.8+ only; omit this on older versions.
-  # cleaning_mode: select.qrevo_curv_2_flow_cleaning_mode
+  # Home Assistant 2026.8+.
+  cleaning_mode: select.woonkamer_qrevo_curv_2_flow_cleaning_mode
+  vacuum_then_mop_script: script.roborock_vacuum_then_mop
   mop_mode: select.qrevo_curv_2_flow_mop_mode
   mop_intensity: select.qrevo_curv_2_flow_mop_intensity
   dock_mop_drying: binary_sensor.qrevo_curv_2_flow_dock_mop_drying
@@ -134,8 +136,8 @@ presets:
     strategy: custom
     cleaning_type: vacuum
     fan_speed: quiet
-    mop_mode: custom
-    mop_intensity: off
+    mop_mode: standard
+    cleaning_count: 1
 
 default_preset: vacuum_only
 ```
@@ -147,7 +149,8 @@ default_preset: vacuum_only
 | `entity` | Yes | Roborock `vacuum.*` entity |
 | `language` | No | `en` (default) or `nl` |
 | `entities.map_select` | For 2+ floors | Select entity and live floor options |
-| `entities.cleaning_mode` | For Vacuum only | High-level Roborock mode select (`vacuum`, `vac_and_mop`, and optionally `mop`) from Home Assistant 2026.8+ |
+| `entities.cleaning_mode` | Recommended | High-level Roborock mode select (`vacuum`, `vac_and_mop`, and optionally `mop`) from Home Assistant 2026.8+ |
+| `entities.vacuum_then_mop_script` | For Vac followed by Mop | Cancellable two-phase HA script; receives `cleaning_area_id`, `fan_speed`, `mop_mode`, and `mop_intensity` variables |
 | `entities.mop_mode` | No | Roborock mop route/mode select |
 | `entities.mop_intensity` | No | Roborock mop intensity select |
 | `entities.dock_mop_drying` | No | Binary sensor that adds the active mop-drying state beside the docked state |
@@ -156,7 +159,7 @@ default_preset: vacuum_only
 | `floors` | Yes | One or more floor mappings |
 | `floor.map_entity` | Yes | Calibrated Roborock Custom Map image |
 | `floor.rooms` | Yes | Segment-to-area mappings and floor-clean membership |
-| `presets` | No | Structured additional presets; arbitrary service YAML is intentionally unsupported |
+| `presets` | No | Structured additional presets with optional `cleaning_count: 1` or `2`; arbitrary service YAML is intentionally unsupported |
 | `default_preset` | No | Built-in or configured preset ID |
 | `vacuum_mode_fallback` | No | `set_clean_motor_mode` enables true Vacuum mode on HA 2026.7 and older with one atomic Roborock command |
 
@@ -165,15 +168,18 @@ default_preset: vacuum_only
 Start validates every requested option against live entity options. It then:
 
 1. Selects and confirms the target floor when necessary.
-2. Applies the high-level `cleaning_mode` for Vacuum or Vacuum and mop when configured. On HA 2026.7 and older, the explicit fallback uses one atomic `set_clean_motor_mode` command for Vacuum mode.
-3. Applies the route, including the safe `smart_mode` → `custom` transition when needed.
-4. Applies mop intensity for mopping jobs only.
-5. Applies fan speed with `vacuum.set_fan_speed`.
-6. Calls `vacuum.clean_area` once with all selected HA area IDs in `cleaning_area_id`.
+2. Applies the Home Assistant 2026.8+ high-level `cleaning_mode` for Vacuum or Vac & Mop when configured. On HA 2026.7 and older, the explicit fallback uses one atomic `set_clean_motor_mode` command for Vacuum mode.
+3. Applies only the app-supported manual route, water-flow, and suction values selected in the sheet.
+4. Sets the robot's native cleaning count with `set_clean_repeat_times` using the device-required `{ repeat: 1|2 }` object.
+5. Calls `vacuum.clean_area` once with all selected HA area IDs.
 
-SmartPlan only sets `smart_mode`; it does not send manual fan or intensity overrides. Entire-floor jobs always use their configured area list rather than `vacuum.start`, so excluded rooms stay excluded.
+Vac followed by Mop uses `entities.vacuum_then_mop_script` because the Roborock command exposed through Home Assistant does not reliably activate this app-only one-time sequence. The card validates both `vacuum` and `mop` cleaning modes, then starts the script with the selected areas and settings. Configure that script to run a Vacuum `vacuum.clean_area` phase, wait for it to finish and return, then run a Mop `vacuum.clean_area` phase over the same areas. Stop and Dock first turn off this script, preventing a cancelled vacuum phase from starting a later mop phase.
 
-Pause, resume, stop, and dock use `vacuum.pause`, `vacuum.start`, `vacuum.stop`, and `vacuum.return_to_base`. `vacuum.start` is exposed only as Resume while paused.
+A complete, commented starting point is provided in [`docs/vacuum-then-mop-script.yaml`](docs/vacuum-then-mop-script.yaml). Replace its five Roborock entity IDs with your own, create or import the script, and select that script in the card editor.
+
+SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. Entire-floor jobs always use their configured room list rather than `vacuum.start`, so excluded rooms stay excluded.
+
+Pause, resume, stop, and dock use `vacuum.pause`, `vacuum.start`, `vacuum.stop`, and `vacuum.return_to_base`. `vacuum.start` is exposed only as Resume while paused. Stop and Dock also cancel the configured Vac followed by Mop script before controlling the vacuum.
 
 ## Troubleshooting
 
@@ -181,6 +187,7 @@ Pause, resume, stop, and dock use `vacuum.pause`, `vacuum.start`, `vacuum.stop`,
 - **Room disabled:** assign an HA `area_id` in the visual editor and make sure that segment is mapped in Roborock entity settings.
 - **Preset unavailable:** its fan speed, mop mode, or intensity is absent from the live entity options. Use a supported value or another preset.
 - **Vacuum only is unavailable:** configure the Roborock high-level Cleaning mode select on Home Assistant 2026.8+, or set `vacuum_mode_fallback: set_clean_motor_mode` on older stable releases. The fallback is atomic and does not call the incompatible mop-intensity `off` select.
+- **Vac followed by Mop is unavailable:** configure `entities.vacuum_then_mop_script` and a Cleaning mode entity that offers both `vacuum` and `mop`.
 - **Floor timeout:** verify `map_select_option` exactly matches a live option on `entities.map_select`.
 - **Card not found after install:** hard-refresh the browser and verify the HACS resource is loaded as a JavaScript module.
 - **Cleaning does not start:** the error toast names the failed operation. The card deliberately does not fall back or roll back device settings automatically.

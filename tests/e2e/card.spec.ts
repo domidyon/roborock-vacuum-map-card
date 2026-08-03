@@ -8,6 +8,21 @@ test('selects multiple rooms and opens the job sheet', async ({ page }) => {
   await expect(page.getByRole('dialog')).toContainText('Kitchen · Hallway');
 });
 
+test('mirrors the Roborock General modes and contextual controls', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Kitchen' }).click();
+  await page.getByRole('button', { name: 'Configure job' }).click();
+  await expect(page.getByRole('tab', { name: 'AI SmartPlan' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Vac followed by Mop' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Vac & Mop' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Vacuum only' })).toBeVisible();
+  await expect(page.getByRole('slider', { name: 'Water flow' })).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Vac & Mop' }).click();
+  await expect(page.getByRole('slider', { name: 'Water flow' })).toBeVisible();
+  await expect(page.getByRole('dialog')).not.toContainText('off raise main brush');
+  await expect(page.getByRole('dialog')).not.toContainText('deep plus');
+});
+
 test('Entire upstairs excludes the bathroom', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('tab', { name: 'Upstairs' }).click();

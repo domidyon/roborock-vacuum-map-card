@@ -114,6 +114,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
         {([
           ['map_select', 'select', 'Floor selector'],
           ['cleaning_mode', 'select', 'Cleaning mode'],
+          ['vacuum_then_mop_script', 'script', 'Vac followed by Mop script'],
           ['mop_mode', 'select', 'Mop mode'],
           ['mop_intensity', 'select', 'Mop intensity'],
           ['dock_mop_drying', 'binary_sensor', 'Dock mop drying'],
@@ -189,7 +190,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
 
       <section>
         <div className="editor-heading"><h3>Additional presets</h3><button type="button" onClick={() => {
-          const next: PresetConfig = { id: `preset_${(config.presets?.length ?? 0) + 1}`, name: 'New preset', icon: 'mdi:tune', strategy: 'custom', cleaning_type: 'vacuum_and_mop' };
+          const next: PresetConfig = { id: `preset_${(config.presets?.length ?? 0) + 1}`, name: 'New preset', icon: 'mdi:tune', strategy: 'custom', cleaning_type: 'vacuum_and_mop', cleaning_count: 1 };
           onChange({ ...config, presets: [...(config.presets ?? []), next] });
         }}><Plus /> Add preset</button></div>
         {(config.presets ?? []).map((preset, presetIndex) => (
@@ -204,11 +205,12 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
                 const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, [key]: event.target.value || undefined }; onChange({ ...config, presets });
               }} /></label>)}
               <label>Strategy<select value={preset.strategy} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, strategy: event.target.value as PresetConfig['strategy'] }; onChange({ ...config, presets }); }}><option value="custom">Custom</option><option value="smartplan">SmartPlan</option></select></label>
-              <label>Cleaning type<select value={preset.cleaning_type ?? 'vacuum_and_mop'} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_type: event.target.value as PresetConfig['cleaning_type'] }; onChange({ ...config, presets }); }}><option value="vacuum">Vacuum only</option><option value="vacuum_and_mop">Vacuum and mop</option></select></label>
+              <label>Cleaning type<select value={preset.cleaning_type ?? 'vacuum_and_mop'} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_type: event.target.value as PresetConfig['cleaning_type'] }; onChange({ ...config, presets }); }}><option value="vacuum">Vacuum only</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="vacuum_then_mop">Vacuum followed by mop</option></select></label>
+              <label>Cleaning count<select value={preset.cleaning_count ?? 1} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_count: Number(event.target.value) as 1 | 2 }; onChange({ ...config, presets }); }}><option value="1">1</option><option value="2">2</option></select></label>
             </div>
           </article>
         ))}
-        <label>Default preset<select value={config.default_preset ?? 'vacuum_only'} onChange={(event) => onChange({ ...config, default_preset: event.target.value })}><option value="vacuum_only">Vacuum only</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="smartplan">SmartPlan</option>{(config.presets ?? []).map((preset) => <option key={preset.id} value={preset.id}>{preset.name}</option>)}</select></label>
+        <label>Default preset<select value={config.default_preset ?? 'vacuum_only'} onChange={(event) => onChange({ ...config, default_preset: event.target.value })}><option value="smartplan">SmartPlan</option><option value="vacuum_then_mop">Vacuum followed by mop</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="vacuum_only">Vacuum only</option>{(config.presets ?? []).map((preset) => <option key={preset.id} value={preset.id}>{preset.name}</option>)}</select></label>
       </section>
     </div>
   );

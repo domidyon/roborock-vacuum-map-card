@@ -150,6 +150,12 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
 
   const transport = async (service: 'pause' | 'start' | 'stop' | 'return_to_base') => {
     try {
+      if (service === 'stop' || service === 'return_to_base') {
+        const script = config.entities?.vacuum_then_mop_script;
+        if (script && hassRef.current.states[script] && hassRef.current.states[script].state !== 'unavailable') {
+          await hassRef.current.callService('script', 'turn_off', {}, { entity_id: script });
+        }
+      }
       await hassRef.current.callService('vacuum', service, {}, { entity_id: config.entity });
     } catch (error) {
       setToast(`${service}: ${error instanceof Error ? error.message : String(error)}`);

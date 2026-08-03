@@ -1,0 +1,165 @@
+# Replace the five Roborock entity IDs before importing this script.
+roborock_vacuum_then_mop:
+  alias: Roborock Vac followed by Mop
+  description: Vacuum selected HA areas, return to the dock, then mop the same areas.
+  icon: mdi:vacuum-outline
+  mode: single
+  fields:
+    cleaning_area_id:
+      name: Cleaning areas
+      required: true
+      selector:
+        area:
+          multiple: true
+    fan_speed:
+      name: Suction power
+      required: true
+      default: balanced
+      selector:
+        select:
+          options: [quiet, balanced, turbo, max]
+    mop_mode:
+      name: Route
+      required: true
+      default: standard
+      selector:
+        select:
+          options: [fast, standard, deep]
+    mop_intensity:
+      name: Water flow
+      required: true
+      default: medium
+      selector:
+        select:
+          options: [slight, low, medium, moderate, high, extreme]
+  sequence:
+    - alias: Select vacuum-only cleaning
+      action: select.select_option
+      target:
+        entity_id: select.my_roborock_cleaning_mode
+      data:
+        option: vacuum
+    - alias: Leave SmartPlan route before setting a manual route
+      if:
+        - condition: state
+          entity_id: select.my_roborock_mop_mode
+          state: smart_mode
+      then:
+        - action: select.select_option
+          target:
+            entity_id: select.my_roborock_mop_mode
+          data:
+            option: custom
+    - alias: Set vacuum route
+      action: select.select_option
+      target:
+        entity_id: select.my_roborock_mop_mode
+      data:
+        option: "{{ mop_mode }}"
+    - alias: Set suction power
+      action: vacuum.set_fan_speed
+      target:
+        entity_id: vacuum.my_roborock
+      data:
+        fan_speed: "{{ fan_speed }}"
+    - alias: Set one vacuum pass
+      action: vacuum.send_command
+      target:
+        entity_id: vacuum.my_roborock
+      data:
+        command: set_clean_repeat_times
+        params:
+          repeat: 1
+    - alias: Start vacuum-only areas
+      action: vacuum.clean_area
+      target:
+        entity_id: vacuum.my_roborock
+      data:
+        cleaning_area_id: "{{ cleaning_area_id }}"
+    - alias: Wait for vacuum phase to start if needed
+      if:
+        - condition: not
+          conditions:
+            - condition: state
+              entity_id: vacuum.my_roborock
+              state: cleaning
+      then:
+        - wait_for_trigger:
+            - trigger: state
+              entity_id: vacuum.my_roborock
+              to: cleaning
+            - trigger: state
+              entity_id: sensor.my_roborock_status
+              to: segment_cleaning
+          timeout: "00:02:00"
+          continue_on_timeout: false
+    - alias: Wait for vacuum phase to finish
+      wait_for_trigger:
+        - trigger: state
+          entity_id: vacuum.my_roborock
+          to: returning
+        - trigger: state
+          entity_id: vacuum.my_roborock
+          to: docked
+        - trigger: state
+          entity_id: sensor.my_roborock_status
+          to: returning_home
+        - trigger: state
+          entity_id: sensor.my_roborock_status
+          to: charging
+      timeout: "03:00:00"
+      continue_on_timeout: false
+    - alias: Wait for the robot to return if needed
+      if:
+        - condition: not
+          conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: sensor.my_roborock_status
+                  state: charging
+                - condition: state
+                  entity_id: vacuum.my_roborock
+                  state: docked
+      then:
+        - wait_for_trigger:
+            - trigger: state
+              entity_id: sensor.my_roborock_status
+              to: charging
+            - trigger: state
+              entity_id: vacuum.my_roborock
+              to: docked
+          timeout: "00:10:00"
+          continue_on_timeout: false
+    - alias: Select mop-only cleaning
+      action: select.select_option
+      target:
+        entity_id: select.my_roborock_cleaning_mode
+      data:
+        option: mop
+    - alias: Set mop route
+      action: select.select_option
+      target:
+        entity_id: select.my_roborock_mop_mode
+      data:
+        option: "{{ mop_mode }}"
+    - alias: Set water flow
+      action: select.select_option
+      target:
+        entity_id: select.my_roborock_mop_intensity
+      data:
+        option: "{{ mop_intensity }}"
+    - alias: Set one mop pass
+      action: vacuum.send_command
+      target:
+        entity_id: vacuum.my_roborock
+      data:
+        command: set_clean_repeat_times
+        params:
+          repeat: 1
+    - alias: Start mop-only areas
+      action: vacuum.clean_area
+      target:
+        entity_id: vacuum.my_roborock
+      data:
+        cleaning_area_id: "{{ cleaning_area_id }}"
