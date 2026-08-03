@@ -53,6 +53,11 @@ The editor supports the complete setup without hand-written YAML:
 
 If areas are missing, configure segment-to-area mapping in the Roborock vacuum entity settings first.
 
+For Roborock multi-level homes, enable **Multi-level** and **Manual Selection** in
+the Roborock app. Smart Recognition can override Home Assistant's selected map
+or localize against the wrong floor. The card reasserts and verifies the
+configured `map_select_option` immediately before every cleaning command.
+
 ## YAML reference
 
 ```yaml
@@ -200,13 +205,15 @@ Start validates every requested option against live entity options. It then:
 2. Applies the Home Assistant 2026.8+ high-level `cleaning_mode` for Vacuum or Vac & Mop when configured. On HA 2026.7 and older, the explicit fallback uses one atomic `set_clean_motor_mode` command for Vacuum mode.
 3. Applies only the app-supported manual route, water-flow, and suction values selected in the sheet.
 4. Sets the robot's native cleaning count with `set_clean_repeat_times` using the device-required `{ repeat: 1|2 }` object.
-5. Calls `vacuum.clean_area` once with all selected HA area IDs.
+5. Starts one native whole-map job with `vacuum.start` when every configured
+   room is selected. Partial or exclusion-based jobs use one
+   `vacuum.clean_area` call with the selected HA area IDs.
 
 Vac followed by Mop uses `entities.vacuum_then_mop_script` because the Roborock command exposed through Home Assistant does not reliably activate this app-only one-time sequence. The card validates both `vacuum` and `mop` cleaning modes, then starts the script with the selected areas and settings. Configure that script to run a Vacuum `vacuum.clean_area` phase, wait for it to finish and return, then run a Mop `vacuum.clean_area` phase over the same areas. Stop and Dock first turn off this script, preventing a cancelled vacuum phase from starting a later mop phase.
 
 A complete, commented starting point is provided in [`docs/vacuum-then-mop-script.yaml`](docs/vacuum-then-mop-script.yaml). Replace its five Roborock entity IDs with your own, create or import the script, and select that script in the card editor.
 
-SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. Entire-floor jobs always use their configured room list rather than `vacuum.start`, so excluded rooms stay excluded.
+SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. An Entire-floor selection that excludes configured rooms stays on `vacuum.clean_area`; only a true all-room selection uses `vacuum.start`.
 
 Assisted carry is designed for a saved floor that has no dock. Its HA scripts prepare and pre-wet the mop at the dock, optionally drive to a configured safe pickup coordinate, run one explicit Vac & Mop area job on the remote floor, and finish with docking, emptying outside do-not-disturb mode, mop washing, and verified auto-drying. The card stores only a compact room/settings payload in `input_text`; the scripts and stage helper remain the source of truth if the dashboard closes.
 

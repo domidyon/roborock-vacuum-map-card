@@ -147,10 +147,17 @@ export async function executeJob({
   if (areaIds.length === 0) throw new JobExecutionError('preflight', 'Select at least one room mapped to a Home Assistant area');
 
   const mapSelect = config.entities?.map_select;
-  if (config.floors.length > 1) {
+  const ensureFloorSelected = async (): Promise<void> => {
+    if (config.floors.length <= 1) return;
     if (!mapSelect || !floor.map_select_option) throw new JobExecutionError('select_floor', 'This floor has no map selector mapping');
     await selectOption(getHass, mapSelect, floor.map_select_option, 'select_floor', timeoutMs, pollMs, sleep);
-  }
+    if (pollMs > 0) await sleep(pollMs);
+    if (getHass().states[mapSelect]?.state !== floor.map_select_option) {
+      throw new JobExecutionError('select_floor', `${mapSelect} did not stay on “${floor.map_select_option}”`);
+    }
+  };
+
+  await ensureFloorSelected();
 
   if (draft.cleaning_type === 'vacuum_then_mop' && draft.strategy !== 'smartplan') {
     const script = config.entities?.vacuum_then_mop_script;
@@ -175,6 +182,7 @@ export async function executeJob({
       requireOption(getHass(), mopIntensity, draft.mop_intensity, 'set_mop_intensity');
     }
     if (draft.fan_speed) requireFanSpeed(getHass(), config.entity, draft.fan_speed);
+    await ensureFloorSelected();
     try {
       await getHass().callService(
         'script',
@@ -241,15 +249,28 @@ export async function executeJob({
     await setRepeat(getHass(), config, draft.cleaning_count);
   }
 
+  // Roborock's map can change while cleaning settings are applied. In manual
+  // multi-map mode, make the chosen floor authoritative at the last possible
+  // moment and refuse to clean if the selection does not remain stable.
+  await ensureFloorSelected();
+
+  const selectedRoomIds = new Set(rooms.map((room) => room.segment_id));
+  const entireFloorSelected = rooms.length === floor.rooms.length
+    && floor.rooms.every((room) => selectedRoomIds.has(room.segment_id));
+
   try {
-    await getHass().callService(
-      'vacuum',
-      'clean_area',
-      { cleaning_area_id: areaIds },
-      { entity_id: config.entity },
-    );
+    if (entireFloorSelected) {
+      await getHass().callService('vacuum', 'start', undefined, { entity_id: config.entity });
+    } else {
+      await getHass().callService(
+        'vacuum',
+        'clean_area',
+        { cleaning_area_id: areaIds },
+        { entity_id: config.entity },
+      );
+    }
   } catch (error) {
-    throw new JobExecutionError('clean_area', error instanceof Error ? error.message : String(error), { cause: error });
+    throw new JobExecutionError(entireFloorSelected ? 'start_floor' : 'clean_area', error instanceof Error ? error.message : String(error), { cause: error });
   }
   return areaIds;
 }

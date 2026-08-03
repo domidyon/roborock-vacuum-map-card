@@ -34,6 +34,56 @@ describe('job executor', () => {
     ]);
   });
 
+  it('reasserts the selected floor when a settings write changes the active map', async () => {
+    const hass = createHass();
+    const mapSelect = configFixture.entities?.map_select as string;
+    const calls: string[] = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push(`${domain}.${service}:${String(data?.option ?? data?.fan_speed ?? data?.command ?? (data?.cleaning_area_id as string[] | undefined)?.join(','))}`);
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+      if (service === 'set_fan_speed') hass.states[mapSelect].state = 'Downstairs';
+    });
+    const upstairs = configFixture.floors[1];
+    await executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: upstairs,
+      rooms: [upstairs.rooms[0]],
+      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', mop_mode: 'standard', cleaning_count: 1 },
+      pollMs: 0,
+    });
+    expect(calls).toEqual([
+      'select.select_option:Upstairs',
+      'select.select_option:vacuum',
+      'select.select_option:standard',
+      'vacuum.set_fan_speed:balanced',
+      'vacuum.send_command:set_clean_repeat_times',
+      'select.select_option:Upstairs',
+      'vacuum.clean_area:office',
+    ]);
+  });
+
+  it('starts one whole-map job when every room on the floor is selected', async () => {
+    const hass = createHass();
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data });
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    const upstairs = configFixture.floors[1];
+    const result = await executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: upstairs,
+      rooms: upstairs.rooms,
+      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', mop_mode: 'standard', cleaning_count: 1 },
+      pollMs: 0,
+    });
+    expect(result).toEqual(['office', 'overloop', 'bedroom', 'waskamer']);
+    expect(calls.at(-1)).toEqual({ domain: 'vacuum', service: 'start', data: undefined });
+    expect(calls.some(({ service }) => service === 'clean_area')).toBe(false);
+  });
+
   it('lets SmartPlan own suction and intensity', async () => {
     const hass = createHass();
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
