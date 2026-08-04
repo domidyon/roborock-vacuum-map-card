@@ -40,7 +40,10 @@ function stateText(hass: HomeAssistant, entityId?: string): string | undefined {
   if (!entityId) return undefined;
   const entity = hass.states[entityId];
   if (!entity || ['unknown', 'unavailable'].includes(entity.state)) return undefined;
-  return `${entity.state}${entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : ''}`;
+  const display = entity.attributes.device_class === 'duration' && !isNaN(Number(entity.state))
+    ? String(Math.round(Number(entity.state)))
+    : entity.state;
+  return `${display}${entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : ''}`;
 }
 
 function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, language: 'en' | 'nl' | undefined): string | undefined {

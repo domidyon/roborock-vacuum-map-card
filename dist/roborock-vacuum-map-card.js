@@ -16664,8 +16664,7 @@ function ix({
 function zl(n, i) {
   if (!i) return;
   const r = n.states[i];
-  if (!(!r || ["unknown", "unavailable"].includes(r.state)))
-    return `${r.state}${r.attributes.unit_of_measurement ? ` ${r.attributes.unit_of_measurement}` : ""}`;
+  return !r || ["unknown", "unavailable"].includes(r.state) ? void 0 : `${r.attributes.device_class === "duration" && !isNaN(Number(r.state)) ? String(Math.round(Number(r.state))) : r.state}${r.attributes.unit_of_measurement ? ` ${r.attributes.unit_of_measurement}` : ""}`;
 }
 function lx(n, i, r) {
   if (!i) return;
