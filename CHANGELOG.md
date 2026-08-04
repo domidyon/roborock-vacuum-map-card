@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1 — 2026-08-04
+
+- Start Vac & Mop jobs after Home Assistant accepts the Roborock cleaning-mode command, even when its delayed derived selector remains `unknown`.
+- Preserve strict state confirmation for Vacuum mode and abort when Home Assistant rejects the cleaning-mode service call.
+- Add regression coverage for the Qrevo Curv 2 Flow's delayed Vac & Mop selector state.
+
 ## 0.5.1 — 2026-08-03
 
 - Run each floor's saved native Roborock routine for Vac followed by Mop jobs.

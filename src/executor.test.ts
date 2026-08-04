@@ -171,6 +171,53 @@ describe('job executor', () => {
     expect(calls.some((call) => call.includes(':off'))).toBe(false);
   });
 
+  it('starts Vac & Mop when HA accepts the mode but keeps its derived selector unknown', async () => {
+    const hass = createHass();
+    hass.states['select.cleaning_mode'].state = 'unknown';
+    const calls: string[] = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push(`${domain}.${service}:${String(data?.option ?? data?.fan_speed ?? data?.command ?? (data?.cleaning_area_id as string[] | undefined)?.join(','))}`);
+      if (domain === 'select' && target?.entity_id !== 'select.cleaning_mode') {
+        hass.states[String(target?.entity_id)].state = String(data?.option);
+      }
+    });
+    await executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: { preset_id: 'vacuum_and_mop', strategy: 'custom', cleaning_type: 'vacuum_and_mop', fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 },
+      pollMs: 0,
+    });
+    expect(hass.states['select.cleaning_mode'].state).toBe('unknown');
+    expect(calls).toEqual([
+      'select.select_option:vac_and_mop',
+      'select.select_option:standard',
+      'vacuum.set_fan_speed:balanced',
+      'vacuum.send_command:set_clean_repeat_times',
+      'vacuum.clean_area:kitchen',
+    ]);
+  });
+
+  it('still aborts Vac & Mop when HA rejects the cleaning mode service call', async () => {
+    const hass = createHass();
+    hass.states['select.cleaning_mode'].state = 'unknown';
+    const calls: string[] = [];
+    hass.callService = vi.fn(async (domain, service, _data, target) => {
+      calls.push(`${domain}.${service}`);
+      if (target?.entity_id === 'select.cleaning_mode') throw new Error('device rejected setting');
+    });
+    await expect(executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: { preset_id: 'vacuum_and_mop', strategy: 'custom', cleaning_type: 'vacuum_and_mop', fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 },
+      pollMs: 0,
+    })).rejects.toMatchObject({ operation: 'set_cleaning_mode' });
+    expect(calls).not.toContain('vacuum.clean_area');
+  });
+
   it('uses one atomic Vacuum-mode command on Home Assistant 2026.7 and older', async () => {
     const hass = createHass();
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];

@@ -76,7 +76,7 @@ function Ig() {
         return d.now() - m;
       };
     }
-    var v = [], h = [], _ = 1, S = null, x = 3, k = !1, j = !1, q = !1, X = !1, V = typeof setTimeout == "function" ? setTimeout : null, B = typeof clearTimeout == "function" ? clearTimeout : null, L = typeof setImmediate < "u" ? setImmediate : null;
+    var v = [], h = [], _ = 1, S = null, x = 3, k = !1, j = !1, q = !1, X = !1, L = typeof setTimeout == "function" ? setTimeout : null, B = typeof clearTimeout == "function" ? clearTimeout : null, V = typeof setImmediate < "u" ? setImmediate : null;
     function H(M) {
       for (var K = r(h); K !== null; ) {
         if (K.callback === null) u(h);
@@ -146,9 +146,9 @@ function Ig() {
       }
     }
     var ve;
-    if (typeof L == "function")
+    if (typeof V == "function")
       ve = function() {
-        L(xe);
+        V(xe);
       };
     else if (typeof MessageChannel < "u") {
       var Te = new MessageChannel(), Me = Te.port2;
@@ -157,10 +157,10 @@ function Ig() {
       };
     } else
       ve = function() {
-        V(xe, 0);
+        L(xe, 0);
       };
     function Ve(M, K) {
-      U = V(function() {
+      U = L(function() {
         M(n.unstable_now());
       }, K);
     }
@@ -273,26 +273,26 @@ function t_() {
     enqueueSetState: function() {
     }
   }, q = Object.assign, X = {};
-  function V(w, D, J) {
+  function L(w, D, J) {
     this.props = w, this.context = D, this.refs = X, this.updater = J || j;
   }
-  V.prototype.isReactComponent = {}, V.prototype.setState = function(w, D) {
+  L.prototype.isReactComponent = {}, L.prototype.setState = function(w, D) {
     if (typeof w != "object" && typeof w != "function" && w != null)
       throw Error(
         "takes an object of state variables to update or a function which returns an object of state variables."
       );
     this.updater.enqueueSetState(this, w, D, "setState");
-  }, V.prototype.forceUpdate = function(w) {
+  }, L.prototype.forceUpdate = function(w) {
     this.updater.enqueueForceUpdate(this, w, "forceUpdate");
   };
   function B() {
   }
-  B.prototype = V.prototype;
-  function L(w, D, J) {
+  B.prototype = L.prototype;
+  function V(w, D, J) {
     this.props = w, this.context = D, this.refs = X, this.updater = J || j;
   }
-  var H = L.prototype = new B();
-  H.constructor = L, q(H, V.prototype), H.isPureReactComponent = !0;
+  var H = V.prototype = new B();
+  H.constructor = V, q(H, L.prototype), H.isPureReactComponent = !0;
   var $ = Array.isArray;
   function F() {
   }
@@ -485,7 +485,7 @@ function t_() {
       return w;
     }
   };
-  return oe.Activity = S, oe.Children = ge, oe.Component = V, oe.Fragment = r, oe.Profiler = s, oe.PureComponent = L, oe.StrictMode = u, oe.Suspense = v, oe.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE = U, oe.__COMPILER_RUNTIME = {
+  return oe.Activity = S, oe.Children = ge, oe.Component = L, oe.Fragment = r, oe.Profiler = s, oe.PureComponent = V, oe.StrictMode = u, oe.Suspense = v, oe.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE = U, oe.__COMPILER_RUNTIME = {
     __proto__: null,
     c: function(w) {
       return U.H.useMemoCache(w);
@@ -878,7 +878,7 @@ function i_() {
     }
     return null;
   }
-  var S = Object.assign, x = /* @__PURE__ */ Symbol.for("react.element"), k = /* @__PURE__ */ Symbol.for("react.transitional.element"), j = /* @__PURE__ */ Symbol.for("react.portal"), q = /* @__PURE__ */ Symbol.for("react.fragment"), X = /* @__PURE__ */ Symbol.for("react.strict_mode"), V = /* @__PURE__ */ Symbol.for("react.profiler"), B = /* @__PURE__ */ Symbol.for("react.consumer"), L = /* @__PURE__ */ Symbol.for("react.context"), H = /* @__PURE__ */ Symbol.for("react.forward_ref"), $ = /* @__PURE__ */ Symbol.for("react.suspense"), F = /* @__PURE__ */ Symbol.for("react.suspense_list"), U = /* @__PURE__ */ Symbol.for("react.memo"), ne = /* @__PURE__ */ Symbol.for("react.lazy"), ue = /* @__PURE__ */ Symbol.for("react.activity"), Oe = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel"), xe = Symbol.iterator;
+  var S = Object.assign, x = /* @__PURE__ */ Symbol.for("react.element"), k = /* @__PURE__ */ Symbol.for("react.transitional.element"), j = /* @__PURE__ */ Symbol.for("react.portal"), q = /* @__PURE__ */ Symbol.for("react.fragment"), X = /* @__PURE__ */ Symbol.for("react.strict_mode"), L = /* @__PURE__ */ Symbol.for("react.profiler"), B = /* @__PURE__ */ Symbol.for("react.consumer"), V = /* @__PURE__ */ Symbol.for("react.context"), H = /* @__PURE__ */ Symbol.for("react.forward_ref"), $ = /* @__PURE__ */ Symbol.for("react.suspense"), F = /* @__PURE__ */ Symbol.for("react.suspense_list"), U = /* @__PURE__ */ Symbol.for("react.memo"), ne = /* @__PURE__ */ Symbol.for("react.lazy"), ue = /* @__PURE__ */ Symbol.for("react.activity"), Oe = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel"), xe = Symbol.iterator;
   function ve(e) {
     return e === null || typeof e != "object" ? null : (e = xe && e[xe] || e["@@iterator"], typeof e == "function" ? e : null);
   }
@@ -891,7 +891,7 @@ function i_() {
     switch (e) {
       case q:
         return "Fragment";
-      case V:
+      case L:
         return "Profiler";
       case X:
         return "StrictMode";
@@ -906,7 +906,7 @@ function i_() {
       switch (e.$$typeof) {
         case j:
           return "Portal";
-        case L:
+        case V:
           return e.displayName || "Context";
         case B:
           return (e._context.displayName || "Context") + ".Consumer";
@@ -2364,8 +2364,8 @@ Error generating stack: ` + l.message + `
         case X:
           p = 8, o |= 24;
           break;
-        case V:
-          return e = jt(12, a, t, o | 2), e.elementType = V, e.lanes = c, e;
+        case L:
+          return e = jt(12, a, t, o | 2), e.elementType = L, e.lanes = c, e;
         case $:
           return e = jt(13, a, t, o), e.elementType = $, e.lanes = c, e;
         case F:
@@ -2373,7 +2373,7 @@ Error generating stack: ` + l.message + `
         default:
           if (typeof e == "object" && e !== null)
             switch (e.$$typeof) {
-              case L:
+              case V:
                 p = 10;
                 break e;
               case B:
@@ -2686,7 +2686,7 @@ Error generating stack: ` + l.message + `
       });
     };
   }, Ry = n.unstable_scheduleCallback, Uy = n.unstable_NormalPriority, nt = {
-    $$typeof: L,
+    $$typeof: V,
     Consumer: null,
     Provider: null,
     _currentValue: null,
@@ -2931,7 +2931,7 @@ Error generating stack: ` + l.message + `
           ), z.return = T, z;
         if (typeof z.then == "function")
           return Y(T, dr(z), E);
-        if (z.$$typeof === L)
+        if (z.$$typeof === V)
           return Y(
             T,
             or(T, z),
@@ -2963,7 +2963,7 @@ Error generating stack: ` + l.message + `
             dr(E),
             Z
           );
-        if (E.$$typeof === L)
+        if (E.$$typeof === V)
           return C(
             T,
             z,
@@ -3006,7 +3006,7 @@ Error generating stack: ` + l.message + `
             dr(Z),
             ae
           );
-        if (Z.$$typeof === L)
+        if (Z.$$typeof === V)
           return O(
             T,
             z,
@@ -3182,7 +3182,7 @@ Error generating stack: ` + l.message + `
             dr(E),
             Z
           );
-        if (E.$$typeof === L)
+        if (E.$$typeof === V)
           return Ye(
             T,
             z,
@@ -3506,7 +3506,7 @@ Error generating stack: ` + l.message + `
   function _r(e) {
     if (e !== null && typeof e == "object") {
       if (typeof e.then == "function") return Pi(e);
-      if (e.$$typeof === L) return ft(e);
+      if (e.$$typeof === V) return ft(e);
     }
     throw Error(u(438, String(e)));
   }
@@ -9915,7 +9915,7 @@ Error generating stack: ` + l.message + `
     }
   }
   var hl = {
-    $$typeof: L,
+    $$typeof: V,
     Provider: null,
     Consumer: null,
     _currentValue: I,
@@ -11985,26 +11985,26 @@ const Gb = /* @__PURE__ */ R("$ZodObject", (n, i) => {
     const _ = [], S = d.shape;
     for (const x of d.keys) {
       const k = S[x], j = k._zod.optin === "optional", q = k._zod.optout === "optional", X = k._zod.run({ value: h[x], issues: [] }, v);
-      X instanceof Promise ? _.push(X.then((V) => hu(V, m, x, h, j, q))) : hu(X, m, x, h, j, q);
+      X instanceof Promise ? _.push(X.then((L) => hu(L, m, x, h, j, q))) : hu(X, m, x, h, j, q);
     }
     return f ? Jh(_, h, m, v, u.value, n) : _.length ? Promise.all(_).then(() => m) : m;
   };
 }), Qb = /* @__PURE__ */ R("$ZodObjectJIT", (n, i) => {
   Gb.init(n, i);
   const r = n._zod.parse, u = yc(() => Kh(i)), s = (x) => {
-    const k = new pb(["shape", "payload", "ctx"]), j = u.value, q = (L) => {
-      const H = Vp(L);
+    const k = new pb(["shape", "payload", "ctx"]), j = u.value, q = (V) => {
+      const H = Vp(V);
       return `shape[${H}]._zod.run({ value: input[${H}], issues: [] }, ctx)`;
     };
     k.write("const input = payload.value;");
     const X = /* @__PURE__ */ Object.create(null);
-    let V = 0;
-    for (const L of j.keys)
-      X[L] = `key_${V++}`;
+    let L = 0;
+    for (const V of j.keys)
+      X[V] = `key_${L++}`;
     k.write("const newResult = {};");
-    for (const L of j.keys) {
-      const H = X[L], $ = Vp(L), F = x[L], U = F?._zod?.optin === "optional", ne = F?._zod?.optout === "optional";
-      k.write(`const ${H} = ${q(L)};`), U && ne ? k.write(`
+    for (const V of j.keys) {
+      const H = X[V], $ = Vp(V), F = x[V], U = F?._zod?.optin === "optional", ne = F?._zod?.optout === "optional";
+      k.write(`const ${H} = ${q(V)};`), U && ne ? k.write(`
         if (${H}.issues.length) {
           if (${$} in input) {
             payload.issues = payload.issues.concat(${H}.issues.map(iss => ({
@@ -12067,7 +12067,7 @@ const Gb = /* @__PURE__ */ R("$ZodObject", (n, i) => {
     }
     k.write("payload.value = newResult;"), k.write("return payload;");
     const B = k.compile();
-    return (L, H) => B(x, L, H);
+    return (V, H) => B(x, V, H);
   };
   let f;
   const d = pu, m = !vc.jitless, h = m && l0.value, _ = i.catchall;
@@ -14610,13 +14610,14 @@ function El(n, i, r, u) {
   if (!s || s.state === "unavailable") throw new Xe(u, `${i} is unavailable`);
   if (!(Array.isArray(s.attributes.options) ? s.attributes.options.map(String) : []).includes(r)) throw new Xe(u, `${i} does not support “${r}”`);
 }
-async function Sl(n, i, r, u, s, f, d) {
-  const m = n();
-  if (El(m, i, r, u), m.states[i]?.state !== r)
+async function Sl(n, i, r, u, s, f, d, m = !0) {
+  const v = n();
+  if (El(v, i, r, u), v.states[i]?.state !== r)
     try {
-      await m.callService("select", "select_option", { option: r }, { entity_id: i }), await gw(n, i, r, s, f, d);
-    } catch (v) {
-      throw v instanceof Xe ? new Xe(u, v.message, { cause: v }) : new Xe(u, v instanceof Error ? v.message : String(v), { cause: v });
+      if (await v.callService("select", "select_option", { option: r }, { entity_id: i }), !m) return;
+      await gw(n, i, r, s, f, d);
+    } catch (h) {
+      throw h instanceof Xe ? new Xe(u, h.message, { cause: h }) : new Xe(u, h instanceof Error ? h.message : String(h), { cause: h });
     }
 }
 async function _w(n, i) {
@@ -14698,13 +14699,13 @@ async function Sw({
       }
       return r.rooms.filter(($) => $.include_in_floor_clean !== !1).map(($) => $.area_id).filter(($) => !!$);
     }
-    const V = i.entities?.vacuum_then_mop_script, B = V ? n().states[V] : void 0;
-    if (!V || !B || B.state === "unavailable")
+    const L = i.entities?.vacuum_then_mop_script, B = L ? n().states[L] : void 0;
+    if (!L || !B || B.state === "unavailable")
       throw new Xe("start_vacuum_then_mop", "Vac followed by Mop requires an available orchestration script");
-    const L = i.entities?.cleaning_mode;
-    if (!L)
+    const V = i.entities?.cleaning_mode;
+    if (!V)
       throw new Xe("set_cleaning_mode", "Vac followed by Mop requires a cleaning-mode entity");
-    if (El(n(), L, "vacuum", "set_cleaning_mode"), El(n(), L, "mop", "set_cleaning_mode"), s.mop_mode) {
+    if (El(n(), V, "vacuum", "set_cleaning_mode"), El(n(), V, "mop", "set_cleaning_mode"), s.mop_mode) {
       const H = i.entities?.mop_mode;
       if (!H) throw new Xe("set_mop_mode", "The selected profile requires a mop-mode entity");
       El(n(), H, s.mop_mode, "set_mop_mode");
@@ -14727,7 +14728,7 @@ async function Sw({
             mop_intensity: s.mop_intensity
           }
         },
-        { entity_id: V }
+        { entity_id: L }
       );
     } catch (H) {
       throw new Xe("start_vacuum_then_mop", H instanceof Error ? H.message : String(H), { cause: H });
@@ -14737,17 +14738,26 @@ async function Sw({
   if (s.strategy === "smartplan")
     await bw(n(), i), await ph(n(), i, 1);
   else {
-    const X = i.entities?.cleaning_mode, V = s.cleaning_type === "vacuum" ? "vacuum" : "vac_and_mop", B = X && n().states[X]?.attributes.options;
-    if (X && Array.isArray(B) && B.map(String).includes(V))
-      await Sl(n, X, V, "set_cleaning_mode", f, d, m);
+    const X = i.entities?.cleaning_mode, L = s.cleaning_type === "vacuum" ? "vacuum" : "vac_and_mop", B = X && n().states[X]?.attributes.options;
+    if (X && Array.isArray(B) && B.map(String).includes(L))
+      await Sl(
+        n,
+        X,
+        L,
+        "set_cleaning_mode",
+        f,
+        d,
+        m,
+        L !== "vac_and_mop"
+      );
     else if (s.cleaning_type === "vacuum" && i.vacuum_mode_fallback === "set_clean_motor_mode")
       await _w(n(), i);
     else if (s.cleaning_type === "vacuum")
       throw new Xe("set_cleaning_mode", "Vacuum-only requires a cleaning-mode entity");
-    const L = i.entities?.mop_mode;
+    const V = i.entities?.mop_mode;
     if (s.cleaning_type !== "vacuum" && s.mop_mode) {
-      if (!L) throw new Xe("set_mop_mode", "The selected profile requires a mop-mode entity");
-      n().states[L]?.state === "smart_mode" && yw.has(s.mop_mode) && await Sl(n, L, "custom", "leave_smartplan", f, d, m), await Sl(n, L, s.mop_mode, "set_mop_mode", f, d, m);
+      if (!V) throw new Xe("set_mop_mode", "The selected profile requires a mop-mode entity");
+      n().states[V]?.state === "smart_mode" && yw.has(s.mop_mode) && await Sl(n, V, "custom", "leave_smartplan", f, d, m), await Sl(n, V, s.mop_mode, "set_mop_mode", f, d, m);
     }
     if (s.cleaning_type !== "vacuum" && s.mop_intensity) {
       const H = i.entities?.mop_intensity;
@@ -15153,9 +15163,9 @@ function Ow({
   onSetting: _,
   onChildLock: S
 }) {
-  const x = !!m, k = i.entities?.dock_child_lock, j = k ? n.states[k]?.state === "on" : !1, q = String(Ta(n, i, "mop_wash_frequency")), X = String(Ta(n, i, "wash_mode")), V = String(Ta(n, i, "wash_temperature")), B = !!Ta(n, i, "auto_empty"), L = String(Ta(n, i, "empty_mode")), H = !!Ta(n, i, "auto_dry"), $ = String(Ta(n, i, "dry_duration")), F = [
-    { action: "empty", label: G(r, "empty"), active: s, icon: /* @__PURE__ */ g.jsx(mu, {}), detail: Al(r, L) },
-    { action: "wash", label: G(r, "wash"), active: u, icon: /* @__PURE__ */ g.jsx(Bp, {}), detail: `${Al(r, X)} · ${Al(r, V)}` },
+  const x = !!m, k = i.entities?.dock_child_lock, j = k ? n.states[k]?.state === "on" : !1, q = String(Ta(n, i, "mop_wash_frequency")), X = String(Ta(n, i, "wash_mode")), L = String(Ta(n, i, "wash_temperature")), B = !!Ta(n, i, "auto_empty"), V = String(Ta(n, i, "empty_mode")), H = !!Ta(n, i, "auto_dry"), $ = String(Ta(n, i, "dry_duration")), F = [
+    { action: "empty", label: G(r, "empty"), active: s, icon: /* @__PURE__ */ g.jsx(mu, {}), detail: Al(r, V) },
+    { action: "wash", label: G(r, "wash"), active: u, icon: /* @__PURE__ */ g.jsx(Bp, {}), detail: `${Al(r, X)} · ${Al(r, L)}` },
     { action: "dry", label: G(r, "dry"), active: f, icon: /* @__PURE__ */ g.jsx(qp, {}), detail: f ? d : Al(r, $) }
   ];
   return /* @__PURE__ */ g.jsxs("div", { className: "sheet-layer", role: "presentation", children: [
@@ -15192,7 +15202,7 @@ function Ow({
           ] }),
           /* @__PURE__ */ g.jsx(wl, { label: G(r, "mopWashFrequency"), setting: "mop_wash_frequency", value: q, language: r, disabled: x, onChange: (U) => _("mop_wash_frequency", U) }),
           /* @__PURE__ */ g.jsx(wl, { label: G(r, "washingMode"), setting: "wash_mode", value: X, language: r, disabled: x, onChange: (U) => _("wash_mode", U) }),
-          /* @__PURE__ */ g.jsx(wl, { label: G(r, "washTemperature"), setting: "wash_temperature", value: V, language: r, disabled: x, onChange: (U) => _("wash_temperature", U) })
+          /* @__PURE__ */ g.jsx(wl, { label: G(r, "washTemperature"), setting: "wash_temperature", value: L, language: r, disabled: x, onChange: (U) => _("wash_temperature", U) })
         ] }),
         /* @__PURE__ */ g.jsxs("section", { className: "dock-settings-group", children: [
           /* @__PURE__ */ g.jsxs("h3", { children: [
@@ -15200,7 +15210,7 @@ function Ow({
             G(r, "dustbin")
           ] }),
           /* @__PURE__ */ g.jsx(ec, { label: G(r, "autoEmpty"), checked: B, disabled: x, onChange: (U) => _("auto_empty", U) }),
-          /* @__PURE__ */ g.jsx(wl, { label: G(r, "emptyMode"), setting: "empty_mode", value: L, language: r, disabled: x, onChange: (U) => _("empty_mode", U) })
+          /* @__PURE__ */ g.jsx(wl, { label: G(r, "emptyMode"), setting: "empty_mode", value: V, language: r, disabled: x, onChange: (U) => _("empty_mode", U) })
         ] }),
         /* @__PURE__ */ g.jsxs("section", { className: "dock-settings-group", children: [
           /* @__PURE__ */ g.jsxs("h3", { children: [
@@ -15271,9 +15281,9 @@ function Rw({
   onClose: v,
   onStart: h
 }) {
-  const _ = vh.map((B) => u.find(({ preset: L }) => L.id === B)).filter(
+  const _ = vh.map((B) => u.find(({ preset: V }) => V.id === B)).filter(
     (B) => !!B
-  ), S = u.filter(({ preset: B }) => !vh.includes(B.id)), k = (i.cleaning_type === "vacuum" ? jw : Mw).filter((B) => r.fanSpeeds.includes(B)), j = Nw.filter((B) => r.mopModes.includes(B)), q = Dw.filter((B) => r.mopIntensities.includes(B)), X = Math.max(0, q.indexOf(i.mop_intensity ?? "medium")), V = i.strategy === "smartplan" ? G(n, "smartPlanDescription") : i.cleaning_type === "vacuum" ? G(n, "vacuumDescription") : i.cleaning_type === "vacuum_then_mop" ? G(n, "vacuumThenMopDescription") : G(n, "vacuumAndMopDescription");
+  ), S = u.filter(({ preset: B }) => !vh.includes(B.id)), k = (i.cleaning_type === "vacuum" ? jw : Mw).filter((B) => r.fanSpeeds.includes(B)), j = Nw.filter((B) => r.mopModes.includes(B)), q = Dw.filter((B) => r.mopIntensities.includes(B)), X = Math.max(0, q.indexOf(i.mop_intensity ?? "medium")), L = i.strategy === "smartplan" ? G(n, "smartPlanDescription") : i.cleaning_type === "vacuum" ? G(n, "vacuumDescription") : i.cleaning_type === "vacuum_then_mop" ? G(n, "vacuumThenMopDescription") : G(n, "vacuumAndMopDescription");
   return /* @__PURE__ */ g.jsxs("div", { className: "sheet-layer", role: "presentation", children: [
     /* @__PURE__ */ g.jsx("button", { type: "button", className: "sheet-backdrop", "aria-label": G(n, "close"), onClick: v }),
     /* @__PURE__ */ g.jsxs("section", { className: "job-sheet", role: "dialog", "aria-modal": "true", "aria-labelledby": "job-sheet-title", children: [
@@ -15286,14 +15296,14 @@ function Rw({
         /* @__PURE__ */ g.jsx("button", { type: "button", className: "icon-button", "aria-label": G(n, "close"), onClick: v, children: /* @__PURE__ */ g.jsx(hc, {}) })
       ] }),
       /* @__PURE__ */ g.jsxs("div", { className: "sheet-body", children: [
-        /* @__PURE__ */ g.jsx("div", { className: "cleaning-mode-tabs", role: "tablist", "aria-label": G(n, "cleaningType"), children: _.map(({ preset: B, available: L, reason: H }) => /* @__PURE__ */ g.jsxs(
+        /* @__PURE__ */ g.jsx("div", { className: "cleaning-mode-tabs", role: "tablist", "aria-label": G(n, "cleaningType"), children: _.map(({ preset: B, available: V, reason: H }) => /* @__PURE__ */ g.jsxs(
           "button",
           {
             type: "button",
             role: "tab",
             "aria-selected": yh(i, B.id),
             className: yh(i, B.id) ? "active" : "",
-            disabled: !L || f,
+            disabled: !V || f,
             title: H,
             onClick: () => m(wu(B)),
             children: [
@@ -15304,7 +15314,7 @@ function Rw({
           B.id
         )) }),
         /* @__PURE__ */ g.jsxs("section", { className: "mode-settings", children: [
-          /* @__PURE__ */ g.jsx("p", { className: "mode-description", children: V }),
+          /* @__PURE__ */ g.jsx("p", { className: "mode-description", children: L }),
           i.strategy !== "smartplan" && i.cleaning_type !== "vacuum_then_mop" && /* @__PURE__ */ g.jsxs(g.Fragment, { children: [
             /* @__PURE__ */ g.jsx(
               tc,
@@ -15364,11 +15374,11 @@ function Rw({
         ] }),
         !d && S.length > 0 && /* @__PURE__ */ g.jsxs("div", { className: "saved-profiles", children: [
           /* @__PURE__ */ g.jsx("span", { children: G(n, "savedProfiles") }),
-          /* @__PURE__ */ g.jsx("div", { children: S.map(({ preset: B, available: L, reason: H }) => /* @__PURE__ */ g.jsxs(
+          /* @__PURE__ */ g.jsx("div", { children: S.map(({ preset: B, available: V, reason: H }) => /* @__PURE__ */ g.jsxs(
             "button",
             {
               type: "button",
-              disabled: !L || f,
+              disabled: !V || f,
               title: H,
               className: i.preset_id === B.id ? "active" : "",
               onClick: () => m(wu(B)),
@@ -15496,8 +15506,8 @@ var ez = function(n, i, r, u, s, f, d) {
     throw new Error("Components are not mounted");
   var m = Iw(r, u, i), v = m.wrapperWidth, h = m.wrapperHeight, _ = m.newContentWidth, S = m.newContentHeight, x = m.newDiffWidth, k = m.newDiffHeight, j = ez(v, _, x, h, S, k, !!f), q = v >= _ && h >= S;
   d && q && !f && (j.minPositionX = 0, j.maxPositionX = 0, j.minPositionY = 0, j.maxPositionY = 0);
-  var X = n.setup, V = X.minPositionX, B = X.maxPositionX, L = X.minPositionY, H = X.maxPositionY;
-  return V != null && (j.minPositionX = v * (1 - i) + V * i), B != null && (j.maxPositionX = B * i), L != null && (j.minPositionY = h * (1 - i) + L * i), H != null && (j.maxPositionY = H * i), j;
+  var X = n.setup, L = X.minPositionX, B = X.maxPositionX, V = X.minPositionY, H = X.maxPositionY;
+  return L != null && (j.minPositionX = v * (1 - i) + L * i), B != null && (j.maxPositionX = B * i), V != null && (j.minPositionY = h * (1 - i) + V * i), H != null && (j.maxPositionY = H * i), j;
 }, Ml = function(n, i, r, u) {
   return u ? n < i ? Aa(i, 2) : n > r ? Aa(r, 2) : Aa(n, 2) : Aa(n, 2);
 }, Si = function(n, i) {
@@ -15550,7 +15560,7 @@ var _h = function(n, i) {
 function az(n) {
   var i = n.state, r = i.positionX, u = i.positionY, s = i.scale, f = n.setup, d = f.disabled, m = f.limitToBounds, v = f.centerZoomedOut, h = n.wrapperComponent;
   if (!(d || !h || !n.bounds)) {
-    var _ = n.bounds, S = _.maxPositionX, x = _.minPositionX, k = _.maxPositionY, j = _.minPositionY, q = r > S || r < x, X = u > k || u < j, V = r > S ? h.offsetWidth : n.setup.minPositionX || 0, B = u > k ? h.offsetHeight : n.setup.minPositionY || 0, L = ku(n, V, B, s, n.bounds, m || v), H = L.x, $ = L.y;
+    var _ = n.bounds, S = _.maxPositionX, x = _.minPositionX, k = _.maxPositionY, j = _.minPositionY, q = r > S || r < x, X = u > k || u < j, L = r > S ? h.offsetWidth : n.setup.minPositionX || 0, B = u > k ? h.offsetHeight : n.setup.minPositionY || 0, V = ku(n, L, B, s, n.bounds, m || v), H = V.x, $ = V.y;
     return {
       scale: s,
       positionX: q ? H : r,
@@ -15620,7 +15630,7 @@ function sz(n, i, r) {
   if (f) {
     var d = n.lastMousePosition, m = n.velocityTime, v = n.setup, h = n.wrapperComponent, _ = v.velocityAnimation, S = _.maxStrengthMouse, x = _.maxStrengthTouch, k = _.sensitivityTouch, j = _.sensitivityMouse, q = Date.now();
     if (d && m && h) {
-      var X = oz(h), V = (u = {}, u[ea.TOUCH] = k, u[ea.MOUSE] = j, u)[r], B = (s = {}, s[ea.TOUCH] = x, s[ea.MOUSE] = S, s)[r], L = i.x - d.x, H = i.y - d.y, $ = nc(L / X, B, V), F = nc(H / X, B, V), U = q - m, ne = L * L + H * H, ue = nc(Math.sqrt(ne) / U, B, V);
+      var X = oz(h), L = (u = {}, u[ea.TOUCH] = k, u[ea.MOUSE] = j, u)[r], B = (s = {}, s[ea.TOUCH] = x, s[ea.MOUSE] = S, s)[r], V = i.x - d.x, H = i.y - d.y, $ = nc(V / X, B, L), F = nc(H / X, B, L), U = q - m, ne = V * V + H * H, ue = nc(Math.sqrt(ne) / U, B, L);
       n.velocity = { velocityX: $, velocityY: F, total: ue };
     }
     n.lastMousePosition = i, n.velocityTime = q;
@@ -15629,9 +15639,9 @@ function sz(n, i, r) {
 function cz(n) {
   var i = n.velocity, r = n.bounds, u = n.setup, s = n.wrapperComponent, f = rz(n);
   if (!(!f || !i || !r || !s)) {
-    var d = i.velocityX, m = i.velocityY, v = i.total, h = r.maxPositionX, _ = r.minPositionX, S = r.maxPositionY, x = r.minPositionY, k = u.limitToBounds, j = u.autoAlignment, q = u.zoomAnimation, X = u.panning, V = X.lockAxisY, B = X.lockAxisX, L = q.animationType, H = j.sizeX, $ = j.sizeY, F = j.velocityAlignmentTime, U = F, ne = uz(n, v), ue = Math.max(ne, U), Oe = ta(n, H), xe = ta(n, $), ve = Oe * s.offsetWidth / 100, Te = xe * s.offsetHeight / 100, Me = h + ve, Ve = _ - ve, M = S + Te, K = x - Te, I = n.state, ye = (/* @__PURE__ */ new Date()).getTime();
-    vv(n, L, ue, function(ge) {
-      var w = n.state, D = w.scale, J = w.positionX, W = w.positionY, re = (/* @__PURE__ */ new Date()).getTime() - ye, se = re / U, Se = pv[j.animationType], Je = 1 - Se(Math.min(1, se)), qe = 1 - ge, tn = J + d * qe, nn = W + m * qe, la = Sh(tn, I.positionX, J, B, k, _, h, Ve, Me, Je), ra = Sh(nn, I.positionY, W, V, k, x, S, K, M, Je);
+    var d = i.velocityX, m = i.velocityY, v = i.total, h = r.maxPositionX, _ = r.minPositionX, S = r.maxPositionY, x = r.minPositionY, k = u.limitToBounds, j = u.autoAlignment, q = u.zoomAnimation, X = u.panning, L = X.lockAxisY, B = X.lockAxisX, V = q.animationType, H = j.sizeX, $ = j.sizeY, F = j.velocityAlignmentTime, U = F, ne = uz(n, v), ue = Math.max(ne, U), Oe = ta(n, H), xe = ta(n, $), ve = Oe * s.offsetWidth / 100, Te = xe * s.offsetHeight / 100, Me = h + ve, Ve = _ - ve, M = S + Te, K = x - Te, I = n.state, ye = (/* @__PURE__ */ new Date()).getTime();
+    vv(n, V, ue, function(ge) {
+      var w = n.state, D = w.scale, J = w.positionX, W = w.positionY, re = (/* @__PURE__ */ new Date()).getTime() - ye, se = re / U, Se = pv[j.animationType], Je = 1 - Se(Math.min(1, se)), qe = 1 - ge, tn = J + d * qe, nn = W + m * qe, la = Sh(tn, I.positionX, J, B, k, _, h, Ve, Me, Je), ra = Sh(nn, I.positionY, W, L, k, x, S, K, M, Je);
       if (J !== tn || W !== nn) {
         n.setState(D, la, ra);
         var Ut = n.props.onPanning;
@@ -15669,8 +15679,8 @@ function fz(n, i) {
         return;
     }
     n.isAnimating = !1, n.animation = null;
-    var x = u?.offsetWidth || 0, k = u?.offsetHeight || 0, j = (s?.offsetWidth || 0) * v, q = (s?.offsetHeight || 0) * v, X = !n.setup.limitToBounds || x < j || k < q, V = !i && r && r.total > 0.1 && X;
-    V ? cz(n) : gv(n);
+    var x = u?.offsetWidth || 0, k = u?.offsetHeight || 0, j = (s?.offsetWidth || 0) * v, q = (s?.offsetHeight || 0) * v, X = !n.setup.limitToBounds || x < j || k < q, L = !i && r && r.total > 0.1 && X;
+    L ? cz(n) : gv(n);
   }
 }
 function Tc(n, i, r, u) {
@@ -15680,7 +15690,7 @@ function Tc(n, i, r, u) {
 function Ec(n, i, r) {
   var u = n.state.scale, s = n.wrapperComponent, f = n.setup, d = f.minScale, m = f.maxScale, v = f.limitToBounds, h = f.zoomAnimation, _ = h.disabled, S = h.animationTime, x = h.animationType, k = u >= d && u <= m, j = _ || k;
   if ((u >= 1 || v) && gv(n), !(j || !s || !n.mounted)) {
-    var q = i || s.offsetWidth / 2, X = r || s.offsetHeight / 2, V = u < d ? d : m, B = Tc(n, V, q, X);
+    var q = i || s.offsetWidth / 2, X = r || s.offsetHeight / 2, L = u < d ? d : m, B = Tc(n, L, q, X);
     B && ia(n, B, S, x);
   }
 }
@@ -15813,11 +15823,11 @@ function Sv(n, i, r, u, s) {
   var f, d, m = n.wrapperComponent, v = n.state, h = v.scale, _ = v.positionX, S = v.positionY, x = n.setup.zoomAnimation;
   if (!m)
     return console.error("No WrapperComponent found");
-  var k = x.disabled ? 0 : u, j = m.offsetWidth, q = m.offsetHeight, X = (j / 2 - _) / h, V = (q / 2 - S) / h, B = bv(n, i, r), L = Tc(n, B, X, V);
-  if (!L)
+  var k = x.disabled ? 0 : u, j = m.offsetWidth, q = m.offsetHeight, X = (j / 2 - _) / h, L = (q / 2 - S) / h, B = bv(n, i, r), V = Tc(n, B, X, L);
+  if (!V)
     return console.error("Error during zoom event. New transformation state was not calculated.");
   var H = n.props, $ = H.onZoomStart, F = H.onZoom, U = H.onZoomStop, ne = new MouseEvent("mousemove", { bubbles: !0 }), ue = ze(n);
-  Ce(ue, ne, $), Ce(ue, ne, F), ia(n, L, k, s);
+  Ce(ue, ne, $), Ce(ue, ne, F), ia(n, V, k, s);
   var Oe = (d = (f = m.ownerDocument) === null || f === void 0 ? void 0 : f.defaultView) !== null && d !== void 0 ? d : typeof window < "u" ? window : null;
   Oe && Oe.setTimeout(function() {
     n.mounted && Ce(ze(n), ne, U);
@@ -15826,12 +15836,12 @@ function Sv(n, i, r, u, s) {
 function wv(n, i, r, u) {
   var s, f, d = n.setup, m = n.wrapperComponent, v = n.contentComponent, h = d.limitToBounds, _ = d.centerOnInit, S = _v(n.props), x = n.state, k = x.scale, j = x.positionX, q = x.positionY;
   if (m) {
-    var X = S.positionX, V = S.positionY;
+    var X = S.positionX, L = S.positionY;
     if (_ && v) {
       var B = Ac(S.scale, m, v);
-      X = B.positionX, V = B.positionY;
+      X = B.positionX, L = B.positionY;
     }
-    var L = xc(n, S.scale), H = Zl(X, V, L, h, 0, 0, m), $ = {
+    var V = xc(n, S.scale), H = Zl(X, L, V, h, 0, 0, m), $ = {
       scale: S.scale,
       positionX: H.x,
       positionY: H.y
@@ -15859,7 +15869,7 @@ function mz(n, i, r, u, s) {
   var f = n.wrapperComponent, d = n.contentComponent, m = n.state, v = n.setup, h = v.limitToBounds, _ = v.minScale, S = v.maxScale;
   if (!f || !d)
     return m;
-  var x = f.getBoundingClientRect(), k = i.getBoundingClientRect(), j = dz(i, f, d, m), q = j.x, X = j.y, V = k.width / m.scale, B = k.height / m.scale, L = f.offsetWidth / V, H = f.offsetHeight / B, $ = Rl(r || Math.min(L, H), _, S, 0, !1), F = (x.width - V * $) / 2, U = (x.height - B * $) / 2, ne = (x.left - q) * $ + F + u, ue = (x.top - X) * $ + U + s, Oe = xc(n, $), xe = Zl(ne, ue, Oe, h, 0, 0, f), ve = xe.x, Te = xe.y;
+  var x = f.getBoundingClientRect(), k = i.getBoundingClientRect(), j = dz(i, f, d, m), q = j.x, X = j.y, L = k.width / m.scale, B = k.height / m.scale, V = f.offsetWidth / L, H = f.offsetHeight / B, $ = Rl(r || Math.min(V, H), _, S, 0, !1), F = (x.width - L * $) / 2, U = (x.height - B * $) / 2, ne = (x.left - q) * $ + F + u, ue = (x.top - X) * $ + U + s, Oe = xc(n, $), xe = Zl(ne, ue, Oe, h, 0, 0, f), ve = xe.x, Te = xe.y;
   return { positionX: ve, positionY: Te, scale: $ };
 }
 var pz = function(n) {
@@ -16039,17 +16049,17 @@ var Az = function(n, i, r, u, s) {
     throw new Error("Pinch touches distance was not provided");
   if (i < 0)
     return n.state.scale;
-  var k = i / u, j = k * r, q = (j - r) * (x / jz), X = r + q, V = X === 1 / 0 ? 0 : Aa(X, 10);
-  return Rl(V, d, f, _, !S && !v);
+  var k = i / u, j = k * r, q = (j - r) * (x / jz), X = r + q, L = X === 1 / 0 ? 0 : Aa(X, 10);
+  return Rl(L, d, f, _, !S && !v);
 }, kv = 160, Cv = 100, Nz = function(n, i) {
   var r = n.props, u = r.onWheelStart, s = r.onZoomStart;
   n.wheelStopEventTimer || (en(n), Ce(ze(n), i, u), Ce(ze(n), i, s));
 }, Dz = function(n, i) {
-  var r = n.props, u = r.onWheel, s = r.onZoom, f = n.contentComponent, d = n.setup, m = n.state, v = m.scale, h = d.limitToBounds, _ = d.centerZoomedOut, S = d.zoomAnimation, x = d.wheel, k = d.disablePadding, j = d.smooth, q = S.size, X = S.disabled, V = x.step;
+  var r = n.props, u = r.onWheel, s = r.onZoom, f = n.contentComponent, d = n.setup, m = n.state, v = m.scale, h = d.limitToBounds, _ = d.centerZoomedOut, S = d.zoomAnimation, x = d.wheel, k = d.disablePadding, j = d.smooth, q = S.size, X = S.disabled, L = x.step;
   if (!f)
     throw new Error("Component not mounted");
   i.preventDefault(), i.stopPropagation();
-  var B = Ez(i, null), L = j ? V * Math.abs(i.deltaY) : V, H = Az(n, B, L, !i.ctrlKey);
+  var B = Ez(i, null), V = j ? L * Math.abs(i.deltaY) : L, H = Az(n, B, V, !i.ctrlKey);
   if (v !== H) {
     var $ = Si(n, H), F = Tv(i, f, v), U = X || q === 0 || _ || k, ne = h && U, ue = ku(n, F.x, F.y, H, $, ne), Oe = ue.x, xe = ue.y;
     n.previousWheelEvent = i, n.setState(H, Oe, xe), Ce(ze(n), i, u), Ce(ze(n), i, s);
@@ -16086,17 +16096,17 @@ var Az = function(n, i, r, u, s) {
 }, Xz = function(n, i) {
   var r = n.contentComponent, u = n.pinchStartDistance, s = n.wrapperComponent, f = n.pinchPreviousCenter, d = n.state.scale, m = n.setup, v = m.limitToBounds, h = m.centerZoomedOut, _ = m.zoomAnimation, S = m.autoAlignment, x = m.pinch, k = m.panning, j = _.disabled, q = _.size, X = x.allowPanning;
   if (!(u === null || !r)) {
-    var V = Oz(i, d, r);
-    if (!(!Number.isFinite(V.x) || !Number.isFinite(V.y))) {
-      var B = Av(i), L = Mz(n, B), H = Ov(i), $ = d / L, F = (H.x - (f?.x || 0)) * $, U = (H.y - (f?.y || 0)) * $;
-      if (!(L === d && F === 0 && U === 0)) {
+    var L = Oz(i, d, r);
+    if (!(!Number.isFinite(L.x) || !Number.isFinite(L.y))) {
+      var B = Av(i), V = Mz(n, B), H = Ov(i), $ = d / V, F = (H.x - (f?.x || 0)) * $, U = (H.y - (f?.y || 0)) * $;
+      if (!(V === d && F === 0 && U === 0)) {
         n.pinchPreviousCenter = H;
-        var ne = Si(n, L), ue = j || q === 0 || h, Oe = v && ue, xe = ku(n, V.x, V.y, L, ne, Oe), ve = xe.x, Te = xe.y;
-        if (n.pinchMidpoint = V, n.lastDistance = B, k.disabled || !X)
-          n.setState(L, ve, Te);
+        var ne = Si(n, V), ue = j || q === 0 || h, Oe = v && ue, xe = ku(n, L.x, L.y, V, ne, Oe), ve = xe.x, Te = xe.y;
+        if (n.pinchMidpoint = L, n.lastDistance = B, k.disabled || !X)
+          n.setState(V, ve, Te);
         else {
-          var Me = S.sizeX, Ve = S.sizeY, M = ta(n, Me, L), K = ta(n, Ve, L), I = ve + F, ye = Te + U, ge = Zl(I, ye, ne, v, M, K, s), w = ge.x, D = ge.y;
-          n.setState(L, w, D);
+          var Me = S.sizeX, Ve = S.sizeY, M = ta(n, Me, V), K = ta(n, Ve, V), I = ve + F, ye = Te + U, ge = Zl(I, ye, ne, v, M, K, s), w = ge.x, D = ge.y;
+          n.setState(V, w, D);
         }
       }
     }
@@ -16125,13 +16135,13 @@ function $z(n, i) {
       return Bz(n, i);
     if (!f)
       return console.error("No ContentComponent found");
-    var X = qz(x, n.state.scale), V = bv(n, X, k);
-    if (d !== V) {
+    var X = qz(x, n.state.scale), L = bv(n, X, k);
+    if (d !== L) {
       Ce(ze(n), i, v);
-      var B = Tv(i, f, d), L = Tc(n, V, B.x, B.y);
-      if (!L)
+      var B = Tv(i, f, d), V = Tc(n, L, B.x, B.y);
+      if (!V)
         return console.error("Error during zoom event. New transformation state was not calculated.");
-      Ce(ze(n), i, h), ia(n, L, j, q), jv(n, i);
+      Ce(ze(n), i, h), ia(n, V, j, q), jv(n, i);
     }
   }
 }
@@ -16187,8 +16197,8 @@ var Lz = function(n, i) {
         var v = xz(r, u);
         if (v) {
           u.preventDefault(), u.stopPropagation();
-          var h = r.state, _ = h.positionX, S = h.positionY, x = _ - u.deltaX, k = S - u.deltaY, j = d ? _ : x, q = m ? S : k, X = r.setup.autoAlignment, V = X.sizeX, B = X.sizeY, L = ta(r, V), H = ta(r, B);
-          j === _ && q === S || (Rz(r, u), yv(r, j, q, L, H), Ce(ze(r), u, s), Uz(r, u));
+          var h = r.state, _ = h.positionX, S = h.positionY, x = _ - u.deltaX, k = S - u.deltaY, j = d ? _ : x, q = m ? S : k, X = r.setup.autoAlignment, L = X.sizeX, B = X.sizeY, V = ta(r, L), H = ta(r, B);
+          j === _ && q === S || (Rz(r, u), yv(r, j, q, V, H), Ce(ze(r), u, s), Uz(r, u));
         }
       }, this.onPanningStart = function(u) {
         var s = r.setup.disabled, f = r.props.onPanningStart;
@@ -16417,15 +16427,15 @@ var Jz = `.transform-component-module_wrapper__SPB86 {
 `, rc = { wrapper: "transform-component-module_wrapper__SPB86", content: "transform-component-module_content__FBWxo", infiniteGrid: "transform-component-module_infiniteGrid__Z-aP3" };
 Kz(Jz);
 var Wz = function(n) {
-  var i = n.children, r = n.wrapperClass, u = r === void 0 ? "" : r, s = n.contentClass, f = s === void 0 ? "" : s, d = n.wrapperStyle, m = n.contentStyle, v = n.wrapperProps, h = v === void 0 ? {} : v, _ = n.contentProps, S = _ === void 0 ? {} : _, x = n.infinite, k = x === void 0 ? !1 : x, j = te.useContext(Yl), q = j.init, X = j.cleanupWindowEvents, V = te.useRef(null), B = te.useRef(null), L = te.useRef(null);
+  var i = n.children, r = n.wrapperClass, u = r === void 0 ? "" : r, s = n.contentClass, f = s === void 0 ? "" : s, d = n.wrapperStyle, m = n.contentStyle, v = n.wrapperProps, h = v === void 0 ? {} : v, _ = n.contentProps, S = _ === void 0 ? {} : _, x = n.infinite, k = x === void 0 ? !1 : x, j = te.useContext(Yl), q = j.init, X = j.cleanupWindowEvents, L = te.useRef(null), B = te.useRef(null), V = te.useRef(null);
   return te.useEffect(function() {
-    var H = V.current, $ = B.current;
+    var H = L.current, $ = B.current;
     return H !== null && $ !== null && q && q?.(H, $), function() {
       X?.();
     };
   }, []), te.useEffect(function() {
     if (k) {
-      var H = L.current;
+      var H = V.current;
       if (H) {
         var $ = function() {
           var F = j.state, U = F.positionX, ne = F.positionY;
@@ -16434,7 +16444,7 @@ var Wz = function(n) {
         return $(), j.onChange($);
       }
     }
-  }, [k, j]), g.jsxs("div", Kt({}, h, { ref: V, className: "".concat(dc.wrapperClass, " ").concat(rc.wrapper, " ").concat(u), style: d }, { children: [k && g.jsx("div", { ref: L, className: rc.infiniteGrid, "aria-hidden": !0 }), g.jsx("div", Kt({}, S, { ref: B, className: "".concat(dc.contentClass, " ").concat(rc.content, " ").concat(f), style: Kt(Kt({}, m), { transform: zv(j.state.positionX, j.state.positionY, j.state.scale) }) }, { children: i }))] }));
+  }, [k, j]), g.jsxs("div", Kt({}, h, { ref: L, className: "".concat(dc.wrapperClass, " ").concat(rc.wrapper, " ").concat(u), style: d }, { children: [k && g.jsx("div", { ref: V, className: rc.infiniteGrid, "aria-hidden": !0 }), g.jsx("div", Kt({}, S, { ref: B, className: "".concat(dc.contentClass, " ").concat(rc.content, " ").concat(f), style: Kt(Kt({}, m), { transform: zv(j.state.positionX, j.state.positionY, j.state.scale) }) }, { children: i }))] }));
 };
 function Pz(n, i) {
   var r = Math.max(0, Math.min(n.x + n.width, i.x + i.width) - Math.max(n.x, i.x)), u = Math.max(0, Math.min(n.y + n.height, i.y + i.height) - Math.max(n.y, i.y));
@@ -16453,29 +16463,29 @@ function Fz(n) {
     height: s * f
   };
   if (k <= 0) {
-    var X = q.x < j.x + j.width && q.x + q.width > j.x, V = q.y < j.y + j.height && q.y + q.height > j.y;
-    return X && V;
+    var X = q.x < j.x + j.width && q.x + q.width > j.x, L = q.y < j.y + j.height && q.y + q.height > j.y;
+    return X && L;
   }
   var B = q.width * q.height;
   if (B <= 0)
     return !1;
-  var L = Pz(j, q);
-  return L / B >= k;
+  var V = Pz(j, q);
+  return V / B >= k;
 }
 xu.forwardRef(function(n, i) {
-  var r = n.x, u = n.y, s = n.width, f = n.height, d = n.margin, m = d === void 0 ? 0 : d, v = n.threshold, h = v === void 0 ? 0 : v, _ = n.placeholder, S = _ === void 0 ? null : _, x = n.onShow, k = n.onHide, j = n.children, q = n.className, X = n.style, V = te.useContext(Yl), B = te.useState(!1), L = B[0], H = B[1], $ = te.useRef(!1), F = te.useRef(x), U = te.useRef(k);
+  var r = n.x, u = n.y, s = n.width, f = n.height, d = n.margin, m = d === void 0 ? 0 : d, v = n.threshold, h = v === void 0 ? 0 : v, _ = n.placeholder, S = _ === void 0 ? null : _, x = n.onShow, k = n.onHide, j = n.children, q = n.className, X = n.style, L = te.useContext(Yl), B = te.useState(!1), V = B[0], H = B[1], $ = te.useRef(!1), F = te.useRef(x), U = te.useRef(k);
   return F.current = x, U.current = k, te.useEffect(function() {
     var ne = function() {
-      var xe, ve, Te = V.wrapperComponent;
+      var xe, ve, Te = L.wrapperComponent;
       if (Te) {
         var Me = Fz({
           elementX: r,
           elementY: u,
           elementWidth: s,
           elementHeight: f,
-          scale: V.state.scale,
-          positionX: V.state.positionX,
-          positionY: V.state.positionY,
+          scale: L.state.scale,
+          positionX: L.state.positionX,
+          positionY: L.state.positionY,
           viewportWidth: Te.offsetWidth,
           viewportHeight: Te.offsetHeight,
           margin: m,
@@ -16485,13 +16495,13 @@ xu.forwardRef(function(n, i) {
       }
     };
     ne();
-    var ue = V.onChange(ne), Oe;
-    return V.wrapperComponent || (Oe = V.onInit(function() {
+    var ue = L.onChange(ne), Oe;
+    return L.wrapperComponent || (Oe = L.onInit(function() {
       return ne();
     })), function() {
       ue(), Oe?.();
     };
-  }, [V, r, u, s, f, m, h]), L ? g.jsx("div", Kt({ ref: i, className: q, style: X }, { children: j })) : S ? g.jsx(g.Fragment, { children: S }) : null;
+  }, [L, r, u, s, f, m, h]), V ? g.jsx("div", Kt({ ref: i, className: q, style: X }, { children: j })) : S ? g.jsx(g.Fragment, { children: S }) : null;
 });
 var Iz = function() {
   var n = te.useContext(Yl);
@@ -16512,7 +16522,7 @@ function tx({ locked: n, onToggleLock: i }) {
   ] });
 }
 function nx({ hass: n, floor: i, language: r, selected: u, launched: s, active: f, disabled: d, onToggle: m }) {
-  const [v, h] = te.useState(!0), [_, S] = te.useState({ width: 0, height: 0 }), [x, k] = te.useState({ width: 0, height: 0 }), [j, q] = te.useState(0), X = te.useRef(null), V = n.states[i.map_entity], B = te.useMemo(() => fv(V), [V]), L = te.useMemo(() => L2(V), [V]), H = te.useMemo(() => Q2(i), [i]), $ = typeof V?.attributes.entity_picture == "string" ? V.attributes.entity_picture : void 0;
+  const [v, h] = te.useState(!0), [_, S] = te.useState({ width: 0, height: 0 }), [x, k] = te.useState({ width: 0, height: 0 }), [j, q] = te.useState(0), X = te.useRef(null), L = n.states[i.map_entity], B = te.useMemo(() => fv(L), [L]), V = te.useMemo(() => L2(L), [L]), H = te.useMemo(() => Q2(i), [i]), $ = typeof L?.attributes.entity_picture == "string" ? L.attributes.entity_picture : void 0;
   te.useEffect(() => {
     if (!f) return;
     const U = setInterval(() => q((ne) => ne + 1), 5e3);
@@ -16528,7 +16538,7 @@ function nx({ hass: n, floor: i, language: r, selected: u, launched: s, active: 
     return ne.observe(U), () => ne.disconnect();
   }, []);
   let F;
-  return !V || V.state === "unavailable" ? F = G(r, "mapMissing") : $ ? L.length < 3 ? F = G(r, "calibrationMissing") : B.length === 0 && (F = G(r, "roomsMissing")) : F = G(r, "imageMissing"), F ? /* @__PURE__ */ g.jsx("div", { className: "map-error", role: "alert", children: F }) : /* @__PURE__ */ g.jsx("div", { className: "map-shell", ref: X, children: /* @__PURE__ */ g.jsxs(
+  return !L || L.state === "unavailable" ? F = G(r, "mapMissing") : $ ? V.length < 3 ? F = G(r, "calibrationMissing") : B.length === 0 && (F = G(r, "roomsMissing")) : F = G(r, "imageMissing"), F ? /* @__PURE__ */ g.jsx("div", { className: "map-error", role: "alert", children: F }) : /* @__PURE__ */ g.jsx("div", { className: "map-shell", ref: X, children: /* @__PURE__ */ g.jsxs(
     Qz,
     {
       initialScale: 1,
@@ -16555,7 +16565,7 @@ function nx({ hass: n, floor: i, language: r, selected: u, launched: s, active: 
                 "img",
                 {
                   src: (() => {
-                    const U = n.hassUrl($), ne = U.includes("?") ? "&" : "?", ue = V?.last_updated ?? V?.state ?? "";
+                    const U = n.hassUrl($), ne = U.includes("?") ? "&" : "?", ue = L?.last_updated ?? L?.state ?? "";
                     return `${U}${ne}v=${encodeURIComponent(ue)}${f ? `&r=${j}` : ""}`;
                   })(),
                   alt: `${i.name} vacuum map`,
@@ -16571,13 +16581,13 @@ function nx({ hass: n, floor: i, language: r, selected: u, launched: s, active: 
                   preserveAspectRatio: "xMidYMid meet",
                   "aria-label": `${i.name} rooms`,
                   children: B.map((U) => {
-                    const ne = H.get(U.segment_id), ue = !!ne?.area_id, Oe = u.has(U.segment_id), xe = s.has(U.segment_id), ve = G2(U, L), Te = ne?.name || U.source_name, Me = d || !ue;
+                    const ne = H.get(U.segment_id), ue = !!ne?.area_id, Oe = u.has(U.segment_id), xe = s.has(U.segment_id), ve = G2(U, V), Te = ne?.name || U.source_name, Me = d || !ue;
                     return /* @__PURE__ */ g.jsxs("g", { className: `room ${Oe ? "selected" : ""} ${xe ? "launched" : ""} ${ue ? "" : "unmapped"}`, children: [
                       /* @__PURE__ */ g.jsx(
                         "path",
                         {
                           className: "room-hitbox",
-                          d: V2(U, L),
+                          d: V2(U, V),
                           role: "button",
                           tabIndex: Me ? -1 : 0,
                           "aria-label": `${Te}${ue ? "" : ` — ${G(r, "roomUnmapped")}`}`,
@@ -16701,7 +16711,7 @@ function ox(n, i) {
   return n.floors.find((u) => u.map_select_option === r) ?? n.floors[0];
 }
 function sx({ hass: n, config: i }) {
-  const r = te.useRef(n), u = te.useRef(!1), s = i.language, [f, d] = te.useState(() => ox(i, n).id), m = i.floors.find((Q) => Q.id === f) ?? i.floors[0], [v, h] = te.useState(/* @__PURE__ */ new Set()), [_, S] = te.useState(!1), [x, k] = te.useState(!1), [j, q] = te.useState(!1), [X, V] = te.useState(!1), [B, L] = te.useState(), [H, $] = te.useState(), [F, U] = te.useState({ phase: "idle" }), ne = te.useMemo(() => rw(n, i), [n, i]), ue = te.useMemo(() => Ew(i, ne, m), [i, ne, m]), Oe = ue.find(({ preset: Q, available: ce }) => Q.id === i.default_preset && ce)?.preset ?? ue.find(({ available: Q }) => Q)?.preset, [xe, ve] = te.useState(
+  const r = te.useRef(n), u = te.useRef(!1), s = i.language, [f, d] = te.useState(() => ox(i, n).id), m = i.floors.find((Q) => Q.id === f) ?? i.floors[0], [v, h] = te.useState(/* @__PURE__ */ new Set()), [_, S] = te.useState(!1), [x, k] = te.useState(!1), [j, q] = te.useState(!1), [X, L] = te.useState(!1), [B, V] = te.useState(), [H, $] = te.useState(), [F, U] = te.useState({ phase: "idle" }), ne = te.useMemo(() => rw(n, i), [n, i]), ue = te.useMemo(() => Ew(i, ne, m), [i, ne, m]), Oe = ue.find(({ preset: Q, available: ce }) => Q.id === i.default_preset && ce)?.preset ?? ue.find(({ available: Q }) => Q)?.preset, [xe, ve] = te.useState(
     () => wu(Oe ?? { id: "custom", strategy: "custom", cleaning_type: "vacuum" })
   ), Te = n.states[i.entity], Me = F2(i), Ve = I2(n, i), M = i.entities?.assisted_carry_job ? n.states[i.entities.assisted_carry_job]?.state : void 0, K = te.useMemo(() => nw(M), [M]), I = Ve !== "idle";
   te.useEffect(() => {
@@ -16864,14 +16874,14 @@ function sx({ hass: n, config: i }) {
     }
   }, vt = async (Q, ce) => {
     if (!B) {
-      L(G(s, "settingSaved"));
+      V(G(s, "settingSaved"));
       try {
         await vw(r.current, i, Q, ce), $(G(s, "settingSaved"));
       } catch (fe) {
         const an = fe instanceof kn ? `${fe.operation}: ${fe.message}` : String(fe);
         $(an);
       } finally {
-        L(void 0);
+        V(void 0);
       }
     }
   }, ju = async (Q, ce) => {
@@ -16880,26 +16890,26 @@ function sx({ hass: n, config: i }) {
         const fe = Q === "empty" ? G(s, "confirmEmpty") : Q === "wash" ? G(s, "confirmWash") : Q === "dry" ? G(s, "confirmDry") : G(s, "confirmDrain");
         if (!window.confirm(fe)) return;
       }
-      L(G(s, "dockActionSent"));
+      V(G(s, "dockActionSent"));
       try {
         await Is(r.current, i, Q, ce), $(G(s, "dockActionSent"));
       } catch (fe) {
         const an = fe instanceof kn ? `${fe.operation}: ${fe.message}` : String(fe);
         $(an);
       } finally {
-        L(void 0);
+        V(void 0);
       }
     }
   }, Hl = async (Q) => {
     const ce = i.entities?.dock_child_lock;
     if (!(!ce || B)) {
-      L(G(s, "settingSaved"));
+      V(G(s, "settingSaved"));
       try {
         await r.current.callService("switch", Q ? "turn_on" : "turn_off", {}, { entity_id: ce }), $(G(s, "settingSaved"));
       } catch (fe) {
         $(`child_lock: ${fe instanceof Error ? fe.message : String(fe)}`);
       } finally {
-        L(void 0);
+        V(void 0);
       }
     }
   };
@@ -16995,7 +17005,7 @@ function sx({ hass: n, config: i }) {
         /* @__PURE__ */ g.jsx(Yp, {}),
         G(s, "dock")
       ] }),
-      /* @__PURE__ */ g.jsxs("button", { type: "button", onClick: () => V(!0), children: [
+      /* @__PURE__ */ g.jsxs("button", { type: "button", onClick: () => L(!0), children: [
         /* @__PURE__ */ g.jsx($_, {}),
         G(s, "dockStation")
       ] })
@@ -17026,7 +17036,7 @@ function sx({ hass: n, config: i }) {
         drying: se,
         dryingRemaining: Se,
         pending: B,
-        onClose: () => !B && V(!1),
+        onClose: () => !B && L(!1),
         onAction: ju,
         onSetting: vt,
         onChildLock: Hl
@@ -17038,7 +17048,7 @@ function sx({ hass: n, config: i }) {
     ] })
   ] });
 }
-const cx = ':host{display:block;--rvm-accent: var(--primary-color, #5965f2);--rvm-on-accent: var(--text-primary-color, #fff);--rvm-surface: var(--card-background-color, #fff);--rvm-surface-2: var(--secondary-background-color, #f2f3f7);--rvm-text: var(--primary-text-color, #202124);--rvm-muted: var(--secondary-text-color, #6b7280);--rvm-border: var(--divider-color, rgba(0, 0, 0, .12));--rvm-danger: var(--error-color, #d32f2f);color:var(--rvm-text);font-family:var(--paper-font-body1_-_font-family, system-ui, sans-serif)}*{box-sizing:border-box}button,input,select{font:inherit}button{color:inherit}svg{width:20px;height:20px;stroke-width:2}.roborock-card{display:block;position:relative;overflow:hidden;border-radius:var(--ha-card-border-radius, 24px);background:var(--rvm-surface)}.card-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 20px 14px}.card-header h1{margin:0 0 4px;font-size:22px;line-height:1.2}.state-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px;color:var(--rvm-muted);font-size:14px;text-transform:capitalize}.state-line .state-detail{text-transform:none}.state-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rvm-muted)}.state-cleaning,.state-paused{background:var(--rvm-accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--rvm-accent) 18%,transparent)}.state-error,.state-unavailable{background:var(--rvm-danger)}.status-strip{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.status-strip div{display:flex;align-items:center;gap:6px;min-height:36px;padding:7px 10px;border-radius:12px;background:var(--rvm-surface-2);font-size:13px}.status-strip svg{width:16px;height:16px;color:var(--rvm-accent)}.floor-tabs,.segmented{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:0 20px 14px;padding:4px;border-radius:14px;background:var(--rvm-surface-2)}.floor-tabs button,.segmented button{min-height:44px;padding:8px 14px;border:0;border-radius:11px;background:transparent;cursor:pointer;font-weight:600}.floor-tabs button.active,.segmented button.active{background:var(--rvm-surface);color:var(--rvm-accent);box-shadow:0 2px 8px #0000001a}.map-shell{position:relative;height:clamp(340px,54vh,620px);margin:0 12px;overflow:hidden;border-radius:20px;background:color-mix(in srgb,var(--rvm-surface-2) 75%,#7d91a8 25%);touch-action:pan-y}.map-transform{width:100%!important;height:100%!important}.map-content{width:100%!important;height:100%!important;display:flex;align-items:center;justify-content:center}.map-image-wrap{position:relative;flex:none;max-width:100%;max-height:100%}.map-image-wrap>img{display:block;width:100%;height:100%;object-fit:fill;-webkit-user-select:none;user-select:none}.room-overlay{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.room-hitbox{fill:transparent;stroke:#ffffff8c;stroke-width:3;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .15s ease,stroke .15s ease;outline:none}.room-hitbox:hover,.room-hitbox:focus-visible{fill:color-mix(in srgb,var(--rvm-accent) 18%,transparent);stroke:var(--rvm-accent)}.room.selected .room-hitbox{fill:color-mix(in srgb,var(--rvm-accent) 32%,transparent);stroke:var(--rvm-accent)}.room.launched .room-hitbox{fill:color-mix(in srgb,#35a854 30%,transparent);stroke:#35a854}.room.unmapped .room-hitbox{fill:#5a5a5a1f;stroke-dasharray:7 5;cursor:not-allowed}.room-label circle{fill:color-mix(in srgb,var(--rvm-surface) 92%,transparent);stroke:var(--rvm-border);stroke-width:2}.room-label text{fill:var(--rvm-text);paint-order:stroke;stroke:var(--rvm-surface);stroke-width:5px;stroke-linejoin:round;font-size:17px;font-weight:700}.room-label foreignObject{color:var(--rvm-accent)}.room-label ha-icon{display:block;width:22px;height:22px}.room.unmapped .room-label{opacity:.55}.map-controls{position:absolute;z-index:5;top:10px;right:10px;display:flex;gap:5px}.map-controls button,.map-controls .icon-button{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--rvm-border);border-radius:13px;background:color-mix(in srgb,var(--rvm-surface) 92%,transparent);cursor:pointer;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}.map-controls button:disabled{opacity:.35;cursor:not-allowed}.map-error{display:grid;place-items:center;min-height:260px;margin:0 12px;padding:30px;border:1px dashed var(--rvm-danger);border-radius:20px;color:var(--rvm-danger);text-align:center}.selection-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px 10px}.selection-row strong,.selection-row span{display:block}.selection-row strong{margin-bottom:3px;font-size:14px}.selection-row>div>span{color:var(--rvm-muted);font-size:13px}.selection-row .selection-count{display:grid;place-items:center;min-width:34px;height:34px;border-radius:50%;color:var(--rvm-on-accent);background:var(--rvm-accent);font-weight:700}.assisted-panel{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;margin:14px 20px 4px;padding:16px;border:1px solid color-mix(in srgb,var(--rvm-accent) 42%,var(--rvm-border));border-radius:18px;background:color-mix(in srgb,var(--rvm-accent) 9%,var(--rvm-surface))}.assisted-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;color:var(--rvm-on-accent);background:var(--rvm-accent)}.assisted-icon svg{width:23px;height:23px}.assisted-copy{min-width:0}.assisted-copy strong{display:block;margin-bottom:3px;font-size:15px}.assisted-copy p{margin:0;color:var(--rvm-muted);font-size:13px;line-height:1.4}.assisted-copy small{display:block;margin-top:6px;overflow:hidden;color:var(--rvm-accent);font-weight:650;text-overflow:ellipsis;white-space:nowrap}.assisted-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.assisted-actions button{min-height:44px}.assisted-complete{border-color:color-mix(in srgb,#35a854 55%,var(--rvm-border));background:color-mix(in srgb,#35a854 10%,var(--rvm-surface))}.assisted-complete .assisted-icon{background:#35a854}.assisted-error{border-color:color-mix(in srgb,var(--rvm-danger) 55%,var(--rvm-border));background:color-mix(in srgb,var(--rvm-danger) 9%,var(--rvm-surface))}.assisted-error .assisted-icon{background:var(--rvm-danger)}.spin{animation:rvm-spin 1.1s linear infinite}@keyframes rvm-spin{to{transform:rotate(360deg)}}.primary-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 20px 14px}button.primary,button.secondary,.primary-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 16px;border-radius:14px;cursor:pointer;font-weight:700}button.primary{border:1px solid var(--rvm-accent);color:var(--rvm-on-accent);background:var(--rvm-accent)}button.secondary{border:1px solid var(--rvm-border);background:var(--rvm-surface-2)}button:disabled{opacity:.45;cursor:not-allowed}.transport{display:flex;justify-content:center;gap:8px;padding:0 20px 20px}.transport button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 13px;border:1px solid var(--rvm-border);border-radius:13px;background:transparent;cursor:pointer}.transport svg{width:18px;height:18px}.sheet-layer{position:fixed;z-index:999;inset:0;display:grid;place-items:center;padding:24px}.sheet-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0000007a;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}.job-sheet{position:relative;display:flex;flex-direction:column;width:min(680px,100%);max-height:min(820px,100vh - 48px);overflow:hidden;border-radius:24px;background:var(--rvm-surface);box-shadow:0 22px 70px #00000052}.job-sheet header{display:flex;justify-content:space-between;gap:16px;padding:24px 24px 14px}.job-sheet h2,.job-sheet h3,.job-sheet p{margin:0}.job-sheet header p{margin-top:5px;color:var(--rvm-muted)}.job-sheet h3{margin-bottom:10px;font-size:15px}.job-sheet footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px 22px;border-top:1px solid var(--rvm-border)}.job-sheet footer button{min-width:120px}.sheet-handle{display:none}.sheet-body{overflow:auto;padding:8px 24px 22px}.icon-button{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:var(--rvm-surface-2);cursor:pointer}.cleaning-mode-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--rvm-border)}.cleaning-mode-tabs button{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;min-height:62px;padding:8px 7px 12px;border:0;color:var(--rvm-muted);background:transparent;cursor:pointer;font-weight:700}.cleaning-mode-tabs button:after{content:"";position:absolute;right:14%;bottom:-1px;left:14%;height:3px;border-radius:3px 3px 0 0;background:transparent}.cleaning-mode-tabs button.active{color:var(--rvm-accent)}.cleaning-mode-tabs button.active:after{background:var(--rvm-accent)}.cleaning-mode-tabs ha-icon{width:22px;height:22px}.mode-settings{margin-top:16px;padding:18px;border:1px solid var(--rvm-border);border-radius:20px;background:color-mix(in srgb,var(--rvm-surface-2) 45%,transparent)}.mode-description{margin:0 0 18px!important;color:var(--rvm-muted);line-height:1.45}.app-field+.app-field{margin-top:20px}.option-strip{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;padding:4px;border-radius:14px;background:var(--rvm-surface-2)}.option-strip button{min-width:0;min-height:46px;padding:7px 6px;overflow:hidden;border:0;border-radius:11px;background:transparent;cursor:pointer;font-size:12px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.option-strip button.active{color:var(--rvm-accent);background:var(--rvm-surface);box-shadow:0 2px 8px #0000001a}.range-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.range-heading strong{color:var(--rvm-accent)}.range-heading output{display:grid;place-items:center;min-width:42px;height:42px;border-radius:50%;background:var(--rvm-surface-2);font-weight:700}.water-flow input[type=range]{width:100%;min-height:34px;accent-color:var(--rvm-accent)}.saved-profiles{margin-top:16px}.saved-profiles>span{color:var(--rvm-muted);font-size:13px;font-weight:600}.saved-profiles>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.saved-profiles button{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:7px 11px;border:1px solid var(--rvm-border);border-radius:12px;background:transparent}.saved-profiles button.active{border-color:var(--rvm-accent);color:var(--rvm-accent);background:color-mix(in srgb,var(--rvm-accent) 10%,transparent)}.dock-sheet{width:min(720px,100%)}.dock-sheet-body{display:block}.dock-sheet-body>*+*{margin-top:14px}.dock-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.dock-actions>button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 10px;min-width:0;min-height:84px;padding:13px;border:1px solid var(--rvm-border);border-radius:16px;color:var(--rvm-text);background:var(--rvm-surface-2);cursor:pointer;text-align:left}.dock-actions>button.active{border-color:var(--rvm-accent);background:color-mix(in srgb,var(--rvm-accent) 12%,var(--rvm-surface))}.dock-actions strong,.dock-actions small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dock-actions small{color:var(--rvm-muted)}.dock-action-icon{grid-row:1/3;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;color:var(--rvm-accent);background:var(--rvm-surface)}.dock-actions>button.active .dock-action-icon{color:var(--rvm-on-accent);background:var(--rvm-accent)}.dock-settings-group{overflow:hidden;border:1px solid var(--rvm-border);border-radius:18px;background:color-mix(in srgb,var(--rvm-surface-2) 44%,transparent)}.dock-settings-group h3{display:flex;align-items:center;gap:8px;margin:0;padding:14px 16px 10px;font-size:15px}.dock-settings-group h3 svg{width:18px;height:18px;color:var(--rvm-accent)}.dock-setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:55px;padding:8px 16px;border-top:1px solid var(--rvm-border)}.dock-setting-row>span{font-weight:600}.dock-setting-row select{width:min(250px,52%);min-height:38px;padding:7px 32px 7px 10px;border:1px solid var(--rvm-border);border-radius:10px;color:var(--rvm-text);background:var(--rvm-surface)}.dock-toggle{position:relative;flex:0 0 auto;width:48px;height:28px;padding:0;border:0;border-radius:14px;background:var(--rvm-border);cursor:pointer;transition:background .15s ease}.dock-toggle>span{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--rvm-surface);box-shadow:0 1px 5px #00000040;transition:transform .15s ease}.dock-toggle.active{background:var(--rvm-accent)}.dock-toggle.active>span{transform:translate(20px)}.drain-button{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:11px 16px;border:0;border-top:1px solid var(--rvm-border);color:var(--rvm-danger);background:transparent;cursor:pointer;text-align:left}.drain-button>span{display:grid;gap:2px}.drain-button small{color:var(--rvm-muted);font-size:12px;font-weight:400}.dock-pending{position:sticky;bottom:0;padding:10px 12px;border-radius:12px;color:var(--rvm-on-accent);background:var(--rvm-accent);text-align:center}.field{display:flex;flex-direction:column;gap:7px;min-width:0}.field>span,.editor label{color:var(--rvm-muted);font-size:13px;font-weight:600}.field select,.editor input,.editor select{width:100%;min-height:44px;padding:9px 11px;border:1px solid var(--rvm-border);border-radius:11px;color:var(--rvm-text);background:var(--rvm-surface)}.field .segmented{margin:0}.toast{position:absolute;z-index:1000;right:16px;bottom:16px;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);padding:12px 12px 12px 16px;border-radius:14px;color:var(--rvm-text);background:var(--rvm-surface);box-shadow:0 8px 30px #0000003d}.toast button{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:10px;background:var(--rvm-surface-2)}.editor{padding:8px 4px 32px;color:var(--rvm-text)}.editor>h2{margin:0 0 4px}.editor>p{margin:0 0 18px;color:var(--rvm-muted)}.editor section{margin:0 0 18px;padding:16px;border:1px solid var(--rvm-border);border-radius:16px;background:var(--rvm-surface)}.editor h3{margin:0 0 12px}.editor h4{margin:14px 0 8px}.editor label{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;text-transform:capitalize}.editor .checkbox{flex-direction:row;align-items:center}.editor .checkbox input{width:18px;min-height:auto}.editor-errors{margin-bottom:14px;padding:12px;border-radius:12px;color:var(--rvm-danger);background:color-mix(in srgb,var(--rvm-danger) 10%,transparent);font-size:12px}.editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.editor-heading>div{display:flex;gap:4px}.editor-heading button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;padding:6px 9px;border:1px solid var(--rvm-border);border-radius:9px;background:var(--rvm-surface-2)}.editor-heading button svg{width:16px;height:16px}.editor-card{margin-top:12px;padding:14px;border-radius:14px;background:var(--rvm-surface-2)}.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin-top:12px}.room-editor-list{display:grid;gap:8px}.room-editor{display:grid;grid-template-columns:100px 1fr 1.2fr 1fr 1.2fr;align-items:end;gap:8px;padding:10px;border:1px solid var(--rvm-border);border-radius:12px;background:var(--rvm-surface)}.room-editor label{margin:0}button:focus-visible,select:focus-visible,input:focus-visible,.room-hitbox:focus-visible{outline:3px solid color-mix(in srgb,var(--rvm-accent) 55%,transparent);outline-offset:2px}@media(max-width:700px){.card-header{align-items:flex-start;flex-direction:column}.status-strip{justify-content:flex-start}.map-shell{height:clamp(300px,48vh,480px);margin:0 8px}.room-label text{font-size:18px}.primary-actions{grid-template-columns:1fr}.assisted-panel{grid-template-columns:auto minmax(0,1fr);margin:12px 12px 4px}.assisted-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr;width:100%}.assisted-actions button{width:100%}.transport{flex-wrap:wrap}.sheet-layer{align-items:end;padding:0}.job-sheet{width:100%;max-height:92vh;border-radius:24px 24px 0 0}.sheet-handle{display:block;width:42px;height:5px;margin:9px auto 0;border-radius:9px;background:var(--rvm-border)}.job-sheet header{padding-top:14px}.dock-actions{grid-template-columns:1fr}.dock-actions>button{min-height:68px}.dock-setting-row{align-items:flex-start;flex-direction:column;gap:7px}.dock-setting-row select{width:100%}.dock-setting-row:has(.dock-toggle){align-items:center;flex-direction:row}.cleaning-mode-tabs{grid-template-columns:repeat(2,1fr)}.cleaning-mode-tabs button:nth-child(-n+2){border-bottom:1px solid var(--rvm-border)}.cleaning-mode-tabs button{min-height:56px}.editor-grid{grid-template-columns:1fr}.room-editor{grid-template-columns:1fr 1fr}.room-editor>strong{grid-column:1/-1}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}', fx = "0.6.0";
+const cx = ':host{display:block;--rvm-accent: var(--primary-color, #5965f2);--rvm-on-accent: var(--text-primary-color, #fff);--rvm-surface: var(--card-background-color, #fff);--rvm-surface-2: var(--secondary-background-color, #f2f3f7);--rvm-text: var(--primary-text-color, #202124);--rvm-muted: var(--secondary-text-color, #6b7280);--rvm-border: var(--divider-color, rgba(0, 0, 0, .12));--rvm-danger: var(--error-color, #d32f2f);color:var(--rvm-text);font-family:var(--paper-font-body1_-_font-family, system-ui, sans-serif)}*{box-sizing:border-box}button,input,select{font:inherit}button{color:inherit}svg{width:20px;height:20px;stroke-width:2}.roborock-card{display:block;position:relative;overflow:hidden;border-radius:var(--ha-card-border-radius, 24px);background:var(--rvm-surface)}.card-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 20px 14px}.card-header h1{margin:0 0 4px;font-size:22px;line-height:1.2}.state-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px;color:var(--rvm-muted);font-size:14px;text-transform:capitalize}.state-line .state-detail{text-transform:none}.state-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rvm-muted)}.state-cleaning,.state-paused{background:var(--rvm-accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--rvm-accent) 18%,transparent)}.state-error,.state-unavailable{background:var(--rvm-danger)}.status-strip{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.status-strip div{display:flex;align-items:center;gap:6px;min-height:36px;padding:7px 10px;border-radius:12px;background:var(--rvm-surface-2);font-size:13px}.status-strip svg{width:16px;height:16px;color:var(--rvm-accent)}.floor-tabs,.segmented{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:0 20px 14px;padding:4px;border-radius:14px;background:var(--rvm-surface-2)}.floor-tabs button,.segmented button{min-height:44px;padding:8px 14px;border:0;border-radius:11px;background:transparent;cursor:pointer;font-weight:600}.floor-tabs button.active,.segmented button.active{background:var(--rvm-surface);color:var(--rvm-accent);box-shadow:0 2px 8px #0000001a}.map-shell{position:relative;height:clamp(340px,54vh,620px);margin:0 12px;overflow:hidden;border-radius:20px;background:color-mix(in srgb,var(--rvm-surface-2) 75%,#7d91a8 25%);touch-action:pan-y}.map-transform{width:100%!important;height:100%!important}.map-content{width:100%!important;height:100%!important;display:flex;align-items:center;justify-content:center}.map-image-wrap{position:relative;flex:none;max-width:100%;max-height:100%}.map-image-wrap>img{display:block;width:100%;height:100%;object-fit:fill;-webkit-user-select:none;user-select:none}.room-overlay{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.room-hitbox{fill:transparent;stroke:#ffffff8c;stroke-width:3;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .15s ease,stroke .15s ease;outline:none}.room-hitbox:hover,.room-hitbox:focus-visible{fill:color-mix(in srgb,var(--rvm-accent) 18%,transparent);stroke:var(--rvm-accent)}.room.selected .room-hitbox{fill:color-mix(in srgb,var(--rvm-accent) 32%,transparent);stroke:var(--rvm-accent)}.room.launched .room-hitbox{fill:color-mix(in srgb,#35a854 30%,transparent);stroke:#35a854}.room.unmapped .room-hitbox{fill:#5a5a5a1f;stroke-dasharray:7 5;cursor:not-allowed}.room-label circle{fill:color-mix(in srgb,var(--rvm-surface) 92%,transparent);stroke:var(--rvm-border);stroke-width:2}.room-label text{fill:var(--rvm-text);paint-order:stroke;stroke:var(--rvm-surface);stroke-width:5px;stroke-linejoin:round;font-size:17px;font-weight:700}.room-label foreignObject{color:var(--rvm-accent)}.room-label ha-icon{display:block;width:22px;height:22px}.room.unmapped .room-label{opacity:.55}.map-controls{position:absolute;z-index:5;top:10px;right:10px;display:flex;gap:5px}.map-controls button,.map-controls .icon-button{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--rvm-border);border-radius:13px;background:color-mix(in srgb,var(--rvm-surface) 92%,transparent);cursor:pointer;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}.map-controls button:disabled{opacity:.35;cursor:not-allowed}.map-error{display:grid;place-items:center;min-height:260px;margin:0 12px;padding:30px;border:1px dashed var(--rvm-danger);border-radius:20px;color:var(--rvm-danger);text-align:center}.selection-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px 10px}.selection-row strong,.selection-row span{display:block}.selection-row strong{margin-bottom:3px;font-size:14px}.selection-row>div>span{color:var(--rvm-muted);font-size:13px}.selection-row .selection-count{display:grid;place-items:center;min-width:34px;height:34px;border-radius:50%;color:var(--rvm-on-accent);background:var(--rvm-accent);font-weight:700}.assisted-panel{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;margin:14px 20px 4px;padding:16px;border:1px solid color-mix(in srgb,var(--rvm-accent) 42%,var(--rvm-border));border-radius:18px;background:color-mix(in srgb,var(--rvm-accent) 9%,var(--rvm-surface))}.assisted-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;color:var(--rvm-on-accent);background:var(--rvm-accent)}.assisted-icon svg{width:23px;height:23px}.assisted-copy{min-width:0}.assisted-copy strong{display:block;margin-bottom:3px;font-size:15px}.assisted-copy p{margin:0;color:var(--rvm-muted);font-size:13px;line-height:1.4}.assisted-copy small{display:block;margin-top:6px;overflow:hidden;color:var(--rvm-accent);font-weight:650;text-overflow:ellipsis;white-space:nowrap}.assisted-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.assisted-actions button{min-height:44px}.assisted-complete{border-color:color-mix(in srgb,#35a854 55%,var(--rvm-border));background:color-mix(in srgb,#35a854 10%,var(--rvm-surface))}.assisted-complete .assisted-icon{background:#35a854}.assisted-error{border-color:color-mix(in srgb,var(--rvm-danger) 55%,var(--rvm-border));background:color-mix(in srgb,var(--rvm-danger) 9%,var(--rvm-surface))}.assisted-error .assisted-icon{background:var(--rvm-danger)}.spin{animation:rvm-spin 1.1s linear infinite}@keyframes rvm-spin{to{transform:rotate(360deg)}}.primary-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 20px 14px}button.primary,button.secondary,.primary-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 16px;border-radius:14px;cursor:pointer;font-weight:700}button.primary{border:1px solid var(--rvm-accent);color:var(--rvm-on-accent);background:var(--rvm-accent)}button.secondary{border:1px solid var(--rvm-border);background:var(--rvm-surface-2)}button:disabled{opacity:.45;cursor:not-allowed}.transport{display:flex;justify-content:center;gap:8px;padding:0 20px 20px}.transport button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 13px;border:1px solid var(--rvm-border);border-radius:13px;background:transparent;cursor:pointer}.transport svg{width:18px;height:18px}.sheet-layer{position:fixed;z-index:999;inset:0;display:grid;place-items:center;padding:24px}.sheet-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0000007a;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}.job-sheet{position:relative;display:flex;flex-direction:column;width:min(680px,100%);max-height:min(820px,100vh - 48px);overflow:hidden;border-radius:24px;background:var(--rvm-surface);box-shadow:0 22px 70px #00000052}.job-sheet header{display:flex;justify-content:space-between;gap:16px;padding:24px 24px 14px}.job-sheet h2,.job-sheet h3,.job-sheet p{margin:0}.job-sheet header p{margin-top:5px;color:var(--rvm-muted)}.job-sheet h3{margin-bottom:10px;font-size:15px}.job-sheet footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px 22px;border-top:1px solid var(--rvm-border)}.job-sheet footer button{min-width:120px}.sheet-handle{display:none}.sheet-body{overflow:auto;padding:8px 24px 22px}.icon-button{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:var(--rvm-surface-2);cursor:pointer}.cleaning-mode-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--rvm-border)}.cleaning-mode-tabs button{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;min-height:62px;padding:8px 7px 12px;border:0;color:var(--rvm-muted);background:transparent;cursor:pointer;font-weight:700}.cleaning-mode-tabs button:after{content:"";position:absolute;right:14%;bottom:-1px;left:14%;height:3px;border-radius:3px 3px 0 0;background:transparent}.cleaning-mode-tabs button.active{color:var(--rvm-accent)}.cleaning-mode-tabs button.active:after{background:var(--rvm-accent)}.cleaning-mode-tabs ha-icon{width:22px;height:22px}.mode-settings{margin-top:16px;padding:18px;border:1px solid var(--rvm-border);border-radius:20px;background:color-mix(in srgb,var(--rvm-surface-2) 45%,transparent)}.mode-description{margin:0 0 18px!important;color:var(--rvm-muted);line-height:1.45}.app-field+.app-field{margin-top:20px}.option-strip{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;padding:4px;border-radius:14px;background:var(--rvm-surface-2)}.option-strip button{min-width:0;min-height:46px;padding:7px 6px;overflow:hidden;border:0;border-radius:11px;background:transparent;cursor:pointer;font-size:12px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.option-strip button.active{color:var(--rvm-accent);background:var(--rvm-surface);box-shadow:0 2px 8px #0000001a}.range-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.range-heading strong{color:var(--rvm-accent)}.range-heading output{display:grid;place-items:center;min-width:42px;height:42px;border-radius:50%;background:var(--rvm-surface-2);font-weight:700}.water-flow input[type=range]{width:100%;min-height:34px;accent-color:var(--rvm-accent)}.saved-profiles{margin-top:16px}.saved-profiles>span{color:var(--rvm-muted);font-size:13px;font-weight:600}.saved-profiles>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.saved-profiles button{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:7px 11px;border:1px solid var(--rvm-border);border-radius:12px;background:transparent}.saved-profiles button.active{border-color:var(--rvm-accent);color:var(--rvm-accent);background:color-mix(in srgb,var(--rvm-accent) 10%,transparent)}.dock-sheet{width:min(720px,100%)}.dock-sheet-body{display:block}.dock-sheet-body>*+*{margin-top:14px}.dock-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.dock-actions>button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 10px;min-width:0;min-height:84px;padding:13px;border:1px solid var(--rvm-border);border-radius:16px;color:var(--rvm-text);background:var(--rvm-surface-2);cursor:pointer;text-align:left}.dock-actions>button.active{border-color:var(--rvm-accent);background:color-mix(in srgb,var(--rvm-accent) 12%,var(--rvm-surface))}.dock-actions strong,.dock-actions small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dock-actions small{color:var(--rvm-muted)}.dock-action-icon{grid-row:1/3;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;color:var(--rvm-accent);background:var(--rvm-surface)}.dock-actions>button.active .dock-action-icon{color:var(--rvm-on-accent);background:var(--rvm-accent)}.dock-settings-group{overflow:hidden;border:1px solid var(--rvm-border);border-radius:18px;background:color-mix(in srgb,var(--rvm-surface-2) 44%,transparent)}.dock-settings-group h3{display:flex;align-items:center;gap:8px;margin:0;padding:14px 16px 10px;font-size:15px}.dock-settings-group h3 svg{width:18px;height:18px;color:var(--rvm-accent)}.dock-setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:55px;padding:8px 16px;border-top:1px solid var(--rvm-border)}.dock-setting-row>span{font-weight:600}.dock-setting-row select{width:min(250px,52%);min-height:38px;padding:7px 32px 7px 10px;border:1px solid var(--rvm-border);border-radius:10px;color:var(--rvm-text);background:var(--rvm-surface)}.dock-toggle{position:relative;flex:0 0 auto;width:48px;height:28px;padding:0;border:0;border-radius:14px;background:var(--rvm-border);cursor:pointer;transition:background .15s ease}.dock-toggle>span{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--rvm-surface);box-shadow:0 1px 5px #00000040;transition:transform .15s ease}.dock-toggle.active{background:var(--rvm-accent)}.dock-toggle.active>span{transform:translate(20px)}.drain-button{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:11px 16px;border:0;border-top:1px solid var(--rvm-border);color:var(--rvm-danger);background:transparent;cursor:pointer;text-align:left}.drain-button>span{display:grid;gap:2px}.drain-button small{color:var(--rvm-muted);font-size:12px;font-weight:400}.dock-pending{position:sticky;bottom:0;padding:10px 12px;border-radius:12px;color:var(--rvm-on-accent);background:var(--rvm-accent);text-align:center}.field{display:flex;flex-direction:column;gap:7px;min-width:0}.field>span,.editor label{color:var(--rvm-muted);font-size:13px;font-weight:600}.field select,.editor input,.editor select{width:100%;min-height:44px;padding:9px 11px;border:1px solid var(--rvm-border);border-radius:11px;color:var(--rvm-text);background:var(--rvm-surface)}.field .segmented{margin:0}.toast{position:absolute;z-index:1000;right:16px;bottom:16px;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);padding:12px 12px 12px 16px;border-radius:14px;color:var(--rvm-text);background:var(--rvm-surface);box-shadow:0 8px 30px #0000003d}.toast button{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:10px;background:var(--rvm-surface-2)}.editor{padding:8px 4px 32px;color:var(--rvm-text)}.editor>h2{margin:0 0 4px}.editor>p{margin:0 0 18px;color:var(--rvm-muted)}.editor section{margin:0 0 18px;padding:16px;border:1px solid var(--rvm-border);border-radius:16px;background:var(--rvm-surface)}.editor h3{margin:0 0 12px}.editor h4{margin:14px 0 8px}.editor label{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;text-transform:capitalize}.editor .checkbox{flex-direction:row;align-items:center}.editor .checkbox input{width:18px;min-height:auto}.editor-errors{margin-bottom:14px;padding:12px;border-radius:12px;color:var(--rvm-danger);background:color-mix(in srgb,var(--rvm-danger) 10%,transparent);font-size:12px}.editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.editor-heading>div{display:flex;gap:4px}.editor-heading button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;padding:6px 9px;border:1px solid var(--rvm-border);border-radius:9px;background:var(--rvm-surface-2)}.editor-heading button svg{width:16px;height:16px}.editor-card{margin-top:12px;padding:14px;border-radius:14px;background:var(--rvm-surface-2)}.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin-top:12px}.room-editor-list{display:grid;gap:8px}.room-editor{display:grid;grid-template-columns:100px 1fr 1.2fr 1fr 1.2fr;align-items:end;gap:8px;padding:10px;border:1px solid var(--rvm-border);border-radius:12px;background:var(--rvm-surface)}.room-editor label{margin:0}button:focus-visible,select:focus-visible,input:focus-visible,.room-hitbox:focus-visible{outline:3px solid color-mix(in srgb,var(--rvm-accent) 55%,transparent);outline-offset:2px}@media(max-width:700px){.card-header{align-items:flex-start;flex-direction:column}.status-strip{justify-content:flex-start}.map-shell{height:clamp(300px,48vh,480px);margin:0 8px}.room-label text{font-size:18px}.primary-actions{grid-template-columns:1fr}.assisted-panel{grid-template-columns:auto minmax(0,1fr);margin:12px 12px 4px}.assisted-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr;width:100%}.assisted-actions button{width:100%}.transport{flex-wrap:wrap}.sheet-layer{align-items:end;padding:0}.job-sheet{width:100%;max-height:92vh;border-radius:24px 24px 0 0}.sheet-handle{display:block;width:42px;height:5px;margin:9px auto 0;border-radius:9px;background:var(--rvm-border)}.job-sheet header{padding-top:14px}.dock-actions{grid-template-columns:1fr}.dock-actions>button{min-height:68px}.dock-setting-row{align-items:flex-start;flex-direction:column;gap:7px}.dock-setting-row select{width:100%}.dock-setting-row:has(.dock-toggle){align-items:center;flex-direction:row}.cleaning-mode-tabs{grid-template-columns:repeat(2,1fr)}.cleaning-mode-tabs button:nth-child(-n+2){border-bottom:1px solid var(--rvm-border)}.cleaning-mode-tabs button{min-height:56px}.editor-grid{grid-template-columns:1fr}.room-editor{grid-template-columns:1fr 1fr}.room-editor>strong{grid-column:1/-1}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}', fx = "0.6.1";
 class Mv extends HTMLElement {
   root;
   container;

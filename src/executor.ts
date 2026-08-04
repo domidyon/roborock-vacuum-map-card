@@ -56,12 +56,14 @@ async function selectOption(
   timeoutMs: number,
   pollMs: number,
   sleep: (milliseconds: number) => Promise<void>,
+  confirmState = true,
 ): Promise<void> {
   const hass = getHass();
   requireOption(hass, entityId, option, operation);
   if (hass.states[entityId]?.state === option) return;
   try {
     await hass.callService('select', 'select_option', { option }, { entity_id: entityId });
+    if (!confirmState) return;
     await waitForState(getHass, entityId, option, timeoutMs, pollMs, sleep);
   } catch (error) {
     if (error instanceof JobExecutionError) throw new JobExecutionError(operation, error.message, { cause: error });
@@ -229,7 +231,18 @@ export async function executeJob({
     const targetCleaningMode = draft.cleaning_type === 'vacuum' ? 'vacuum' : 'vac_and_mop';
     const cleaningModeOptions = cleaningMode && getHass().states[cleaningMode]?.attributes.options;
     if (cleaningMode && Array.isArray(cleaningModeOptions) && cleaningModeOptions.map(String).includes(targetCleaningMode)) {
-      await selectOption(getHass, cleaningMode, targetCleaningMode, 'set_cleaning_mode', timeoutMs, pollMs, sleep);
+      // Water-slide Roborocks can accept vac_and_mop while HA reports the
+      // derived high-level selector as unknown for a minute or more.
+      await selectOption(
+        getHass,
+        cleaningMode,
+        targetCleaningMode,
+        'set_cleaning_mode',
+        timeoutMs,
+        pollMs,
+        sleep,
+        targetCleaningMode !== 'vac_and_mop',
+      );
     } else if (draft.cleaning_type === 'vacuum' && config.vacuum_mode_fallback === 'set_clean_motor_mode') {
       await setLegacyVacuumMode(getHass(), config);
     } else if (draft.cleaning_type === 'vacuum') {
