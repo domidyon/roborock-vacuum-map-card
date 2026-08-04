@@ -143,6 +143,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
           ['cleaning_progress', 'sensor', 'Cleaning progress'],
           ['status', 'sensor', 'Status'],
           ['error', 'sensor', 'Error'],
+          ['last_clean_end', 'sensor', 'Last clean end'],
         ] as const).map(([key, domain, label]) => (
           <label key={key}>{label}<SelectEntity hass={hass} domain={domain} optional value={config.entities?.[key]} onChange={(value) => onChange({ ...config, entities: { ...config.entities, [key]: value } })} /></label>
         ))}

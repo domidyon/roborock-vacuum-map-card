@@ -79,6 +79,7 @@ export const cardConfigSchema = z
         cleaning_progress: optionalEntityId,
         status: optionalEntityId,
         error: optionalEntityId,
+        last_clean_end: optionalEntityId,
       })
       .passthrough()
       .optional()

@@ -5,7 +5,7 @@ import { getStubConfig, normalizeConfig } from './config';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from './types';
 import styles from './styles/main.scss?inline';
 
-const VERSION = '0.4.0';
+const VERSION = '0.6.0';
 
 abstract class ReactElement extends HTMLElement {
   protected root?: ReactDOM.Root;
@@ -51,7 +51,7 @@ export class RoborockVacuumMapCard extends ReactElement {
   }
 
   getGridOptions() {
-    return { columns: 12, rows: 'auto', min_rows: 8 };
+    return { columns: 12, rows: 'auto', min_rows: 10 };
   }
 
   static getConfigElement() {

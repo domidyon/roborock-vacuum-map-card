@@ -90,6 +90,7 @@ export interface RoborockEntityConfig {
   cleaning_progress?: string;
   status?: string;
   error?: string;
+  last_clean_end?: string;
 }
 
 export interface RoomConfig {

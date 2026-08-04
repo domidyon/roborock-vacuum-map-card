@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Battery, Clock3, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Sparkles, Square, Timer, X } from 'lucide-react';
+import { Battery, Clock3, History, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Sparkles, Square, Timer, X } from 'lucide-react';
 import {
   AssistedCarryError,
   assistedFloor,
@@ -50,13 +50,10 @@ function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, 
   const value = Number(entity.state);
   if (!Number.isFinite(value) || value < 0) return undefined;
   const unit = String(entity.attributes.unit_of_measurement ?? '');
-  const minutes = unit === 's'
-    ? value / 60
-    : unit === 'min'
-      ? value
-      : unit === 'd'
-        ? value * 24 * 60
-        : value * 60;
+  const UNIT_TO_MINUTES: Record<string, number> = { s: 1 / 60, min: 1, h: 60, d: 1440 };
+  const factor = UNIT_TO_MINUTES[unit];
+  if (factor === undefined) return undefined;
+  const minutes = value * factor;
   const roundedMinutes = Math.max(0, Math.round(minutes));
   const hours = Math.floor(roundedMinutes / 60);
   const remainingMinutes = roundedMinutes % 60;
@@ -70,6 +67,21 @@ function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, 
 function detailedActivity(language: 'en' | 'nl' | undefined, state?: string): string | undefined {
   if (state === 'washing_the_mop') return t(language, 'washingMop');
   return undefined;
+}
+
+function formatRelativeTime(isoString: string, language: 'en' | 'nl' | undefined): string | undefined {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return undefined;
+  const diffMs = Date.now() - date.getTime();
+  if (diffMs < 0) return undefined;
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return t(language, 'justNow');
+  if (diffMins < 60) return `${diffMins} min ${t(language, 'ago')}`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}${language === 'nl' ? ' u' : 'h'} ${t(language, 'ago')}`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return t(language, 'yesterday');
+  return `${diffDays} ${t(language, 'daysAgo')}`;
 }
 
 function initialFloor(config: RoborockVacuumMapCardConfig, hass: HomeAssistant): FloorConfig {
@@ -144,6 +156,12 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     }
   }, [execution.phase, jobActive]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(undefined), 5000);
+    return () => clearTimeout(id);
+  }, [toast]);
+
   const launched = new Set(execution.floor_id === floor.id ? execution.segment_ids ?? [] : []);
   const selectedRooms = floor.rooms.filter((room) => selected.has(room.segment_id));
   const selectedNames = selectedRooms.map((room) => room.name);
@@ -153,6 +171,11 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const dryingRemaining = mopDrying
     ? formatRemainingTime(hass, config.entities?.dock_mop_drying_remaining_time, language)
     : undefined;
+  const lastCleanState = config.entities?.last_clean_end ? hass.states[config.entities.last_clean_end]?.state : undefined;
+  const lastClean = !jobActive && lastCleanState && !['unknown', 'unavailable'].includes(lastCleanState)
+    ? formatRelativeTime(lastCleanState, language)
+    : undefined;
+
   const headerDetails = [
     detailedActivity(language, detailedStatus),
     mopDrying ? t(language, 'dryingMop') : undefined,
@@ -164,6 +187,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     { icon: <ScanLine />, label: t(language, 'area'), value: stateText(hass, config.entities?.cleaning_area) },
     { icon: <Clock3 />, label: t(language, 'duration'), value: stateText(hass, config.entities?.cleaning_time) },
     { icon: <Timer />, label: t(language, 'progress'), value: stateText(hass, config.entities?.cleaning_progress) },
+    { icon: <History />, label: t(language, 'lastClean'), value: lastClean },
   ].filter((item) => item.value);
 
   const switchFloor = (nextFloorId: string) => {
@@ -236,7 +260,8 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   };
 
   const startUpstairs = async () => {
-    if (assistedPending || !carryFloor || !carryJob) return;
+    if (submittingRef.current || !carryFloor || !carryJob) return;
+    submittingRef.current = true;
     setAssistedPending(true);
     try {
       await startAssistedCarry(hassRef.current, config, carryFloor, carryJob);
@@ -244,12 +269,14 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       setToast(assistantMessage(error));
       try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
     } finally {
+      submittingRef.current = false;
       setAssistedPending(false);
     }
   };
 
   const finishUpstairs = async () => {
-    if (assistedPending) return;
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setAssistedPending(true);
     try {
       await finishAssistedCarry(hassRef.current, config);
@@ -257,6 +284,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       setToast(assistantMessage(error));
       try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
     } finally {
+      submittingRef.current = false;
       setAssistedPending(false);
     }
   };
@@ -435,6 +463,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         language={language}
         selected={selected}
         launched={launched}
+        active={jobActive}
         disabled={assistedActive || execution.phase === 'submitting' || execution.phase === 'starting' || execution.phase === 'active'}
         onToggle={(segmentId) =>
           setSelected((current) => {

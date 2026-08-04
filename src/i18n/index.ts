@@ -94,6 +94,11 @@ const en = {
   assisted_complete_description: 'The robot is docked, the mop is washed, and drying has started when configured.',
   assisted_error_title: 'Assistant needs attention',
   assisted_error_description: 'Check the robot and dock, then reset the workflow to try again.',
+  lastClean: 'Last clean',
+  justNow: 'just now',
+  yesterday: 'yesterday',
+  ago: 'ago',
+  daysAgo: 'days ago',
 };
 
 const nl: typeof en = {
@@ -190,6 +195,11 @@ const nl: typeof en = {
   assisted_complete_description: 'De robot staat in het dock, de dweil is gewassen en drogen is gestart wanneer ingesteld.',
   assisted_error_title: 'Assistent heeft aandacht nodig',
   assisted_error_description: 'Controleer de robot en het dock en reset daarna de workflow.',
+  lastClean: 'Laatste schoonmaak',
+  justNow: 'zojuist',
+  yesterday: 'gisteren',
+  ago: 'geleden',
+  daysAgo: 'dagen geleden',
 };
 
 export type TranslationKey = keyof typeof en;

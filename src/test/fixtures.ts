@@ -55,6 +55,7 @@ export const configFixture: RoborockVacuumMapCardConfig = {
     cleaning_time: 'sensor.time',
     cleaning_progress: 'sensor.progress',
     error: 'sensor.error',
+    last_clean_end: 'sensor.last_clean_end',
   },
   floors: [
     {
@@ -146,6 +147,7 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
       'sensor.time': { entity_id: 'sensor.time', state: '45', attributes: { unit_of_measurement: 'min' } },
       'sensor.progress': { entity_id: 'sensor.progress', state: '0', attributes: { unit_of_measurement: '%' } },
       'sensor.error': { entity_id: 'sensor.error', state: 'none', attributes: {} },
+      'sensor.last_clean_end': { entity_id: 'sensor.last_clean_end', state: '2026-08-03T22:35:02+00:00', attributes: {} },
       'image.downstairs': { entity_id: 'image.downstairs', state: 'now', attributes: { entity_picture: mapImage, rooms: downstairsRooms, calibration_points: calibration } },
       'image.upstairs': { entity_id: 'image.upstairs', state: 'now', attributes: { entity_picture: mapImage, rooms: upstairsRooms, calibration_points: calibration } },
     },

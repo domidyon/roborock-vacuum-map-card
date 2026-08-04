@@ -12,6 +12,7 @@ interface MapViewProps {
   language?: Language;
   selected: Set<number>;
   launched: Set<number>;
+  active?: boolean;
   disabled?: boolean;
   onToggle: (segmentId: number) => void;
 }
@@ -30,16 +31,23 @@ function Controls({ locked, onToggleLock }: { locked: boolean; onToggleLock: () 
   );
 }
 
-export function MapView({ hass, floor, language, selected, launched, disabled, onToggle }: MapViewProps) {
+export function MapView({ hass, floor, language, selected, launched, active, disabled, onToggle }: MapViewProps) {
   const [locked, setLocked] = useState(true);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const [refreshTick, setRefreshTick] = useState(0);
   const shellRef = useRef<HTMLDivElement>(null);
   const entity = hass.states[floor.map_entity];
   const rooms = useMemo(() => parseRooms(entity), [entity]);
   const calibration = useMemo(() => parseCalibrationPoints(entity), [entity]);
   const configured = useMemo(() => configuredRoomMap(floor), [floor]);
   const imagePath = typeof entity?.attributes.entity_picture === 'string' ? entity.attributes.entity_picture : undefined;
+
+  useEffect(() => {
+    if (!active) return;
+    const id = setInterval(() => setRefreshTick((n) => n + 1), 5000);
+    return () => { clearInterval(id); setRefreshTick(0); };
+  }, [active]);
 
   useEffect(() => {
     const shell = shellRef.current;
@@ -84,7 +92,12 @@ export function MapView({ hass, floor, language, selected, launched, disabled, o
             })()}
           >
             <img
-              src={hass.hassUrl(imagePath!)}
+              src={(() => {
+                const base = hass.hassUrl(imagePath!);
+                const sep = base.includes('?') ? '&' : '?';
+                const version = entity?.last_updated ?? entity?.state ?? '';
+                return `${base}${sep}v=${encodeURIComponent(version)}${active ? `&r=${refreshTick}` : ''}`;
+              })()}
               alt={`${floor.name} vacuum map`}
               draggable={false}
               onLoad={(event) => setDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
