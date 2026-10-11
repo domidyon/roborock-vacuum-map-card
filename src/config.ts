@@ -45,7 +45,7 @@ export const cardConfigSchema = z
     type: z.literal('custom:roborock-vacuum-map-card').optional(),
     entity: entityId.refine((value) => value.startsWith('vacuum.'), 'Entity must be a vacuum'),
     name: z.string().optional(),
-    language: z.enum(['en', 'nl']).optional().default('en'),
+    language: z.enum(['en', 'nl', 'tr']).optional().default('en'),
     entities: z
       .object({
         map_select: optionalEntityId,

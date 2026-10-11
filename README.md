@@ -19,7 +19,7 @@ A Roborock-native Home Assistant Dashboard card for selecting multiple rooms and
 - Atomic SmartPlan control of suction, water, and route, plus native one-pass/two-pass cleaning
 - Draft-only settings until Start is pressed; service failures abort before cleaning and retain the draft
 - Visual Lovelace editor with room discovery, HA-area mapping, floor/preset reordering, and lossless YAML round-tripping
-- Responsive mobile bottom sheet, desktop dialog, light/dark HA themes, keyboard support, English, and Dutch
+- Responsive mobile bottom sheet, desktop dialog, light/dark HA themes, keyboard support, English, and Dutch, and Turkish language support
 - One HACS-installable JavaScript bundle
 - Optional assisted-carry workflow for a floor without its dock, with durable HA-backed progress across phone reloads
 

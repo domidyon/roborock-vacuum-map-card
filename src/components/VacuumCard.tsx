@@ -50,7 +50,7 @@ function stateText(hass: HomeAssistant, entityId?: string): string | undefined {
   return `${display}${entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : ''}`;
 }
 
-function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, language: 'en' | 'nl' | undefined): string | undefined {
+function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, language: 'en' | 'nl' | 'tr' | undefined): string | undefined {
   if (!entityId) return undefined;
   const entity = hass.states[entityId];
   if (!entity || ['unknown', 'unavailable'].includes(entity.state)) return undefined;
@@ -65,27 +65,27 @@ function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, 
   const hours = Math.floor(roundedMinutes / 60);
   const remainingMinutes = roundedMinutes % 60;
   const parts = [
-    hours > 0 ? `${hours} ${language === 'nl' ? 'u' : 'h'}` : undefined,
-    remainingMinutes > 0 || hours === 0 ? `${remainingMinutes} min` : undefined,
+    hours > 0 ? `${hours} ${language === 'nl' ? 'u' : language === 'tr' ? 'sa' : 'h'}` : undefined,
+    remainingMinutes > 0 || hours === 0 ? `${remainingMinutes} ${language === 'tr' ? 'dk' : 'min'}` : undefined,
   ].filter(Boolean);
   return `${parts.join(' ')} ${t(language, 'remaining')}`;
 }
 
-function detailedActivity(language: 'en' | 'nl' | undefined, state?: string): string | undefined {
+function detailedActivity(language: 'en' | 'nl' | 'tr' | undefined, state?: string): string | undefined {
   if (state === 'washing_the_mop') return t(language, 'washingMop');
   return undefined;
 }
 
-function formatRelativeTime(isoString: string, language: 'en' | 'nl' | undefined): string | undefined {
+function formatRelativeTime(isoString: string, language: 'en' | 'nl' | 'tr' | undefined): string | undefined {
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return undefined;
   const diffMs = Date.now() - date.getTime();
   if (diffMs < 0) return undefined;
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return t(language, 'justNow');
-  if (diffMins < 60) return `${diffMins} min ${t(language, 'ago')}`;
+  if (diffMins < 60) return `${diffMins} ${language === 'tr' ? 'dk' : 'min'} ${t(language, 'ago')}`;
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}${language === 'nl' ? ' u' : 'h'} ${t(language, 'ago')}`;
+  if (diffHours < 24) return `${diffHours}${language === 'nl' ? ' u' : language === 'tr' ? ' sa' : 'h'} ${t(language, 'ago')}`;
   const diffDays = Math.floor(diffHours / 24);
   if (diffDays === 1) return t(language, 'yesterday');
   return `${diffDays} ${t(language, 'daysAgo')}`;

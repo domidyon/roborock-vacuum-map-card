@@ -1,4 +1,4 @@
-export type Language = 'en' | 'nl';
+export type Language = 'en' | 'nl' | 'tr';
 export type CleaningStrategy = 'custom' | 'smartplan';
 export type CleaningType = 'vacuum' | 'vacuum_and_mop' | 'vacuum_then_mop';
 export type CleaningCount = 1 | 2;

@@ -105,7 +105,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
       <section>
         <h3>Card</h3>
         <label>Name<input value={config.name ?? ''} placeholder="Use vacuum name" onChange={(event) => onChange({ ...config, name: event.target.value || undefined })} /></label>
-        <label>Language<select value={config.language ?? 'en'} onChange={(event) => onChange({ ...config, language: event.target.value as 'en' | 'nl' })}><option value="en">English</option><option value="nl">Nederlands</option></select></label>
+        <label>Language<select value={config.language ?? 'en'} onChange={(event) => onChange({ ...config, language: event.target.value as 'en' | 'nl' | 'tr' })}><option value="en">English</option><option value="nl">Nederlands</option><option value="tr">Türkçe</option></select></label>
         <label>Vacuum<SelectEntity hass={hass} domain="vacuum" value={config.entity} onChange={(entity) => entity && onChange({ ...config, entity })} /></label>
       </section>
 

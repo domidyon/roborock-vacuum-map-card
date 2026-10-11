@@ -65,21 +65,26 @@ function currentSetting(
 }
 
 function optionLabel(language: Language | undefined, value: string): string {
-  const labels: Record<string, [string, string]> = {
-    smart: ['Smart', 'Slim'],
-    light: ['Light', 'Licht'],
-    balanced: ['Balanced', 'Gebalanceerd'],
-    deep: ['Deep', 'Diep'],
-    max: ['Max', 'Max'],
-    normal: ['Normal', 'Normaal'],
-    warm: ['Warm', 'Warm'],
-    hot: ['High temperature', 'Hoge temperatuur'],
-    '2h': ['2 hours', '2 uur'],
-    '3h': ['3 hours · Standard', '3 uur · Standaard'],
-    '4h': ['4 hours', '4 uur'],
+  const labels: Record<string, [string, string, string]> = {
+    smart: ['Smart', 'Slim', 'Akıllı'],
+    light: ['Light', 'Licht', 'Hafif'],
+    balanced: ['Balanced', 'Gebalanceerd', 'Dengeli'],
+    deep: ['Deep', 'Diep', 'Derin'],
+    max: ['Max', 'Max', 'Maksimum'],
+    normal: ['Normal', 'Normaal', 'Normal'],
+    warm: ['Warm', 'Warm', 'Ilık'],
+    hot: ['High temperature', 'Hoge temperatuur', 'Yüksek sıcaklık'],
+    '2h': ['2 hours', '2 uur', '2 saat'],
+    '3h': ['3 hours · Standard', '3 uur · Standaard', '3 saat · Standart'],
+    '4h': ['4 hours', '4 uur', '4 saat'],
   };
-  if (value.endsWith('_min')) return `${value.replace('_min', '')} min`;
-  return labels[value]?.[language === 'nl' ? 1 : 0] ?? value;
+
+  if (value.endsWith('_min')) {
+    return `${value.replace('_min', '')} ${language === 'tr' ? 'dk' : 'min'}`;
+  }
+
+  const languageIndex = language === 'nl' ? 1 : language === 'tr' ? 2 : 0;
+  return labels[value]?.[languageIndex] ?? value;
 }
 
 function SettingSelect({
