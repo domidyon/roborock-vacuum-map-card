@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 — 2026-10-12
+
+- Add Turkish language support across the card UI, dock controls, configuration editor, and time formatting (thanks @koltuknil).
+- Report the correct card version in the browser console.
+
 ## 0.7.0 — 2026-08-11
 
 - Add free-drawn, movable, and resizable rectangular zone cleaning on calibrated Roborock maps.
