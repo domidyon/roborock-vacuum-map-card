@@ -163,3 +163,30 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
   };
   return hass;
 }
+
+export function createS7Hass(): HomeAssistant {
+  const hass = createHass();
+  hass.states['vacuum.roborock'] = {
+    ...hass.states['vacuum.roborock'],
+    attributes: {
+      ...hass.states['vacuum.roborock'].attributes,
+      friendly_name: 'Roborock S7+',
+      fan_speed_list: ['quiet', 'balanced', 'turbo', 'max'],
+    },
+  };
+  hass.states['select.cleaning_mode'] = {
+    ...hass.states['select.cleaning_mode'],
+    attributes: { options: ['vacuum', 'vac_and_mop', 'mop', 'custom'] },
+  };
+  hass.states['select.mop_mode'] = {
+    ...hass.states['select.mop_mode'],
+    state: 'standard',
+    attributes: { options: ['standard', 'deep', 'deep_plus', 'custom'] },
+  };
+  hass.states['select.mop_intensity'] = {
+    ...hass.states['select.mop_intensity'],
+    state: 'standard',
+    attributes: { options: ['off', 'mild', 'standard', 'intense', 'custom'] },
+  };
+  return hass;
+}

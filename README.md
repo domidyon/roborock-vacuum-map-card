@@ -206,7 +206,7 @@ Start validates every requested option against live entity options. It then:
 1. Selects and confirms the target floor when necessary.
 2. Applies the Home Assistant 2026.8+ high-level `cleaning_mode` for Vacuum or Vac & Mop when configured. On HA 2026.7 and older, the explicit fallback uses one atomic `set_clean_motor_mode` command for Vacuum mode.
 3. Applies only the app-supported manual route, water-flow, and suction values selected in the sheet.
-4. For room and floor jobs, sets the robot's native cleaning count with `set_clean_repeat_times` using the device-required `{ repeat: 1|2 }` object. Zone jobs pass the count directly to the zoned-cleaning action.
+4. For room and floor jobs on newer SmartPlan/water-flow models, sets the robot's native cleaning count with `set_clean_repeat_times` using the device-required `{ repeat: 1|2 }` object. Older vibrating-mop models keep one-pass jobs on Home Assistant's native area/full-floor actions and use `app_segment_clean` with segment IDs only when two passes are requested. Zone jobs pass the count directly to the zoned-cleaning action.
 5. Starts one native whole-map job with `vacuum.start` when every configured
    room is selected. Partial or exclusion-based jobs use one
    `vacuum.clean_area` call with the selected HA area IDs.
@@ -218,6 +218,8 @@ Vac followed by Mop presses the active floor's `floor.vacuum_then_mop_routine`. 
 A complete, commented starting point is provided in [`docs/vacuum-then-mop-script.yaml`](docs/vacuum-then-mop-script.yaml). Replace its five Roborock entity IDs with your own, create or import the script, and select that script in the card editor.
 
 SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. An Entire-floor selection that excludes configured rooms stays on `vacuum.clean_area`; only a true all-room selection uses `vacuum.start`.
+
+Built-in modes adapt their water-flow defaults to the live Roborock options. Newer water-flow models retain `medium`; vibrating-mop models such as the S7 use their supported `mild`, `standard`, and `intense` values. SmartPlan is shown only when the live fan and mop-route options advertise `smart_mode`.
 
 Assisted carry is designed for a saved floor that has no dock and exposes the same four app-style modes. The compact `input_text` payload persists rooms, strategy, cleaning type, and applicable manual settings, while old payloads decode as Vac & Mop. Vacuum-only skips mop hardware checks, pre-wetting, manual mop settings, washing, and drying. SmartPlan uses its atomic AI bundle and conservatively prepares/services the mop. A floor-native Vac followed by Mop routine is stored without manual overrides and launched by the assisted start script after the carry handoff. The scripts and stage helper remain the durable source of truth if the dashboard closes.
 

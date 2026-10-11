@@ -179,6 +179,8 @@ export interface RoborockCapabilities {
   hasCleaningMode: boolean;
   hasMopMode: boolean;
   hasMopIntensity: boolean;
+  hasSmartPlan: boolean;
+  roomRepeatStrategy: 'set_clean_repeat_times' | 'app_segment_clean';
 }
 
 export type JobExecutionPhase = 'idle' | 'submitting' | 'starting' | 'active' | 'failed';

@@ -49,12 +49,23 @@ export const BUILT_IN_PRESETS: PresetConfig[] = [
   },
 ];
 
+const MOP_INTENSITY_DEFAULTS = ['medium', 'standard', 'mild', 'low', 'intense', 'high', 'slight', 'moderate', 'extreme'];
+
+function adaptBuiltInPreset(preset: PresetConfig, capabilities: RoborockCapabilities): PresetConfig {
+  if (preset.cleaning_type === 'vacuum' || !preset.mop_intensity || capabilities.mopIntensities.includes(preset.mop_intensity)) {
+    return preset;
+  }
+  const mopIntensity = MOP_INTENSITY_DEFAULTS.find((option) => capabilities.mopIntensities.includes(option));
+  return mopIntensity ? { ...preset, mop_intensity: mopIntensity } : preset;
+}
+
 function missingOption(
   config: RoborockVacuumMapCardConfig,
   capabilities: RoborockCapabilities,
   preset: PresetConfig,
   floor?: FloorConfig,
 ): string | undefined {
+  if (preset.strategy === 'smartplan' && !capabilities.hasSmartPlan) return 'SmartPlan';
   const canSetVacuumMode = capabilities.cleaningModes.includes('vacuum')
     || config.vacuum_mode_fallback === 'set_clean_motor_mode';
   if (preset.cleaning_type === 'vacuum' && !canSetVacuumMode) {
@@ -83,7 +94,8 @@ export function getAvailablePresets(
   capabilities: RoborockCapabilities,
   floor?: FloorConfig,
 ): AvailablePreset[] {
-  return [...BUILT_IN_PRESETS, ...(config.presets ?? [])].map((preset) => {
+  const builtInPresets = BUILT_IN_PRESETS.map((preset) => adaptBuiltInPreset(preset, capabilities));
+  return [...builtInPresets, ...(config.presets ?? [])].map((preset) => {
     const missing = missingOption(config, capabilities, preset, floor);
     return {
       preset,

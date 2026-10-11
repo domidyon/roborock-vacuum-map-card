@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add S7-compatible room cleaning without the unsupported `set_clean_repeat_times` command.
+- Derive built-in mop intensity and SmartPlan availability from live device options while preserving the existing newer-model command path.
+- Use the documented `app_segment_clean` repeat payload for two-pass jobs on legacy vibrating-mop models.
+
 ## 0.7.0 — 2026-08-11
 
 - Add free-drawn, movable, and resizable rectangular zone cleaning on calibrated Roborock maps.

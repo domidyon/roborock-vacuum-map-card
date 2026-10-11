@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import type { CSSProperties } from 'react';
 import type { AvailablePreset } from '../presets';
 import { draftFromPreset } from '../presets';
 import { t } from '../i18n';
@@ -23,7 +24,7 @@ const MODE_IDS = ['smartplan', 'vacuum_then_mop', 'vacuum_and_mop', 'vacuum_only
 const VACUUM_SUCTION = ['quiet', 'balanced', 'turbo', 'max', 'max_plus'];
 const MOP_SUCTION = ['quiet', 'balanced', 'turbo', 'max'];
 const APP_ROUTES = ['fast', 'standard', 'deep'];
-const WATER_FLOW = ['slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
+const WATER_FLOW = ['mild', 'standard', 'intense', 'slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
 const WATER_LEVEL: Record<string, number> = { slight: 1, low: 5, medium: 15, moderate: 25, high: 28, extreme: 30 };
 
 function label(value: string): string {
@@ -83,9 +84,10 @@ export function JobSheet({
   onStart,
 }: JobSheetProps) {
   const modeIds = zoneCleaning ? ['vacuum_only', 'vacuum_and_mop'] as const : MODE_IDS;
-  const appModes = modeIds.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
-    (mode): mode is AvailablePreset => Boolean(mode),
-  );
+  const appModes = modeIds
+    .map((id) => presets.find(({ preset }) => preset.id === id))
+    .filter((mode): mode is AvailablePreset => Boolean(mode))
+    .filter(({ preset, available }) => preset.id !== 'smartplan' || available);
   const savedPresets = presets.filter(({ preset }) =>
     !MODE_IDS.includes(preset.id as typeof MODE_IDS[number])
       && (!zoneCleaning || (
@@ -98,6 +100,7 @@ export function JobSheet({
   const routes = APP_ROUTES.filter((option) => capabilities.mopModes.includes(option));
   const waterOptions = WATER_FLOW.filter((option) => capabilities.mopIntensities.includes(option));
   const waterIndex = Math.max(0, waterOptions.indexOf(draft.mop_intensity ?? 'medium'));
+  const waterLevel = WATER_LEVEL[waterOptions[waterIndex]];
   const description = draft.strategy === 'smartplan'
     ? t(language, 'smartPlanDescription')
     : draft.cleaning_type === 'vacuum'
@@ -120,7 +123,12 @@ export function JobSheet({
         </header>
 
         <div className="sheet-body">
-          <div className="cleaning-mode-tabs" role="tablist" aria-label={t(language, 'cleaningType')}>
+          <div
+            className="cleaning-mode-tabs"
+            role="tablist"
+            aria-label={t(language, 'cleaningType')}
+            style={{ '--mode-count': appModes.length } as CSSProperties}
+          >
             {appModes.map(({ preset, available, reason }) => (
               <button
                 type="button"
@@ -154,7 +162,7 @@ export function JobSheet({
                     <span>{t(language, 'waterFlow')}</span>
                     <div className="range-heading">
                       <strong>{label(waterOptions[waterIndex])}</strong>
-                      <output>{WATER_LEVEL[waterOptions[waterIndex]]}</output>
+                      {waterLevel !== undefined && <output>{waterLevel}</output>}
                     </div>
                     <input
                       type="range"
