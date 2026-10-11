@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { executeJob } from './executor';
-import { configFixture, createHass } from './test/fixtures';
+import { configFixture, createHass, createS7Hass } from './test/fixtures';
 
 describe('job executor', () => {
   it('starts a Vacuum zone through the native Roborock action without a separate repeat command', async () => {
@@ -53,6 +53,94 @@ describe('job executor', () => {
       'vacuum.set_fan_speed:turbo',
       'roborock.set_vacuum_zoned_cleaning:25000',
     ]);
+  });
+
+  it('keeps S7 one-pass jobs on Home Assistant area cleaning without a repeat command', async () => {
+    const hass = createS7Hass();
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data });
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    await executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', cleaning_count: 1 },
+      pollMs: 0,
+    });
+    expect(calls.some(({ data }) => data?.command === 'set_clean_repeat_times')).toBe(false);
+    expect(calls.at(-1)).toEqual({
+      domain: 'vacuum',
+      service: 'clean_area',
+      data: { cleaning_area_id: ['kitchen'] },
+    });
+  });
+
+  it('starts S7 Vac & Mop with its standard route and intensity', async () => {
+    const hass = createS7Hass();
+    hass.states['select.mop_mode'].state = 'deep';
+    hass.states['select.mop_intensity'].state = 'mild';
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown>; target?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data, target });
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    await executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: {
+        preset_id: 'vacuum_and_mop',
+        strategy: 'custom',
+        cleaning_type: 'vacuum_and_mop',
+        fan_speed: 'balanced',
+        mop_mode: 'standard',
+        mop_intensity: 'standard',
+        cleaning_count: 1,
+      },
+      pollMs: 0,
+    });
+    expect(calls).toContainEqual({
+      domain: 'select',
+      service: 'select_option',
+      data: { option: 'standard' },
+      target: { entity_id: 'select.mop_mode' },
+    });
+    expect(calls).toContainEqual({
+      domain: 'select',
+      service: 'select_option',
+      data: { option: 'standard' },
+      target: { entity_id: 'select.mop_intensity' },
+    });
+    expect(calls.some(({ data }) => data?.command === 'set_clean_repeat_times')).toBe(false);
+    expect(calls.at(-1)).toMatchObject({ domain: 'vacuum', service: 'clean_area' });
+  });
+
+  it('uses the S7 segment payload for two-pass jobs', async () => {
+    const hass = createS7Hass();
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data });
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    await executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0], configFixture.floors[0].rooms[1]],
+      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', cleaning_count: 2 },
+      pollMs: 0,
+    });
+    expect(calls.some(({ data }) => data?.command === 'set_clean_repeat_times')).toBe(false);
+    expect(calls.at(-1)).toEqual({
+      domain: 'vacuum',
+      service: 'send_command',
+      data: { command: 'app_segment_clean', params: [{ segments: [1, 2], repeat: 2 }] },
+    });
+    expect(calls.some(({ service }) => service === 'clean_area')).toBe(false);
   });
 
   it('rejects unsupported zone modes before changing vacuum settings', async () => {

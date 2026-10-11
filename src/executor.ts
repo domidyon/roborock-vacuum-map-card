@@ -1,4 +1,4 @@
-import { isVacuumBusy } from './capabilities';
+import { detectCapabilities, isVacuumBusy } from './capabilities';
 import type { FloorConfig, HomeAssistant, JobDraft, RoborockVacuumMapCardConfig, RoomConfig, VacuumZone } from './types';
 
 const SAFE_SMARTPLAN_EXIT_MODES = new Set(['standard', 'deep', 'deep_plus', 'fast']);
@@ -140,6 +140,7 @@ export async function executeJob({
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
 }: ExecuteJobOptions): Promise<string[]> {
   const initialHass = getHass();
+  const capabilities = detectCapabilities(initialHass, config);
   const vacuum = initialHass.states[config.entity];
   if (!vacuum || vacuum.state === 'unavailable') throw new JobExecutionError('preflight', `${config.entity} is unavailable`);
   if (isVacuumBusy(vacuum.state)) throw new JobExecutionError('preflight', `Vacuum is ${vacuum.state}`);
@@ -233,7 +234,9 @@ export async function executeJob({
     // SmartPlan is one atomic Roborock mode. Setting only mop_mode=smart_mode
     // leaves suction and water in their previous manual states.
     await setSmartPlan(getHass(), config);
-    await setRepeat(getHass(), config, 1);
+    if (capabilities.roomRepeatStrategy === 'set_clean_repeat_times') {
+      await setRepeat(getHass(), config, 1);
+    }
   } else {
     const cleaningMode = config.entities?.cleaning_mode;
     const targetCleaningMode = draft.cleaning_type === 'vacuum' ? 'vacuum' : 'vac_and_mop';
@@ -283,7 +286,9 @@ export async function executeJob({
       }
     }
 
-    if (!zone) await setRepeat(getHass(), config, draft.cleaning_count);
+    if (!zone && capabilities.roomRepeatStrategy === 'set_clean_repeat_times') {
+      await setRepeat(getHass(), config, draft.cleaning_count);
+    }
   }
 
   // Roborock's map can change while cleaning settings are applied. In manual
@@ -294,6 +299,9 @@ export async function executeJob({
   const selectedRoomIds = new Set(rooms.map((room) => room.segment_id));
   const entireFloorSelected = rooms.length === floor.rooms.length
     && floor.rooms.every((room) => selectedRoomIds.has(room.segment_id));
+  const useSegmentRepeat = !zone
+    && draft.cleaning_count === 2
+    && capabilities.roomRepeatStrategy === 'app_segment_clean';
 
   try {
     if (zone) {
@@ -302,6 +310,14 @@ export async function executeJob({
         'set_vacuum_zoned_cleaning',
         { ...zone, repeats: draft.cleaning_count },
         { entity_id: config.entity },
+      );
+    } else if (useSegmentRepeat) {
+      await sendCommand(
+        getHass(),
+        config,
+        'app_segment_clean',
+        [{ segments: rooms.map((room) => room.segment_id), repeat: draft.cleaning_count }],
+        'clean_segments',
       );
     } else if (entireFloorSelected) {
       await getHass().callService('vacuum', 'start', undefined, { entity_id: config.entity });
@@ -314,7 +330,7 @@ export async function executeJob({
       );
     }
   } catch (error) {
-    const operation = zone ? 'clean_zone' : entireFloorSelected ? 'start_floor' : 'clean_area';
+    const operation = zone ? 'clean_zone' : useSegmentRepeat ? 'clean_segments' : entireFloorSelected ? 'start_floor' : 'clean_area';
     throw new JobExecutionError(operation, error instanceof Error ? error.message : String(error), { cause: error });
   }
   return areaIds;

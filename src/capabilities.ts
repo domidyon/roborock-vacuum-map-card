@@ -24,6 +24,11 @@ export function detectCapabilities(hass: HomeAssistant, config: RoborockVacuumMa
   const cleaningModes = options(hass, config.entities?.cleaning_mode);
   const mopModes = options(hass, config.entities?.mop_mode);
   const mopIntensities = options(hass, config.entities?.mop_intensity);
+  const hasSmartPlan = fanSpeeds.includes('smart_mode') && mopModes.includes('smart_mode');
+  // Keep the existing repeat command for newer SmartPlan/water-slider models.
+  // Older profiles use the documented per-segment repeat payload instead.
+  const hasModernRepeatProfile = hasSmartPlan
+    || mopIntensities.some((option) => ['slight', 'moderate', 'extreme'].includes(option));
   return {
     fanSpeeds,
     mapOptions,
@@ -38,6 +43,8 @@ export function detectCapabilities(hass: HomeAssistant, config: RoborockVacuumMa
     hasCleaningMode: cleaningModes.length > 0,
     hasMopMode: mopModes.length > 0,
     hasMopIntensity: mopIntensities.length > 0,
+    hasSmartPlan,
+    roomRepeatStrategy: hasModernRepeatProfile ? 'set_clean_repeat_times' : 'app_segment_clean',
   };
 }
 

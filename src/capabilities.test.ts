@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { detectCapabilities } from './capabilities';
 import { getAvailablePresets } from './presets';
-import { configFixture, createHass } from './test/fixtures';
+import { configFixture, createHass, createS7Hass } from './test/fixtures';
 
 describe('capability detection and presets', () => {
   it('derives transport and setting options from live entities', () => {
@@ -9,6 +9,27 @@ describe('capability detection and presets', () => {
     expect(capabilities).toMatchObject({ canStart: true, canPause: true, canStop: true, canDock: true, hasCleaningMode: true, hasMopMode: true });
     expect(capabilities.fanSpeeds).toEqual(['quiet', 'balanced', 'turbo', 'max', 'max_plus', 'off_raise_main_brush', 'smart_mode', 'custom']);
     expect(capabilities.cleaningModes).toEqual(['vacuum', 'vac_and_mop', 'mop']);
+    expect(capabilities.hasSmartPlan).toBe(true);
+    expect(capabilities.roomRepeatStrategy).toBe('set_clean_repeat_times');
+    expect(getAvailablePresets(configFixture, capabilities).find(({ preset }) => preset.id === 'vacuum_and_mop')).toMatchObject({
+      available: true,
+      preset: { mop_intensity: 'medium' },
+    });
+  });
+
+  it('uses S7-compatible defaults without changing the modern profile', () => {
+    const capabilities = detectCapabilities(createS7Hass(), configFixture);
+    const presets = getAvailablePresets(configFixture, capabilities);
+    expect(capabilities.hasSmartPlan).toBe(false);
+    expect(capabilities.roomRepeatStrategy).toBe('app_segment_clean');
+    expect(presets.find(({ preset }) => preset.id === 'smartplan')).toMatchObject({
+      available: false,
+      reason: 'Unsupported SmartPlan',
+    });
+    expect(presets.find(({ preset }) => preset.id === 'vacuum_and_mop')).toMatchObject({
+      available: true,
+      preset: { mop_mode: 'standard', mop_intensity: 'standard' },
+    });
   });
 
   it('marks presets unavailable when required live options are absent', () => {
