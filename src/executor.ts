@@ -1,7 +1,14 @@
 import { isVacuumBusy } from './capabilities';
-import type { FloorConfig, HomeAssistant, JobDraft, RoborockVacuumMapCardConfig, RoomConfig, VacuumZone } from './types';
+import type { CleaningType, FloorConfig, HomeAssistant, JobDraft, RoborockVacuumMapCardConfig, RoomConfig, VacuumZone } from './types';
 
 const SAFE_SMARTPLAN_EXIT_MODES = new Set(['standard', 'deep', 'deep_plus', 'fast']);
+export const ZONE_CLEANING_TYPES = new Set<CleaningType>(['vacuum', 'mop', 'vacuum_and_mop']);
+const CLEANING_MODE_OPTIONS: Record<CleaningType, string> = {
+  vacuum: 'vacuum',
+  mop: 'mop',
+  vacuum_and_mop: 'vac_and_mop',
+  vacuum_then_mop: 'vac_and_mop',
+};
 
 export class JobExecutionError extends Error {
   constructor(
@@ -149,8 +156,8 @@ export async function executeJob({
   }
   const areaIds = [...new Set(rooms.map((room) => room.area_id).filter((value): value is string => Boolean(value)))];
   if (!zone && areaIds.length === 0) throw new JobExecutionError('preflight', 'Select at least one room mapped to a Home Assistant area');
-  if (zone && (draft.strategy !== 'custom' || !['vacuum', 'vacuum_and_mop'].includes(draft.cleaning_type))) {
-    throw new JobExecutionError('preflight', 'Zone cleaning supports only Vacuum and Vac & Mop');
+  if (zone && (draft.strategy !== 'custom' || !ZONE_CLEANING_TYPES.has(draft.cleaning_type))) {
+    throw new JobExecutionError('preflight', 'Zone cleaning supports only Vacuum, Mop and Vac & Mop');
   }
   if (zone && (![zone.x1, zone.y1, zone.x2, zone.y2].every(Number.isFinite) || zone.x2 <= zone.x1 || zone.y2 <= zone.y1)) {
     throw new JobExecutionError('preflight', 'The selected zone is invalid');
@@ -236,10 +243,10 @@ export async function executeJob({
     await setRepeat(getHass(), config, 1);
   } else {
     const cleaningMode = config.entities?.cleaning_mode;
-    const targetCleaningMode = draft.cleaning_type === 'vacuum' ? 'vacuum' : 'vac_and_mop';
+    const targetCleaningMode = CLEANING_MODE_OPTIONS[draft.cleaning_type];
     const cleaningModeOptions = cleaningMode && getHass().states[cleaningMode]?.attributes.options;
     if (cleaningMode && Array.isArray(cleaningModeOptions) && cleaningModeOptions.map(String).includes(targetCleaningMode)) {
-      // Water-slide Roborocks can accept vac_and_mop while HA reports the
+      // Water-slide Roborocks can accept water modes while HA reports the
       // derived high-level selector as unknown for a minute or more.
       await selectOption(
         getHass,
@@ -249,12 +256,14 @@ export async function executeJob({
         timeoutMs,
         pollMs,
         sleep,
-        targetCleaningMode !== 'vac_and_mop',
+        targetCleaningMode === 'vacuum',
       );
     } else if (draft.cleaning_type === 'vacuum' && config.vacuum_mode_fallback === 'set_clean_motor_mode') {
       await setLegacyVacuumMode(getHass(), config);
     } else if (draft.cleaning_type === 'vacuum') {
       throw new JobExecutionError('set_cleaning_mode', 'Vacuum-only requires a cleaning-mode entity');
+    } else if (draft.cleaning_type === 'mop') {
+      throw new JobExecutionError('set_cleaning_mode', 'Mop-only requires a cleaning-mode entity with the “mop” option');
     }
 
     const mopMode = config.entities?.mop_mode;
@@ -273,7 +282,8 @@ export async function executeJob({
       await selectOption(getHass, mopIntensity, draft.mop_intensity, 'set_mop_intensity', timeoutMs, pollMs, sleep);
     }
 
-    if (draft.fan_speed) {
+    // Mop-only keeps suction off; setting a fan speed would re-enable it.
+    if (draft.fan_speed && draft.cleaning_type !== 'mop') {
       const hass = getHass();
       requireFanSpeed(hass, config.entity, draft.fan_speed);
       try {

@@ -1,6 +1,7 @@
 export type Language = 'en' | 'nl' | 'tr';
 export type CleaningStrategy = 'custom' | 'smartplan';
-export type CleaningType = 'vacuum' | 'vacuum_and_mop' | 'vacuum_then_mop';
+export type CleaningType = 'vacuum' | 'mop' | 'vacuum_and_mop' | 'vacuum_then_mop';
+export type MopRouteMode = 'vacuum_and_mop' | 'mop';
 export type CleaningCount = 1 | 2;
 export type SelectionMode = 'rooms' | 'zone';
 export type DockSettingKey =
@@ -152,6 +153,7 @@ export interface RoborockVacuumMapCardConfig {
   presets?: PresetConfig[];
   default_preset?: string;
   vacuum_mode_fallback?: 'set_clean_motor_mode';
+  mop_routes?: Partial<Record<MopRouteMode, string[]>>;
   [key: string]: unknown;
 }
 

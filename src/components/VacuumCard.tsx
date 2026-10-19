@@ -15,7 +15,7 @@ import {
 } from '../assisted-carry';
 import { detectCapabilities, isVacuumActive } from '../capabilities';
 import { DockExecutionError, executeDockAction, executeDockSetting } from '../dock-executor';
-import { executeJob, JobExecutionError } from '../executor';
+import { executeJob, JobExecutionError, ZONE_CLEANING_TYPES } from '../executor';
 import { t } from '../i18n';
 import { mapZoneToVacuumZone, parseCalibrationPoints } from '../map';
 import { draftFromPreset, getAvailablePresets } from '../presets';
@@ -248,13 +248,13 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       setDraft(draftFromPreset(assistedPreset));
     }
     if (selectionMode === 'zone' && (
-      draft.strategy !== 'custom' || !['vacuum', 'vacuum_and_mop'].includes(draft.cleaning_type)
+      draft.strategy !== 'custom' || !ZONE_CLEANING_TYPES.has(draft.cleaning_type)
     )) {
       const zonePreset = presets.find(({ preset, available }) => preset.id === 'vacuum_only' && available)?.preset
         ?? presets.find(({ preset, available }) => preset.id === 'vacuum_and_mop' && available)?.preset
         ?? presets.find(({ preset, available }) => available
           && preset.strategy === 'custom'
-          && ['vacuum', 'vacuum_and_mop'].includes(preset.cleaning_type ?? 'vacuum'))?.preset;
+          && ZONE_CLEANING_TYPES.has(preset.cleaning_type ?? 'vacuum'))?.preset;
       if (!zonePreset) {
         setToast(t(language, 'unsupported'));
         return;
@@ -640,6 +640,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           submitting={execution.phase === 'submitting' || assistedPending}
           assistedCarry={assistedConfiguring}
           zoneCleaning={selectionMode === 'zone'}
+          mopRoutes={config.mop_routes}
           onDraftChange={changeDraft}
           onClose={() => execution.phase !== 'submitting' && !assistedPending && setSheetOpen(false)}
           onStart={submit}

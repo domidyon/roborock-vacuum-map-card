@@ -10,6 +10,11 @@ describe('card config', () => {
     expect(parsed.future_option).toEqual({ enabled: true });
   });
 
+  it('accepts per-mode mop routes and rejects empty route lists', () => {
+    expect(validateConfig({ ...configFixture, mop_routes: { vacuum_and_mop: ['fast', 'standard'], mop: ['deep'] } })).toEqual([]);
+    expect(validateConfig({ ...configFixture, mop_routes: { mop: [] } }).join('\n')).toContain('mop_routes.mop');
+  });
+
   it('requires a map selector for multiple floors', () => {
     const invalid = { ...configFixture, entities: { ...configFixture.entities, map_select: undefined } };
     expect(validateConfig(invalid)).toContain('entities.map_select: Multiple floors require a map-select entity');

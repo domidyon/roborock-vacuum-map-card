@@ -36,6 +36,8 @@ const en = {
   smartPlanDescription:
     'Roborock AI chooses suction, water flow, and route for every selected room.',
   vacuumDescription: 'Vacuum only. The mop stays raised.',
+  mopOnly: 'Mop only',
+  mopOnlyDescription: 'Mop only. Suction stays off.',
   vacuumAndMopDescription:
     'Vacuum and mop together for a daily clean.',
   vacuumThenMopDescription:
@@ -168,6 +170,9 @@ const nl: typeof en = {
     'Roborock AI kiest per geselecteerde kamer de zuigkracht, waterhoeveelheid en route.',
   vacuumDescription:
     'Alleen stofzuigen. De dweil blijft opgetild.',
+  mopOnly: 'Alleen dweilen',
+  mopOnlyDescription:
+    'Alleen dweilen. De zuigkracht blijft uit.',
   vacuumAndMopDescription:
     'Tegelijk stofzuigen en dweilen voor de dagelijkse schoonmaak.',
   vacuumThenMopDescription:
@@ -310,6 +315,10 @@ const tr: typeof en = {
 
   vacuumDescription:
     'Sadece süpürme yapar. Paspas bezi kaldırılmış durumda kalır.',
+
+  mopOnly: 'Sadece Paspas',
+  mopOnlyDescription:
+    'Sadece paspaslama yapar. Vakum kapalı kalır.',
 
   vacuumAndMopDescription:
     'Günlük temizlik için aynı anda süpürür ve paspaslar.',

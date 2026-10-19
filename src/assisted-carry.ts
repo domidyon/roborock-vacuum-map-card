@@ -49,7 +49,8 @@ export function isAssistedCarryActive(stage: AssistedCarryStage): boolean {
 
 export function createAssistedJob(floor: FloorConfig, segmentIds: number[], draft: JobDraft): AssistedCarryJob {
   const nativeRoutine = draft.cleaning_type === 'vacuum_then_mop';
-  if (draft.strategy !== 'smartplan' && !nativeRoutine && !draft.fan_speed) {
+  const mopOnly = draft.cleaning_type === 'mop';
+  if (draft.strategy !== 'smartplan' && !nativeRoutine && !mopOnly && !draft.fan_speed) {
     throw new AssistedCarryError('prepare', 'Suction is required');
   }
   if (draft.strategy !== 'smartplan' && !nativeRoutine && draft.cleaning_type !== 'vacuum' && (!draft.mop_mode || !draft.mop_intensity)) {
@@ -70,7 +71,7 @@ export function createAssistedJob(floor: FloorConfig, segmentIds: number[], draf
     vacuum_then_mop_routine: floor.vacuum_then_mop_routine,
     strategy: draft.strategy,
     cleaning_type: draft.cleaning_type,
-    fan_speed: draft.strategy === 'smartplan' || nativeRoutine ? undefined : draft.fan_speed,
+    fan_speed: draft.strategy === 'smartplan' || nativeRoutine || mopOnly ? undefined : draft.fan_speed,
     mop_mode: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' || nativeRoutine ? undefined : draft.mop_mode,
     mop_intensity: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum' || nativeRoutine ? undefined : draft.mop_intensity,
     cleaning_count: draft.strategy === 'smartplan' || draft.cleaning_type === 'vacuum_then_mop' ? 1 : draft.cleaning_count,
@@ -103,12 +104,12 @@ export function decodeAssistedJob(value: string | undefined): AssistedCarryJob |
     const strategy = raw.g === undefined ? 'custom' : raw.g;
     const cleaningType = raw.t === undefined ? 'vacuum_and_mop' : raw.t;
     if (!['custom', 'smartplan'].includes(String(strategy))) return undefined;
-    if (!['vacuum', 'vacuum_and_mop', 'vacuum_then_mop'].includes(String(cleaningType))) return undefined;
+    if (!['vacuum', 'mop', 'vacuum_and_mop', 'vacuum_then_mop'].includes(String(cleaningType))) return undefined;
     const fanSpeed = typeof raw.f === 'string' ? raw.f : undefined;
     const mopMode = typeof raw.m === 'string' ? raw.m : undefined;
     const mopIntensity = typeof raw.w === 'string' ? raw.w : undefined;
     const nativeRoutine = cleaningType === 'vacuum_then_mop';
-    if (strategy === 'custom' && !nativeRoutine && !fanSpeed) return undefined;
+    if (strategy === 'custom' && !nativeRoutine && cleaningType !== 'mop' && !fanSpeed) return undefined;
     if (strategy === 'custom' && !nativeRoutine && cleaningType !== 'vacuum' && (!mopMode || !mopIntensity)) return undefined;
     return {
       segment_ids: raw.s as number[],

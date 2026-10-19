@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import type { AvailablePreset } from '../presets';
 import { draftFromPreset } from '../presets';
 import { t } from '../i18n';
-import type { CleaningCount, JobDraft, Language, RoborockCapabilities } from '../types';
+import type { CleaningCount, JobDraft, Language, MopRouteMode, RoborockCapabilities } from '../types';
 import { HaIcon } from './HaIcon';
 
 interface JobSheetProps {
@@ -14,19 +14,24 @@ interface JobSheetProps {
   submitting: boolean;
   assistedCarry?: boolean;
   zoneCleaning?: boolean;
+  mopRoutes?: Partial<Record<MopRouteMode, string[]>>;
   onDraftChange: (draft: JobDraft) => void;
   onClose: () => void;
   onStart: () => void;
 }
 
-const MODE_IDS = ['smartplan', 'vacuum_then_mop', 'vacuum_and_mop', 'vacuum_only'] as const;
+const MODE_IDS = ['smartplan', 'vacuum_then_mop', 'vacuum_and_mop', 'vacuum_only', 'mop_only'] as const;
+const ZONE_MODE_IDS = ['vacuum_only', 'vacuum_and_mop', 'mop_only'] as const;
 const VACUUM_SUCTION = ['quiet', 'balanced', 'turbo', 'max', 'max_plus'];
 const MOP_SUCTION = ['quiet', 'balanced', 'turbo', 'max'];
 const APP_ROUTES = ['fast', 'standard', 'deep'];
 const WATER_FLOW = ['slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
 const WATER_LEVEL: Record<string, number> = { slight: 1, low: 5, medium: 15, moderate: 25, high: 28, extreme: 30 };
 
+const OPTION_LABELS: Record<string, string> = { deep_plus: 'Deep+' };
+
 function label(value: string): string {
+  if (OPTION_LABELS[value]) return OPTION_LABELS[value];
   return value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
@@ -66,6 +71,7 @@ function activeMode(draft: JobDraft, id: typeof MODE_IDS[number]): boolean {
   if (draft.strategy === 'smartplan') return false;
   if (id === 'vacuum_only') return draft.cleaning_type === 'vacuum';
   if (id === 'vacuum_and_mop') return draft.cleaning_type === 'vacuum_and_mop';
+  if (id === 'mop_only') return draft.cleaning_type === 'mop';
   return draft.cleaning_type === 'vacuum_then_mop';
 }
 
@@ -78,11 +84,12 @@ export function JobSheet({
   submitting,
   assistedCarry = false,
   zoneCleaning = false,
+  mopRoutes,
   onDraftChange,
   onClose,
   onStart,
 }: JobSheetProps) {
-  const modeIds = zoneCleaning ? ['vacuum_only', 'vacuum_and_mop'] as const : MODE_IDS;
+  const modeIds = zoneCleaning ? ZONE_MODE_IDS : MODE_IDS;
   const appModes = modeIds.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
     (mode): mode is AvailablePreset => Boolean(mode),
   );
@@ -90,21 +97,24 @@ export function JobSheet({
     !MODE_IDS.includes(preset.id as typeof MODE_IDS[number])
       && (!zoneCleaning || (
         preset.strategy === 'custom'
-        && ['vacuum', 'vacuum_and_mop'].includes(preset.cleaning_type ?? 'vacuum')
+        && ['vacuum', 'mop', 'vacuum_and_mop'].includes(preset.cleaning_type ?? 'vacuum')
       )),
   );
   const fanAllowList = draft.cleaning_type === 'vacuum' ? VACUUM_SUCTION : MOP_SUCTION;
   const fanSpeeds = fanAllowList.filter((option) => capabilities.fanSpeeds.includes(option));
-  const routes = APP_ROUTES.filter((option) => capabilities.mopModes.includes(option));
+  const routeAllowList = (draft.cleaning_type === 'mop' ? mopRoutes?.mop : mopRoutes?.vacuum_and_mop) ?? APP_ROUTES;
+  const routes = routeAllowList.filter((option) => capabilities.mopModes.includes(option));
   const waterOptions = WATER_FLOW.filter((option) => capabilities.mopIntensities.includes(option));
   const waterIndex = Math.max(0, waterOptions.indexOf(draft.mop_intensity ?? 'medium'));
   const description = draft.strategy === 'smartplan'
     ? t(language, 'smartPlanDescription')
     : draft.cleaning_type === 'vacuum'
       ? t(language, 'vacuumDescription')
-      : draft.cleaning_type === 'vacuum_then_mop'
-        ? t(language, 'vacuumThenMopDescription')
-        : t(language, 'vacuumAndMopDescription');
+      : draft.cleaning_type === 'mop'
+        ? t(language, 'mopOnlyDescription')
+        : draft.cleaning_type === 'vacuum_then_mop'
+          ? t(language, 'vacuumThenMopDescription')
+          : t(language, 'vacuumAndMopDescription');
 
   return (
     <div className="sheet-layer" role="presentation">
@@ -142,12 +152,14 @@ export function JobSheet({
             <p className="mode-description">{description}</p>
             {draft.strategy !== 'smartplan' && draft.cleaning_type !== 'vacuum_then_mop' && (
               <>
-                <ChoiceButtons
-                  title={t(language, 'suction')}
-                  value={draft.fan_speed}
-                  options={fanSpeeds}
-                  onChange={(fan_speed) => onDraftChange({ ...draft, preset_id: 'custom_draft', fan_speed })}
-                />
+                {draft.cleaning_type !== 'mop' && (
+                  <ChoiceButtons
+                    title={t(language, 'suction')}
+                    value={draft.fan_speed}
+                    options={fanSpeeds}
+                    onChange={(fan_speed) => onDraftChange({ ...draft, preset_id: 'custom_draft', fan_speed })}
+                  />
+                )}
 
                 {draft.cleaning_type !== 'vacuum' && waterOptions.length > 0 && (
                   <label className="field app-field water-flow">

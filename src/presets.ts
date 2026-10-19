@@ -47,6 +47,16 @@ export const BUILT_IN_PRESETS: PresetConfig[] = [
     mop_mode: 'standard',
     cleaning_count: 1,
   },
+  {
+    id: 'mop_only',
+    name: 'Mop only',
+    icon: 'mdi:water',
+    strategy: 'custom',
+    cleaning_type: 'mop',
+    mop_mode: 'standard',
+    mop_intensity: 'medium',
+    cleaning_count: 1,
+  },
 ];
 
 function missingOption(
@@ -59,6 +69,9 @@ function missingOption(
     || config.vacuum_mode_fallback === 'set_clean_motor_mode';
   if (preset.cleaning_type === 'vacuum' && !canSetVacuumMode) {
     return 'cleaning mode “vacuum”';
+  }
+  if (preset.cleaning_type === 'mop' && !capabilities.cleaningModes.includes('mop')) {
+    return 'cleaning mode “mop”';
   }
   if (preset.cleaning_type === 'vacuum_then_mop') {
     if (floor?.vacuum_then_mop_routine) return undefined;
