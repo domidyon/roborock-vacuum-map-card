@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import type { AvailablePreset } from '../presets';
 import { draftFromPreset } from '../presets';
-import { t } from '../i18n';
+import { optionText, t, type TranslationKey } from '../i18n';
 import type { CleaningCount, JobDraft, Language, MopRouteMode, RoborockCapabilities } from '../types';
 import { HaIcon } from './HaIcon';
 
@@ -28,23 +28,26 @@ const APP_ROUTES = ['fast', 'standard', 'deep'];
 const WATER_FLOW = ['slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
 const WATER_LEVEL: Record<string, number> = { slight: 1, low: 5, medium: 15, moderate: 25, high: 28, extreme: 30 };
 
-const OPTION_LABELS: Record<string, string> = { deep_plus: 'Deep+' };
-
-function label(value: string): string {
-  if (OPTION_LABELS[value]) return OPTION_LABELS[value];
-  return value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
-}
+const MODE_LABEL_KEYS: Record<typeof MODE_IDS[number], TranslationKey> = {
+  smartplan: 'smartPlan',
+  vacuum_then_mop: 'vacuumThenMop',
+  vacuum_and_mop: 'vacuumAndMop',
+  vacuum_only: 'vacuumOnly',
+  mop_only: 'mopOnly',
+};
 
 function ChoiceButtons<T extends string>({
   value,
   options,
   onChange,
   title,
+  language,
 }: {
   value?: T;
   options: T[];
   onChange: (value: T) => void;
   title: string;
+  language?: Language;
 }) {
   if (options.length === 0) return null;
   return (
@@ -58,7 +61,7 @@ function ChoiceButtons<T extends string>({
             className={value === option ? 'active' : ''}
             onClick={() => onChange(option)}
           >
-            {label(option)}
+            {optionText(language, option)}
           </button>
         ))}
       </div>
@@ -143,7 +146,7 @@ export function JobSheet({
                 onClick={() => onDraftChange(draftFromPreset(preset))}
               >
                 <HaIcon icon={preset.icon} />
-                <span>{preset.id === 'smartplan' ? 'AI SmartPlan' : preset.name}</span>
+                <span>{t(language, MODE_LABEL_KEYS[preset.id as typeof MODE_IDS[number]])}</span>
               </button>
             ))}
           </div>
@@ -154,6 +157,7 @@ export function JobSheet({
               <>
                 {draft.cleaning_type !== 'mop' && (
                   <ChoiceButtons
+                    language={language}
                     title={t(language, 'suction')}
                     value={draft.fan_speed}
                     options={fanSpeeds}
@@ -165,7 +169,7 @@ export function JobSheet({
                   <label className="field app-field water-flow">
                     <span>{t(language, 'waterFlow')}</span>
                     <div className="range-heading">
-                      <strong>{label(waterOptions[waterIndex])}</strong>
+                      <strong>{optionText(language, waterOptions[waterIndex])}</strong>
                       <output>{WATER_LEVEL[waterOptions[waterIndex]]}</output>
                     </div>
                     <input
@@ -185,6 +189,7 @@ export function JobSheet({
                 )}
 
                 <ChoiceButtons
+                  language={language}
                   title={t(language, 'cleaningCount')}
                   value={String(draft.cleaning_count) as '1' | '2'}
                   options={['1', '2'] as Array<'1' | '2'>}
@@ -196,6 +201,7 @@ export function JobSheet({
                 />
 
                 <ChoiceButtons
+                  language={language}
                   title={t(language, 'mopRoute')}
                   value={draft.mop_mode}
                   options={routes}

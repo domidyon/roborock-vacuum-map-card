@@ -227,6 +227,35 @@ describe('vacuum card flows', () => {
     expect(stateLine).toHaveTextContent('docked · Drying mop · 3 h 54 min remaining');
   });
 
+  it('renders the card in Polish', () => {
+    const hass = createHass();
+    hass.states['binary_sensor.mop_drying'].state = 'on';
+    hass.states['sensor.mop_drying_remaining'].state = '3.9';
+    render(<VacuumCard hass={hass} config={{ ...configFixture, language: 'pl' }} />);
+    const stateLine = screen.getByText('docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('docked · Suszenie mopa · 3 godz. 54 min pozostało');
+    expect(screen.getByRole('button', { name: 'Całe piętro' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ustaw sprzątanie' })).toBeInTheDocument();
+  });
+
+  it('translates mode names, descriptions and option values in Polish', async () => {
+    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'pl' }} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ustaw sprzątanie' }));
+    const dialog = screen.getByRole('dialog');
+    for (const name of ['AI SmartPlan', 'Odkurz, potem mopuj', 'Odkurz i mop', 'Odkurz', 'Mopuj']) {
+      expect(within(dialog).getByRole('tab', { name })).toBeInTheDocument();
+    }
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Odkurz i mop' }));
+    expect(dialog).toHaveTextContent('Dzienne odkurzanie i mopowanie.');
+    expect(within(dialog).getByRole('button', { name: 'Zrównoważony' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Ogólne' })).toBeInTheDocument();
+    expect(dialog).toHaveTextContent('Średni');
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'AI SmartPlan' }));
+    expect(dialog).toHaveTextContent('Uczy się i dostosowuje do Twojej przestrzeni');
+  });
+
   it('shows a dock-side mop wash as active detail instead of only docked', () => {
     const hass = createHass();
     hass.states['sensor.status'] = { entity_id: 'sensor.status', state: 'washing_the_mop', attributes: {} };

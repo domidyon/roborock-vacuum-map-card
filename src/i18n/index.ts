@@ -30,8 +30,9 @@ const en = {
   configureTitle: 'Configure cleaning job',
   presets: 'Presets',
   cleaningType: 'Cleaning type',
+  smartPlan: 'AI SmartPlan',
   vacuumOnly: 'Vacuum only',
-  vacuumAndMop: 'Vacuum and mop',
+  vacuumAndMop: 'Vac & Mop',
   vacuumThenMop: 'Vac followed by Mop',
   smartPlanDescription:
     'Roborock AI chooses suction, water flow, and route for every selected room.',
@@ -129,6 +130,8 @@ const en = {
   yesterday: 'yesterday',
   ago: 'ago',
   daysAgo: 'days ago',
+  hourShort: 'h',
+  minuteShort: 'min',
 };
 
 const nl: typeof en = {
@@ -163,6 +166,7 @@ const nl: typeof en = {
   configureTitle: 'Schoonmaaktaak instellen',
   presets: 'Presets',
   cleaningType: 'Schoonmaaktype',
+  smartPlan: 'AI SmartPlan',
   vacuumOnly: 'Alleen stofzuigen',
   vacuumAndMop: 'Stofzuigen en dweilen',
   vacuumThenMop: 'Stofzuigen, daarna dweilen',
@@ -264,6 +268,8 @@ const nl: typeof en = {
   yesterday: 'gisteren',
   ago: 'geleden',
   daysAgo: 'dagen geleden',
+  hourShort: 'u',
+  minuteShort: 'min',
 };
 
 const tr: typeof en = {
@@ -306,6 +312,7 @@ const tr: typeof en = {
   presets: 'Ön Ayarlar',
   cleaningType: 'Temizlik türü',
 
+  smartPlan: 'AI SmartPlan',
   vacuumOnly: 'Sadece Süpürme',
   vacuumAndMop: 'Süpürme ve Paspas',
   vacuumThenMop: 'Vakum, sonra Paspas',
@@ -471,6 +478,142 @@ const tr: typeof en = {
   yesterday: 'dün',
   ago: 'önce',
   daysAgo: 'gün önce',
+  hourShort: 'sa',
+  minuteShort: 'dk',
+};
+
+const pl: typeof en = {
+  status: 'Status',
+  battery: 'Bateria',
+  room: 'Pomieszczenie',
+  area: 'Powierzchnia',
+  duration: 'Czas',
+  progress: 'Postęp',
+  entireFloor: 'Całe piętro',
+  configureJob: 'Ustaw sprzątanie',
+  selectionMode: 'Tryb wyboru na mapie',
+  rooms: 'Pomieszczenia',
+  zone: 'Strefa',
+  selectedRooms: 'Wybrane pomieszczenia',
+  noRoomsSelected: 'Dotknij jednego lub kilku pomieszczeń na mapie',
+  selectedZone: 'Wybrana strefa',
+  noZoneSelected: 'Przeciągnij po mapie, aby narysować strefę sprzątania',
+  zoneReady: 'Przeciągnij, aby przesunąć, lub użyj narożników, aby zmienić rozmiar',
+  customZone: 'Własna strefa',
+  clearZone: 'Usuń strefę',
+  resizeZone: 'Zmień rozmiar strefy',
+  pause: 'Pauza',
+  resume: 'Wznów',
+  stop: 'Zatrzymaj',
+  dock: 'Do stacji',
+  dryingMop: 'Suszenie mopa',
+  washingMop: 'Mycie mopa',
+  remaining: 'pozostało',
+  configureTitle: 'Ustawienia sprzątania',
+  presets: 'Profile',
+  cleaningType: 'Rodzaj sprzątania',
+  smartPlan: 'AI SmartPlan',
+  vacuumOnly: 'Odkurz',
+  vacuumAndMop: 'Odkurz i mop',
+  vacuumThenMop: 'Odkurz, potem mopuj',
+  smartPlanDescription:
+    'Uczy się i dostosowuje do Twojej przestrzeni, zwyczajów oraz preferencji, aby dobierać optymalną ścieżkę sprzątania.',
+  vacuumDescription: 'Tylko odkurzanie, jeden raz.',
+  mopOnly: 'Mopuj',
+  mopOnlyDescription: 'Tylko mopowanie, jeden raz.',
+  vacuumAndMopDescription:
+    'Dzienne odkurzanie i mopowanie.',
+  vacuumThenMopDescription:
+    'Uruchamia zapisaną procedurę Roborock dla tego piętra. Pomieszczenia, siłę ssania, przepływ wody, liczbę przejść i trasę ustawia się w aplikacji Roborock.',
+  suction: 'Siła ssania',
+  waterFlow: 'Przepływ wody',
+  cleaningCount: 'Liczba przejść',
+  savedProfiles: 'Zapisane profile',
+  mopRoute: 'Trasa mopowania',
+  mopIntensity: 'Intensywność mopowania',
+  cancel: 'Anuluj',
+  start: 'Start',
+  starting: 'Uruchamianie…',
+  unsupported: 'Niedostępne',
+  mapMissing: 'Skonfigurowana encja mapy jest niedostępna.',
+  imageMissing: 'Encja mapy nie udostępnia obrazu.',
+  calibrationMissing:
+    'Brak kalibracji Roborock Custom Map. Zainstaluj i skonfiguruj Roborock Custom Map.',
+  roomsMissing:
+    'Brak danych o pomieszczeniach z Roborock Custom Map. Obszary nie zostały zgadnięte.',
+  roomUnmapped:
+    'Ten segment nie jest przypisany do obszaru Home Assistant.',
+  launched: 'Wysłano zadanie sprzątania',
+  floor: 'Piętro',
+  close: 'Zamknij',
+  dockStation: 'Stacja',
+  dockOverview: 'Mycie, opróżnianie, suszenie i ustawienia stacji',
+  empty: 'Opróżnij',
+  wash: 'Umyj',
+  dry: 'Susz',
+  dockSettings: 'Ustawienia stacji',
+  mopWashFrequency: 'Częstotliwość mycia mopa',
+  washingMode: 'Tryb mycia',
+  washTemperature: 'Temperatura wody',
+  dustbin: 'Pojemnik na kurz',
+  autoEmpty: 'Automatyczne opróżnianie',
+  emptyMode: 'Tryb opróżniania',
+  drying: 'Suszenie',
+  autoDry: 'Automatyczne suszenie',
+  dryDuration: 'Czas suszenia',
+  safetyMaintenance: 'Bezpieczeństwo i konserwacja',
+  childLock: 'Blokada rodzicielska stacji',
+  drainWaterTank: 'Opróżnij zbiornik brudnej wody w robocie',
+  drainWarning:
+    'Niedostępne w obecnej integracji Roborock dla Home Assistant. Użyj aplikacji Roborock.',
+  confirmEmpty: 'Rozpocząć opróżnianie w stacji? Będzie głośno.',
+  confirmWash:
+    'Rozpocząć mycie mopa? Uruchomi to pompę stacji.',
+  confirmDry:
+    'Rozpocząć suszenie mopa? Uruchomi to wentylator stacji.',
+  confirmDrain: 'Opróżnić teraz zbiornik brudnej wody w robocie?',
+  drainRejected:
+    'Home Assistant nie potrafi obecnie poprawnie wysłać tej komendy Roborock. Użyj aplikacji Roborock.',
+  settingSaved: 'Zapisano ustawienie stacji',
+  dockActionSent: 'Wysłano komendę do stacji',
+  active: 'Aktywne',
+  inactive: 'Wyłączone',
+  prepareUpstairs: 'Przygotuj piętro',
+  preparingUpstairs: 'Przygotowywanie…',
+  startUpstairs: 'Start na piętrze',
+  dockAndFinish: 'Do stacji i zakończ',
+  newUpstairsJob: 'Nowe sprzątanie piętra',
+  assistedCarryTitle: 'Sprzątanie piętra z przenoszeniem',
+  assistedCarryDescription:
+    'Stacja przygotowuje mopa, a karta prowadzi przez oba przeniesienia robota i kończy obsługę w stacji.',
+  assisted_preparing_title: 'Przygotowanie w stacji',
+  assisted_preparing_description:
+    'Zatrzymywanie suszenia, mycie mopa i przejazd robota do punktu odbioru.',
+  assisted_carry_upstairs_title: 'Zanieś robota na piętro',
+  assisted_carry_upstairs_description:
+    'Postaw go w wolnym miejscu startowym, a potem uruchom zapisane sprzątanie.',
+  assisted_cleaning_upstairs_title: 'Sprzątanie piętra',
+  assisted_cleaning_upstairs_description:
+    'Po zakończeniu robot wróci do tego miejsca startowego na piętrze.',
+  assisted_carry_downstairs_title: 'Znieś robota na dół',
+  assisted_carry_downstairs_description:
+    'Postaw go na dolnym piętrze blisko stacji albo bezpośrednio na stacji.',
+  assisted_finishing_title: 'Kończenie w stacji',
+  assisted_finishing_description:
+    'Dokowanie, opróżnianie, mycie mopa i sprawdzenie automatycznego suszenia.',
+  assisted_complete_title: 'Sprzątanie piętra zakończone',
+  assisted_complete_description:
+    'Robot jest w stacji, mop umyty, a suszenie uruchomione, jeśli jest skonfigurowane.',
+  assisted_error_title: 'Wymagana uwaga',
+  assisted_error_description:
+    'Sprawdź robota i stację, a potem zresetuj procedurę, aby spróbować ponownie.',
+  lastClean: 'Ostatnie sprzątanie',
+  justNow: 'przed chwilą',
+  yesterday: 'wczoraj',
+  ago: 'temu',
+  daysAgo: 'dni temu',
+  hourShort: 'godz.',
+  minuteShort: 'min',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -483,9 +626,42 @@ export function t(
     return nl[key];
   }
 
+  if (language === 'pl') {
+    return pl[key];
+  }
+
   if (language === 'tr') {
     return tr[key];
   }
 
   return en[key];
+}
+
+// Labels for live Roborock option values (suction, water flow, mop route).
+// Values without a translation fall back to English, then to a title-cased ID.
+const optionLabels: Partial<Record<Language, Record<string, string>>> = {
+  en: { deep_plus: 'Deep+' },
+  pl: {
+    quiet: 'Cichy',
+    balanced: 'Zrównoważony',
+    turbo: 'Turbo',
+    max: 'Max',
+    max_plus: 'Max+',
+    slight: 'Minimalny',
+    low: 'Niski',
+    medium: 'Średni',
+    moderate: 'Umiarkowany',
+    high: 'Wysoki',
+    extreme: 'Ekstremalny',
+    fast: 'Szybko',
+    standard: 'Ogólne',
+    deep: 'Intensywny',
+    deep_plus: 'Intensywny+',
+  },
+};
+
+export function optionText(language: Language | undefined, value: string): string {
+  return optionLabels[language ?? 'en']?.[value]
+    ?? optionLabels.en?.[value]
+    ?? value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
 }
