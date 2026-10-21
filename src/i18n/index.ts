@@ -177,6 +177,14 @@ const en = {
   setupOpenEditor: "Then edit this card and choose Setup assistant.",
   setupConfigErrors: "The card configuration needs attention:",
   setupVacuumMissing: "The configured vacuum doesn't exist:",
+  mapLoading: "Loading map…",
+  mapLoadFailed: "The map image could not be loaded.",
+  retry: "Retry",
+  vacuumOffline: "The vacuum is offline. Home Assistant can't reach it right now.",
+  vacuumErrorBanner: "The vacuum reports an error:",
+  copyDiagnostics: "Copy diagnostics",
+  diagnosticsCopied: "Diagnostics copied. Paste them into your GitHub issue.",
+  diagnosticsManual: "Copy the text below into your GitHub issue.",
 };
 
 const nl: typeof en = {
@@ -360,6 +368,14 @@ const nl: typeof en = {
   setupOpenEditor: "Bewerk daarna deze kaart en kies Installatie-assistent.",
   setupConfigErrors: "De kaartconfiguratie vraagt aandacht:",
   setupVacuumMissing: "De ingestelde stofzuiger bestaat niet:",
+  mapLoading: "Kaart laden…",
+  mapLoadFailed: "De kaartafbeelding kon niet worden geladen.",
+  retry: "Opnieuw proberen",
+  vacuumOffline: "De stofzuiger is offline. Home Assistant kan hem nu niet bereiken.",
+  vacuumErrorBanner: "De stofzuiger meldt een fout:",
+  copyDiagnostics: "Diagnose kopiëren",
+  diagnosticsCopied: "Diagnose gekopieerd. Plak deze in je GitHub-issue.",
+  diagnosticsManual: "Kopieer de tekst hieronder naar je GitHub-issue.",
 };
 
 const tr: typeof en = {
@@ -615,6 +631,14 @@ const tr: typeof en = {
   setupOpenEditor: "Ardından bu kartı düzenleyin ve Kurulum asistanını seçin.",
   setupConfigErrors: "Kart yapılandırması ilgi gerektiriyor:",
   setupVacuumMissing: "Yapılandırılan süpürge mevcut değil:",
+  mapLoading: "Harita yükleniyor…",
+  mapLoadFailed: "Harita görüntüsü yüklenemedi.",
+  retry: "Tekrar dene",
+  vacuumOffline: "Süpürge çevrimdışı. Home Assistant şu anda ona ulaşamıyor.",
+  vacuumErrorBanner: "Süpürge bir hata bildiriyor:",
+  copyDiagnostics: "Tanılamayı kopyala",
+  diagnosticsCopied: "Tanılama kopyalandı. GitHub sorununuza yapıştırın.",
+  diagnosticsManual: "Aşağıdaki metni GitHub sorununuza kopyalayın.",
 };
 
 const pl: typeof en = {
@@ -794,6 +818,14 @@ const pl: typeof en = {
   setupOpenEditor: "Następnie edytuj tę kartę i wybierz Asystenta konfiguracji.",
   setupConfigErrors: "Konfiguracja karty wymaga uwagi:",
   setupVacuumMissing: "Skonfigurowany odkurzacz nie istnieje:",
+  mapLoading: "Ładowanie mapy…",
+  mapLoadFailed: "Nie udało się załadować obrazu mapy.",
+  retry: "Spróbuj ponownie",
+  vacuumOffline: "Odkurzacz jest offline. Home Assistant nie może się z nim teraz połączyć.",
+  vacuumErrorBanner: "Odkurzacz zgłasza błąd:",
+  copyDiagnostics: "Kopiuj diagnostykę",
+  diagnosticsCopied: "Skopiowano diagnostykę. Wklej ją do zgłoszenia na GitHubie.",
+  diagnosticsManual: "Skopiuj poniższy tekst do zgłoszenia na GitHubie.",
 };
 
 export type TranslationKey = keyof typeof en;

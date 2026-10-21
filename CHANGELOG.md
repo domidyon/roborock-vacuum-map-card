@@ -35,6 +35,13 @@
 - Choose preset suction, route and water flow from the robot's supported options instead of free text.
 - Translate the editor, setup assistant, Re-detect and preset scripts into English, Dutch, Polish and Turkish, following the Home Assistant user language.
 - Fix the native area picker in the editor not receiving `hass`.
+- Ship Preact's React-compatible runtime instead of React DOM and fully minify the bundle: 754 → 374 KB (181 → 109 KB gzipped). Unit and e2e tests run on the shipped runtime.
+- Add *Copy diagnostics* to the editor and the *Finish setting up* screen: a redacted report for bug and model reports.
+- Add map loading and *Retry* states, and banners when the vacuum is offline or reports an error.
+- Improve accessibility: sheets trap focus, close on Escape and return focus to the opener; the setup assistant moves focus to each step; animations respect *reduce motion*.
+- Add troubleshooting, FAQ and translation guides, CONTRIBUTING, Code of Conduct, SECURITY, bug and feature templates, a pull-request template and Dependabot.
+- Refresh screenshots and add an onboarding GIF (`scripts/capture-screenshots.mjs --gif`).
+- Split the card component into header, controls, dock and assisted-carry hooks without behaviour changes.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21

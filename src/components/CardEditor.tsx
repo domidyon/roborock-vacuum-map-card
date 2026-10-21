@@ -12,6 +12,7 @@ import { FloorsSection } from './editor/FloorsSection';
 import { PresetsSection } from './editor/PresetsSection';
 import type { SectionProps } from './editor/shared';
 import { SetupWizard } from './onboarding/SetupWizard';
+import { DiagnosticsButton } from './DiagnosticsButton';
 import { RedetectPanel } from './RedetectPanel';
 
 interface CardEditorProps {
@@ -64,6 +65,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
       <div className="editor-toolbar">
         <button type="button" onClick={() => setWizardOpen(true)}><Wand2 /> {t('setupAssistant')}</button>
         <button type="button" disabled={!hass.states[config.entity]} onClick={() => setRedetectOpen(true)}><RefreshCw /> {t('redetect')}</button>
+        <DiagnosticsButton hass={hass} config={config} labels={{ copy: t('copyDiagnostics'), copied: t('diagnosticsCopied'), manual: t('diagnosticsManual') }} />
       </div>
       {redetectOpen && <RedetectPanel {...props} onApply={(next) => { onChange(next); setRedetectOpen(false); }} onClose={() => setRedetectOpen(false)} />}
       {errors.length > 0 && <div className="editor-errors" role="alert">{errors.map((error) => <div key={error}>{error}</div>)}</div>}

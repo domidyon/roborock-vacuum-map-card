@@ -49,11 +49,16 @@ guesses room boundaries.
 | 🧹 **Maintenance** *(beta)* | Brush, filter, sensor and strainer life in the dock panel, a badge when something is due, and resets with confirmation |
 | 📱 **Feels native** | Mobile bottom sheet, desktop dialog, light and dark themes, keyboard support |
 | 🌍 **Translated** | English, Nederlands, Polski, Türkçe ([add yours](#-translations)) |
-| 🧩 **Visual editor** | Room discovery, area mapping, floor and preset ordering, lossless YAML round-tripping |
+| 🧩 **Visual editor** | Setup assistant, Re-detect, sections, Home Assistant's own pickers, lossless YAML round-tripping |
+| 🩹 **Diagnostics** | One click copies a redacted report for bug and model reports |
 
-<p align="center">
-  <img src="docs/screenshots/demo-mobile-dark.png" alt="Mobile dark theme" width="300">
-</p>
+<table>
+  <tr>
+    <td><img src="docs/screenshots/demo-mobile-dark.png" alt="Mobile, dark theme" width="260"></td>
+    <td><img src="docs/screenshots/pre-start-checks.png" alt="Pre-start checks blocking a mop job" width="420"><br>
+        <img src="docs/screenshots/maintenance.png" alt="Dock panel with maintenance" width="420"></td>
+  </tr>
+</table>
 
 ## 🤖 Supported robots
 
@@ -102,6 +107,8 @@ See [supported models](docs/models.md) for what each model profile changes.
 Changed something in Home Assistant later? **Re-detect** in the editor offers the fixes
 (new rooms, renamed maps, deleted areas) one by one.
 
+<p align="center"><img src="docs/screenshots/setup-assistant.gif" alt="The setup assistant, from checks to a saved card" width="620"></p>
+
 A minimal YAML config looks like this:
 
 ```yaml
@@ -147,7 +154,8 @@ failed. It never rolls back or improvises. Details are in
 | Floor switch times out | Make `map_select_option` exactly match an option of your selected-map entity |
 | Card not found after install | Hard-refresh the browser and check the resource is loaded as a JavaScript module |
 
-More answers are in the [full troubleshooting guide](docs/configuration.md#troubleshooting).
+More answers are in the [troubleshooting guide](docs/troubleshooting.md) and the [FAQ](docs/faq.md).
+Reporting a bug? Use **Copy diagnostics** in the card editor and paste the result.
 
 ## 🗺️ Roadmap
 
@@ -164,26 +172,20 @@ branch. See the [CHANGELOG](CHANGELOG.md) for what has already shipped.
 ## 🤝 Contributing
 
 Bug reports, model reports and pull requests are very welcome. This is a
-spare-time project, so please be patient with responses.
-
-```bash
-git clone https://github.com/domidyon/roborock-vacuum-map-card.git
-cd roborock-vacuum-map-card
-npm install
-npm run dev        # fixture page with a simulated Home Assistant
-npm run verify     # lint, typecheck, unit tests, production build
-npx playwright install chromium && npm run test:e2e
-```
-
-- Target the **`beta`** branch with pull requests.
-- Include the rebuilt `dist/roborock-vacuum-map-card.js` with source changes.
-- Add or update tests. The executor is fully unit-tested, so keep it that way.
+spare-time project, so please be patient with responses. See
+[CONTRIBUTING](CONTRIBUTING.md) for the development setup and pull-request checklist,
+and the [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: see [SECURITY](SECURITY.md).
 
 ### 🌍 Translations
 
-All UI strings live in [`src/i18n/index.ts`](src/i18n/index.ts). To add a language,
-copy the `en` block, translate it, and add the language code to the `language`
-option in `src/config.ts`. Thanks to everyone who contributed Turkish and Polish!
+The card and the editor are translated into English, Nederlands, Polski and Türkçe.
+[docs/translating.md](docs/translating.md) explains how to add or improve a language.
+Thanks to everyone who contributed Turkish and Polish!
+
+### 📚 Documentation
+
+[Configuration](docs/configuration.md) · [Supported models](docs/models.md) ·
+[Troubleshooting](docs/troubleshooting.md) · [FAQ](docs/faq.md) · [Translating](docs/translating.md)
 
 ## 🙏 Credits
 

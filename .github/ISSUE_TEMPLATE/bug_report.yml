@@ -1,0 +1,38 @@
+name: Bug report
+description: Something in the card doesn't work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check [troubleshooting](https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/docs/troubleshooting.md) first.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Select Kitchen
+        2. Configure job → Vac & Mop
+        3. Start
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Card editor → **Copy diagnostics** (or the button on the *Finish setting up* screen). It is redacted, but please check it before posting.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error messages or logs
+      description: The card's error message, browser console errors, or `homeassistant.components.roborock` log lines.
+      render: text

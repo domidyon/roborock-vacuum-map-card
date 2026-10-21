@@ -4,6 +4,7 @@ import { DOCK_SETTING_DEFAULTS, DOCK_SETTING_ENTITIES, DOCK_SETTING_OPTIONS } fr
 import { t, type TranslationKey } from '../i18n';
 import type { ConsumableStatus } from '../maintenance';
 import { levelText, remainingText } from './notices';
+import { useDialog } from './useDialog';
 import type {
   DockAction,
   DockSettingKey,
@@ -134,6 +135,7 @@ export function DockSheet({
   maintenance = [],
   onResetConsumable,
 }: DockSheetProps) {
+  const dialogRef = useDialog<HTMLElement>(onClose);
   const disabled = Boolean(pending);
   const childLockEntity = config.entities?.dock_child_lock;
   const childLock = childLockEntity ? hass.states[childLockEntity]?.state === 'on' : false;
@@ -154,7 +156,7 @@ export function DockSheet({
   return (
     <div className="sheet-layer" role="presentation">
       <button type="button" className="sheet-backdrop" aria-label={t(language, 'close')} onClick={onClose} />
-      <section className="job-sheet dock-sheet" role="dialog" aria-modal="true" aria-labelledby="dock-sheet-title">
+      <section className="job-sheet dock-sheet" role="dialog" aria-modal="true" aria-labelledby="dock-sheet-title" ref={dialogRef} tabIndex={-1}>
         <div className="sheet-handle" />
         <header>
           <div>

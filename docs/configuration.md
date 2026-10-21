@@ -327,13 +327,4 @@ but can't be selected. Dismissing the notice hides it until the issues change.
 
 ## Troubleshooting
 
-- **Calibration/rooms missing:** confirm the selected image comes from `roborock_custom_map`, then reload that integration after the core Roborock integration is loaded.
-- **Room disabled:** assign an HA `area_id` in the visual editor and make sure that segment is mapped in Roborock entity settings.
-- **Preset unavailable:** its fan speed, mop mode, or intensity is absent from the live entity options. Use a supported value or another preset.
-- **Vacuum only is unavailable:** configure `entities.cleaning_mode` with the Roborock high-level Cleaning mode select.
-- **Mop only is missing or unavailable:** set `enable_mop_only: true` (only if your Roborock app offers Mop only), and make sure the configured `entities.cleaning_mode` select offers the `mop` option.
-- **Vac followed by Mop is unavailable:** configure `floor.vacuum_then_mop_routine`; for legacy two-phase orchestration, configure `entities.vacuum_then_mop_script` and a Cleaning mode entity that offers both `vacuum` and `mop`.
-- **Floor timeout:** verify `map_select_option` exactly matches a live option on `entities.map_select`.
-- **Card not found after install:** hard-refresh the browser and verify the HACS resource is loaded as a JavaScript module.
-- **Cleaning does not start:** the error toast names the failed operation. The card deliberately does not fall back or roll back device settings automatically.
-
+See [troubleshooting](troubleshooting.md).

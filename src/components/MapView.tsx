@@ -86,6 +86,9 @@ export function MapView({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [refreshTick, setRefreshTick] = useState(0);
+  // The image URL that failed to load, and how often the user retried.
+  const [failedUrl, setFailedUrl] = useState<string>();
+  const [retries, setRetries] = useState(0);
   const shellRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<ZoneDrag | undefined>(undefined);
   const zoneRef = useRef(zone);
@@ -125,6 +128,21 @@ export function MapView({
   if (error) {
     return <div className="map-error" role="alert">{error}</div>;
   }
+  const imageUrl = (() => {
+    const base = hass.hassUrl(imagePath!);
+    if (base.startsWith('data:')) return base;
+    const sep = base.includes('?') ? '&' : '?';
+    const version = entity?.last_updated ?? entity?.state ?? '';
+    return `${base}${sep}v=${encodeURIComponent(version)}${active ? `&r=${refreshTick}` : ''}${retries ? `&retry=${retries}` : ''}`;
+  })();
+  if (failedUrl === imageUrl) {
+    return (
+      <div className="map-error" role="alert">
+        {t(language, 'mapLoadFailed')}
+        <button type="button" className="secondary" onClick={() => { setRetries(retries + 1); setFailedUrl(undefined); }}>{t(language, 'retry')}</button>
+      </div>
+    );
+  }
 
   return (
     <div className={`map-shell ${selectionMode === 'zone' ? 'zone-mode' : ''}`} ref={shellRef}>
@@ -157,17 +175,13 @@ export function MapView({
             })()}
           >
             <img
-              src={(() => {
-                const base = hass.hassUrl(imagePath!);
-                if (base.startsWith('data:')) return base;
-                const sep = base.includes('?') ? '&' : '?';
-                const version = entity?.last_updated ?? entity?.state ?? '';
-                return `${base}${sep}v=${encodeURIComponent(version)}${active ? `&r=${refreshTick}` : ''}`;
-              })()}
+              src={imageUrl}
               alt={`${floor.name} vacuum map`}
               draggable={false}
               onLoad={(event) => setDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+              onError={() => setFailedUrl(imageUrl)}
             />
+            {!dimensions.width && <div className="map-loading" role="status">{t(language, 'mapLoading')}</div>}
             {dimensions.width > 0 && dimensions.height > 0 && <svg
               className={`room-overlay ${selectionMode === 'zone' ? 'drawing-zone' : ''}`}
               viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}

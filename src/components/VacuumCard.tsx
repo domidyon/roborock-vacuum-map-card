@@ -1,104 +1,40 @@
+import { X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Battery, Clock3, History, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Sparkles, Square, Timer, TriangleAlert, X } from 'lucide-react';
 import {
-  AssistedCarryError,
   assistedFloor,
   assistedStage,
-  createAssistedJob,
   decodeAssistedJob,
-  finishAssistedCarry,
   isAssistedCarryActive,
-  prepareAssistedCarry,
-  resetAssistedCarry,
-  setAssistedStage,
-  startAssistedCarry,
 } from '../assisted-carry';
 import { detectCapabilities, isVacuumActive } from '../capabilities';
-import { DockExecutionError, executeDockAction, executeDockSetting } from '../dock-executor';
 import { executeJob, JobExecutionError, ZONE_CLEANING_TYPES } from '../executor';
-import { configHealth, roomUsable } from '../health';
 import { t } from '../i18n';
-import { maintenanceStatus, overdueCount, type ConsumableStatus } from '../maintenance';
-import { preflightChecks } from '../preflight';
+import { maintenanceStatus, overdueCount } from '../maintenance';
 import { mapZoneToVacuumZone, parseCalibrationPoints } from '../map';
+import { preflightChecks } from '../preflight';
 import { draftFromPreset, getAvailablePresets } from '../presets';
 import type {
-  FloorConfig,
-  DockAction,
-  DockSettingKey,
   HomeAssistant,
   JobDraft,
   JobExecutionState,
-  Language,
   MapZone,
   RoborockVacuumMapCardConfig,
   SelectionMode,
 } from '../types';
+import { AssistedCarryPanel } from './AssistedCarryPanel';
+import { ActionBar, SelectionTabs } from './card/CardControls';
+import { CardHeader } from './card/CardHeader';
+import { formatRemainingTime, initialFloor } from './card/format';
+import { assistedPreset, entireFloorSegments, runTransport, zonePreset, type TransportService } from './card/jobs';
+import { useAssistedCarry } from './card/useAssistedCarry';
+import { useDockControls } from './card/useDockControls';
 import { DockSheet } from './DockSheet';
 import { JobSheet } from './JobSheet';
 import { MapView } from './MapView';
-import { healthText } from './notices';
-import { AssistedCarryPanel } from './AssistedCarryPanel';
 
 interface VacuumCardProps {
   hass: HomeAssistant;
   config: RoborockVacuumMapCardConfig;
-}
-
-function stateText(hass: HomeAssistant, entityId?: string): string | undefined {
-  if (!entityId) return undefined;
-  const entity = hass.states[entityId];
-  if (!entity || ['unknown', 'unavailable'].includes(entity.state)) return undefined;
-  const display = entity.attributes.device_class === 'duration' && !isNaN(Number(entity.state))
-    ? String(Math.round(Number(entity.state)))
-    : entity.state;
-  return `${display}${entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : ''}`;
-}
-
-function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, language: Language | undefined): string | undefined {
-  if (!entityId) return undefined;
-  const entity = hass.states[entityId];
-  if (!entity || ['unknown', 'unavailable'].includes(entity.state)) return undefined;
-  const value = Number(entity.state);
-  if (!Number.isFinite(value) || value < 0) return undefined;
-  const unit = String(entity.attributes.unit_of_measurement ?? '');
-  const UNIT_TO_MINUTES: Record<string, number> = { s: 1 / 60, min: 1, h: 60, d: 1440 };
-  const factor = UNIT_TO_MINUTES[unit];
-  if (factor === undefined) return undefined;
-  const minutes = value * factor;
-  const roundedMinutes = Math.max(0, Math.round(minutes));
-  const hours = Math.floor(roundedMinutes / 60);
-  const remainingMinutes = roundedMinutes % 60;
-  const parts = [
-    hours > 0 ? `${hours} ${t(language, 'hourShort')}` : undefined,
-    remainingMinutes > 0 || hours === 0 ? `${remainingMinutes} ${t(language, 'minuteShort')}` : undefined,
-  ].filter(Boolean);
-  return `${parts.join(' ')} ${t(language, 'remaining')}`;
-}
-
-function detailedActivity(language: Language | undefined, state?: string): string | undefined {
-  if (state === 'washing_the_mop') return t(language, 'washingMop');
-  return undefined;
-}
-
-function formatRelativeTime(isoString: string, language: Language | undefined): string | undefined {
-  const date = new Date(isoString);
-  if (isNaN(date.getTime())) return undefined;
-  const diffMs = Date.now() - date.getTime();
-  if (diffMs < 0) return undefined;
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return t(language, 'justNow');
-  if (diffMins < 60) return `${diffMins} ${t(language, 'minuteShort')} ${t(language, 'ago')}`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} ${t(language, 'hourShort')} ${t(language, 'ago')}`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return t(language, 'yesterday');
-  return `${diffDays} ${t(language, 'daysAgo')}`;
-}
-
-function initialFloor(config: RoborockVacuumMapCardConfig, hass: HomeAssistant): FloorConfig {
-  const current = config.entities?.map_select ? hass.states[config.entities.map_select]?.state : undefined;
-  return config.floors.find((floor) => floor.map_select_option === current) ?? config.floors[0];
 }
 
 export function VacuumCard({ hass, config }: VacuumCardProps) {
@@ -112,18 +48,12 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const [zone, setZone] = useState<MapZone>();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [assistedConfiguring, setAssistedConfiguring] = useState(false);
-  const [assistedPending, setAssistedPending] = useState(false);
   const [dockOpen, setDockOpen] = useState(false);
-  const [dockPending, setDockPending] = useState<string>();
   const [toast, setToast] = useState<string>();
   const [execution, setExecution] = useState<JobExecutionState>({ phase: 'idle' });
   const capabilities = useMemo(() => detectCapabilities(hass, config), [hass, config]);
   const maintenance = useMemo(() => maintenanceStatus(hass, config), [hass, config]);
   const overdue = overdueCount(maintenance);
-  const health = useMemo(() => configHealth(hass, config), [hass, config]);
-  const healthKey = JSON.stringify(health);
-  // Dismissal lasts until the set of issues changes.
-  const [dismissedHealth, setDismissedHealth] = useState<string>();
   const presets = useMemo(() => getAvailablePresets(config, capabilities, floor), [config, capabilities, floor]);
   const defaultPreset = presets.find(({ preset, available }) => preset.id === config.default_preset && available)?.preset
     ?? presets.find(({ available }) => available)?.preset;
@@ -210,25 +140,6 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const dryingRemaining = mopDrying
     ? formatRemainingTime(hass, config.entities?.dock_mop_drying_remaining_time, language)
     : undefined;
-  const lastCleanState = config.entities?.last_clean_end ? hass.states[config.entities.last_clean_end]?.state : undefined;
-  const lastClean = !jobActive && lastCleanState && !['unknown', 'unavailable'].includes(lastCleanState)
-    ? formatRelativeTime(lastCleanState, language)
-    : undefined;
-
-  const headerDetails = [
-    detailedActivity(language, detailedStatus),
-    mopDrying ? t(language, 'dryingMop') : undefined,
-    dryingRemaining,
-  ].filter((value): value is string => Boolean(value));
-  const statusItems = [
-    { icon: <Battery />, label: t(language, 'battery'), value: stateText(hass, config.entities?.battery) },
-    { icon: <MapPin />, label: t(language, 'room'), value: stateText(hass, config.entities?.current_room) },
-    { icon: <ScanLine />, label: t(language, 'area'), value: stateText(hass, config.entities?.cleaning_area) },
-    { icon: <Clock3 />, label: t(language, 'duration'), value: stateText(hass, config.entities?.cleaning_time) },
-    { icon: <Timer />, label: t(language, 'progress'), value: stateText(hass, config.entities?.cleaning_progress) },
-    { icon: <History />, label: t(language, 'lastClean'), value: lastClean },
-  ].filter((item) => item.value);
-
   const switchFloor = (nextFloorId: string) => {
     if (assistedActive) return;
     const nextFloor = config.floors.find((item) => item.id === nextFloorId);
@@ -249,33 +160,23 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
 
   const openJobSheet = (assisted: boolean) => {
     if (assisted) {
-      const assistedPreset = presets.find(({ preset, available }) => preset.id === config.default_preset && available)?.preset
-        ?? presets.find(({ preset, available }) => preset.id === 'vacuum_only' && available)?.preset
-        ?? presets.find(({ available }) => available)?.preset;
-      if (!assistedPreset) {
+      const preset = assistedPreset(presets, config.default_preset);
+      if (!preset) {
         setToast(t(language, 'unsupported'));
         return;
       }
-      setDraft(draftFromPreset(assistedPreset));
+      setDraft(draftFromPreset(preset));
     }
-    if (selectionMode === 'zone' && (
-      draft.strategy !== 'custom' || !ZONE_CLEANING_TYPES.has(draft.cleaning_type)
-    )) {
-      const zonePreset = presets.find(({ preset, available }) => preset.id === 'vacuum_only' && available)?.preset
-        ?? presets.find(({ preset, available }) => preset.id === 'vacuum_and_mop' && available)?.preset
-        ?? presets.find(({ preset, available }) => available
-          && preset.strategy === 'custom'
-          && ZONE_CLEANING_TYPES.has(preset.cleaning_type ?? 'vacuum'))?.preset;
-      if (!zonePreset) {
+    if (selectionMode === 'zone' && (draft.strategy !== 'custom' || !ZONE_CLEANING_TYPES.has(draft.cleaning_type))) {
+      const preset = zonePreset(presets);
+      if (!preset) {
         setToast(t(language, 'unsupported'));
         return;
       }
-      setDraft(draftFromPreset(zonePreset));
+      setDraft(draftFromPreset(preset));
     }
     if (!assisted && draft.cleaning_type === 'vacuum_then_mop' && floor.vacuum_then_mop_routine) {
-      const included = floor.rooms
-        .filter((room) => room.include_in_floor_clean !== false && roomUsable(hass, room))
-        .map((room) => room.segment_id);
+      const included = entireFloorSegments(hass, floor);
       setSelected(new Set(included));
     }
     setAssistedConfiguring(assisted);
@@ -283,114 +184,40 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   };
 
   const selectEntireFloor = () => {
-    const included = floor.rooms
-      .filter((room) => room.include_in_floor_clean !== false && roomUsable(hass, room))
-      .map((room) => room.segment_id);
+    const included = entireFloorSegments(hass, floor);
     setSelected(new Set(included));
     openJobSheet(Boolean(floor.assisted_carry));
   };
 
   const changeDraft = (nextDraft: JobDraft) => {
     if (nextDraft.cleaning_type === 'vacuum_then_mop' && floor.vacuum_then_mop_routine) {
-      const included = floor.rooms
-        .filter((room) => room.include_in_floor_clean !== false && roomUsable(hass, room))
-        .map((room) => room.segment_id);
+      const included = entireFloorSegments(hass, floor);
       setSelected(new Set(included));
     }
     setDraft(nextDraft);
   };
 
-  const assistantMessage = (error: unknown): string => {
-    if (error instanceof AssistedCarryError) return `${error.operation}: ${error.message}`;
-    return error instanceof Error ? error.message : String(error);
-  };
-
-  const prepareUpstairs = async (submittedDraft: JobDraft = draft) => {
-    if (submittingRef.current) return;
-    submittingRef.current = true;
-    setAssistedPending(true);
-    try {
-      const job = createAssistedJob(floor, [...selected], submittedDraft);
-      await prepareAssistedCarry(hassRef.current, config, job);
-      setSheetOpen(false);
-      setToast(t(language, 'preparingUpstairs'));
-    } catch (error) {
-      setToast(assistantMessage(error));
-      try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
-    } finally {
-      submittingRef.current = false;
-      setAssistedPending(false);
-    }
-  };
-
-  const startUpstairs = async () => {
-    if (submittingRef.current || !carryFloor || !carryJob) return;
-    submittingRef.current = true;
-    setAssistedPending(true);
-    try {
-      await startAssistedCarry(hassRef.current, config, carryFloor, carryJob);
-    } catch (error) {
-      setToast(assistantMessage(error));
-      try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
-    } finally {
-      submittingRef.current = false;
-      setAssistedPending(false);
-    }
-  };
-
-  const finishUpstairs = async () => {
-    if (submittingRef.current) return;
-    submittingRef.current = true;
-    setAssistedPending(true);
-    try {
-      await finishAssistedCarry(hassRef.current, config);
-    } catch (error) {
-      setToast(assistantMessage(error));
-      try { await setAssistedStage(hassRef.current, config, 'error'); } catch { /* retain the original error */ }
-    } finally {
-      submittingRef.current = false;
-      setAssistedPending(false);
-    }
-  };
-
-  const resetUpstairs = async () => {
-    if (assistedPending) return;
-    setAssistedPending(true);
-    try {
-      await resetAssistedCarry(hassRef.current, config);
-      setSelected(new Set());
-    } catch (error) {
-      setToast(assistantMessage(error));
-    } finally {
-      setAssistedPending(false);
-    }
-  };
-
-  const cancelUpstairs = async () => {
-    if (assistedPending) return;
-    setAssistedPending(true);
-    try {
-      const scripts = [
-        config.entities?.assisted_carry_prepare_script,
-        config.entities?.assisted_carry_start_script,
-        config.entities?.assisted_carry_finish_script,
-      ].filter((entityId): entityId is string => Boolean(entityId && hassRef.current.states[entityId]));
-      if (scripts.length > 0) await hassRef.current.callService('script', 'turn_off', {}, { entity_id: scripts });
-      if (carryStage === 'cleaning_upstairs') await hassRef.current.callService('vacuum', 'stop', {}, { entity_id: config.entity });
-      if (washing) await executeDockAction(hassRef.current, config, 'wash', true);
-      if (emptying) await executeDockAction(hassRef.current, config, 'empty', true);
-      await resetAssistedCarry(hassRef.current, config);
-      setSelected(new Set());
-    } catch (error) {
-      setToast(assistantMessage(error));
-    } finally {
-      setAssistedPending(false);
-    }
-  };
+  const assisted = useAssistedCarry({
+    hassRef,
+    submittingRef,
+    config,
+    language,
+    floor,
+    selected,
+    carryStage,
+    carryFloor,
+    carryJob,
+    washing,
+    emptying,
+    setToast,
+    clearSelection: () => setSelected(new Set()),
+    closeSheet: () => setSheetOpen(false),
+  });
+  const dock = useDockControls(hassRef, config, language, setToast);
 
   const submit = async (submittedDraft: JobDraft = draft) => {
     if (assistedConfiguring) {
-      await prepareUpstairs(submittedDraft);
+      await assisted.prepareUpstairs(submittedDraft);
       return;
     }
     if (submittingRef.current) return;
@@ -426,167 +253,35 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     }
   };
 
-  const transport = async (service: 'pause' | 'start' | 'stop' | 'return_to_base') => {
+  const transport = async (service: TransportService) => {
     try {
-      if (service === 'stop' || service === 'return_to_base') {
-        const script = config.entities?.vacuum_then_mop_script;
-        if (script && hassRef.current.states[script] && hassRef.current.states[script].state !== 'unavailable') {
-          await hassRef.current.callService('script', 'turn_off', {}, { entity_id: script });
-        }
-        const carryScript = config.entities?.assisted_carry_start_script;
-        if (assistedActive && carryScript && hassRef.current.states[carryScript] && hassRef.current.states[carryScript].state !== 'unavailable') {
-          await hassRef.current.callService('script', 'turn_off', {}, { entity_id: carryScript });
-        }
-      }
-      await hassRef.current.callService('vacuum', service, {}, { entity_id: config.entity });
-      if (service === 'stop' && carryStage === 'cleaning_upstairs') {
-        await setAssistedStage(hassRef.current, config, 'carry_downstairs');
-      }
+      await runTransport(hassRef.current, config, service, { active: assistedActive, stage: carryStage });
     } catch (error) {
       setToast(`${service}: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
-  const changeDockSetting = async (setting: DockSettingKey, value: string | boolean) => {
-    if (dockPending) return;
-    setDockPending(t(language, 'settingSaved'));
-    try {
-      await executeDockSetting(hassRef.current, config, setting, value);
-      setToast(t(language, 'settingSaved'));
-    } catch (error) {
-      const message = error instanceof DockExecutionError ? `${error.operation}: ${error.message}` : String(error);
-      setToast(message);
-    } finally {
-      setDockPending(undefined);
-    }
-  };
-
-  const resetConsumable = async (consumable: ConsumableStatus) => {
-    if (dockPending || !consumable.reset_button) return;
-    if (!window.confirm(t(language, 'confirmResetConsumable'))) return;
-    setDockPending(t(language, 'dockActionSent'));
-    try {
-      await hassRef.current.callService('button', 'press', {}, { entity_id: consumable.reset_button });
-      setToast(t(language, 'dockActionSent'));
-    } catch (error) {
-      setToast(`reset_${consumable.kind}: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setDockPending(undefined);
-    }
-  };
-
-  const runDockAction = async (action: DockAction, active: boolean) => {
-    if (dockPending) return;
-    if (!active) {
-      const prompt = action === 'empty'
-        ? t(language, 'confirmEmpty')
-        : action === 'wash'
-          ? t(language, 'confirmWash')
-          : action === 'dry'
-            ? t(language, 'confirmDry')
-            : t(language, 'confirmDrain');
-      if (!window.confirm(prompt)) return;
-    }
-    setDockPending(t(language, 'dockActionSent'));
-    try {
-      await executeDockAction(hassRef.current, config, action, active);
-      setToast(t(language, 'dockActionSent'));
-    } catch (error) {
-      const message = action === 'drain'
-        ? t(language, 'drainRejected')
-        : error instanceof DockExecutionError
-          ? `${error.operation}: ${error.message}`
-          : String(error);
-      setToast(message);
-    } finally {
-      setDockPending(undefined);
-    }
-  };
-
-  const changeChildLock = async (enabled: boolean) => {
-    const entityId = config.entities?.dock_child_lock;
-    if (!entityId || dockPending) return;
-    setDockPending(t(language, 'settingSaved'));
-    try {
-      await hassRef.current.callService('switch', enabled ? 'turn_on' : 'turn_off', {}, { entity_id: entityId });
-      setToast(t(language, 'settingSaved'));
-    } catch (error) {
-      setToast(`child_lock: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setDockPending(undefined);
-    }
-  };
-
   return (
     <ha-card className="roborock-card">
-      <div className="card-header">
-        <div>
-          <h1>{config.name ?? vacuum?.attributes.friendly_name ?? 'Roborock'}</h1>
-          <div className="state-line">
-            <span className={`state-dot state-${vacuum?.state ?? 'unavailable'}`} />
-            <span>{vacuum?.state?.replaceAll('_', ' ') ?? 'unavailable'}</span>
-            {headerDetails.map((detail) => <span className="state-detail" key={detail}>{` · ${detail}`}</span>)}
-          </div>
-        </div>
-        {statusItems.length > 0 && (
-          <div className="status-strip">
-            {statusItems.map((item) => (
-              <div key={item.label} title={item.label}>{item.icon}<strong>{item.value}</strong></div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {health.length > 0 && dismissedHealth !== healthKey && (
-        <details className="health-notice">
-          <summary><TriangleAlert />{t(language, 'setupAttention')} ({health.length})</summary>
-          <ul>{health.map((issue) => <li key={JSON.stringify(issue)}>{healthText(language, issue)}</li>)}</ul>
-          <button type="button" className="secondary" onClick={() => setDismissedHealth(healthKey)}>{t(language, 'dismiss')}</button>
-        </details>
-      )}
-
-      {config.floors.length > 1 && (
-        <div className="floor-tabs" role="tablist" aria-label={t(language, 'floor')}>
-          {config.floors.map((item) => (
-            <button
-              type="button"
-              role="tab"
-              aria-selected={floor.id === item.id}
-              className={floor.id === item.id ? 'active' : ''}
-              disabled={assistedActive && floor.id !== item.id}
-              key={item.id}
-              onClick={() => switchFloor(item.id)}
-            >
-              {item.name}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {!floor.assisted_carry && (
-        <div className="selection-mode-tabs" role="tablist" aria-label={t(language, 'selectionMode')}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selectionMode === 'rooms'}
-            className={selectionMode === 'rooms' ? 'active' : ''}
-            disabled={selectionBusy}
-            onClick={() => switchSelectionMode('rooms')}
-          >
-            {t(language, 'rooms')}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selectionMode === 'zone'}
-            className={selectionMode === 'zone' ? 'active' : ''}
-            disabled={selectionBusy}
-            onClick={() => switchSelectionMode('zone')}
-          >
-            {t(language, 'zone')}
-          </button>
-        </div>
-      )}
+      <CardHeader
+        hass={hass}
+        config={config}
+        language={language}
+        jobActive={jobActive}
+        detailedStatus={detailedStatus}
+        mopDrying={mopDrying}
+        dryingRemaining={dryingRemaining}
+      />
+      <SelectionTabs
+        language={language}
+        floors={config.floors}
+        floor={floor}
+        selectionMode={selectionMode}
+        assistedActive={assistedActive}
+        busy={selectionBusy}
+        onFloor={switchFloor}
+        onMode={switchSelectionMode}
+      />
 
       <MapView
         hass={hass}
@@ -615,56 +310,31 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           language={language}
           stage={carryStage}
           roomNames={selectedNames}
-          pending={assistedPending}
-          onStart={startUpstairs}
-          onFinish={finishUpstairs}
-          onReset={resetUpstairs}
-          onCancel={cancelUpstairs}
+          pending={assisted.assistedPending}
+          onStart={assisted.startUpstairs}
+          onFinish={assisted.finishUpstairs}
+          onReset={assisted.resetUpstairs}
+          onCancel={assisted.cancelUpstairs}
         />
       )}
 
-      <div className="selection-row">
-        <div>
-          <strong>{selectionMode === 'zone' ? t(language, 'selectedZone') : t(language, 'selectedRooms')}</strong>
-          <span>{selectionMode === 'zone'
-            ? zone ? t(language, 'zoneReady') : t(language, 'noZoneSelected')
-            : selectedNames.length ? selectedNames.join(' · ') : t(language, 'noRoomsSelected')}</span>
-        </div>
-        <span className="selection-count">{selectionMode === 'zone' ? Number(Boolean(zone)) : selected.size}</span>
-      </div>
-
-      {!assistedActive && <div className="primary-actions">
-        {selectionMode === 'rooms' && <button type="button" className="secondary" onClick={selectEntireFloor} disabled={selectionBusy}>
-          <Home /> {t(language, 'entireFloor')}
-        </button>}
-        <button
-          type="button"
-          className="primary"
-          onClick={() => openJobSheet(Boolean(floor.assisted_carry))}
-          disabled={(selectionMode === 'zone' ? !zone : selected.size === 0) || selectionBusy}
-        >
-          {floor.assisted_carry && <Sparkles />}{floor.assisted_carry ? t(language, 'prepareUpstairs') : t(language, 'configureJob')}
-        </button>
-      </div>}
-
-      <div className="transport" aria-label="Vacuum controls">
-        {vacuum?.state === 'paused' && capabilities.canStart && (
-          <button type="button" onClick={() => transport('start')}><Play />{t(language, 'resume')}</button>
-        )}
-        {vacuum?.state === 'cleaning' && capabilities.canPause && (
-          <button type="button" onClick={() => transport('pause')}><Pause />{t(language, 'pause')}</button>
-        )}
-        {capabilities.canStop && (
-          <button type="button" onClick={() => transport('stop')}><Square />{t(language, 'stop')}</button>
-        )}
-        {capabilities.canDock && (
-          <button type="button" onClick={() => transport('return_to_base')}><Home />{t(language, 'dock')}</button>
-        )}
-        <button type="button" onClick={() => setDockOpen(true)}>
-          <SlidersHorizontal />{t(language, 'dockStation')}
-          {overdue > 0 && <span className="maintenance-badge" title={t(language, 'maintenanceBadge')} aria-label={t(language, 'maintenanceBadge')}>{overdue}</span>}
-        </button>
-      </div>
+      <ActionBar
+        language={language}
+        floor={floor}
+        selectionMode={selectionMode}
+        selectedNames={selectedNames}
+        selectedCount={selected.size}
+        zone={zone}
+        assistedActive={assistedActive}
+        busy={selectionBusy}
+        vacuumState={vacuum?.state}
+        capabilities={capabilities}
+        overdue={overdue}
+        onEntireFloor={selectEntireFloor}
+        onConfigure={() => openJobSheet(Boolean(floor.assisted_carry))}
+        onTransport={transport}
+        onDock={() => setDockOpen(true)}
+      />
 
       {sheetOpen && (
         <JobSheet
@@ -673,13 +343,13 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           capabilities={capabilities}
           presets={presets}
           selectedRoomNames={selectionMode === 'zone' ? [t(language, 'customZone')] : selectedNames}
-          submitting={execution.phase === 'submitting' || assistedPending}
+          submitting={execution.phase === 'submitting' || assisted.assistedPending}
           assistedCarry={assistedConfiguring}
           zoneCleaning={selectionMode === 'zone'}
           mopRoutes={capabilities.mopRoutes}
           checks={assistedConfiguring ? undefined : preflightChecks(hass, config, draft)}
           onDraftChange={changeDraft}
-          onClose={() => execution.phase !== 'submitting' && !assistedPending && setSheetOpen(false)}
+          onClose={() => execution.phase !== 'submitting' && !assisted.assistedPending && setSheetOpen(false)}
           onStart={submit}
         />
       )}
@@ -693,13 +363,13 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           emptying={emptying}
           drying={mopDrying}
           dryingRemaining={dryingRemaining}
-          pending={dockPending}
-          onClose={() => !dockPending && setDockOpen(false)}
-          onAction={runDockAction}
-          onSetting={changeDockSetting}
-          onChildLock={changeChildLock}
+          pending={dock.dockPending}
+          onClose={() => !dock.dockPending && setDockOpen(false)}
+          onAction={dock.runDockAction}
+          onSetting={dock.changeDockSetting}
+          onChildLock={dock.changeChildLock}
           maintenance={maintenance}
-          onResetConsumable={resetConsumable}
+          onResetConsumable={dock.resetConsumable}
         />
       )}
 

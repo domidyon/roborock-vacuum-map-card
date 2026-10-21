@@ -2,6 +2,7 @@ import { CircleCheck, CircleX, TriangleAlert } from 'lucide-react';
 import { t, type TranslationKey } from '../i18n';
 import { prerequisites } from '../onboarding/prerequisites';
 import type { HomeAssistant, Language } from '../types';
+import { DiagnosticsButton } from './DiagnosticsButton';
 
 interface SetupStateProps {
   hass: HomeAssistant;
@@ -10,10 +11,12 @@ interface SetupStateProps {
   errors?: string[];
   /** Configured vacuum that doesn't exist. */
   missingVacuum?: string;
+  /** The raw card config, for diagnostics. */
+  config?: unknown;
 }
 
 /** Shown instead of the card until it can work: what is missing and how to fix it. */
-export function SetupState({ hass, language, errors = [], missingVacuum }: SetupStateProps) {
+export function SetupState({ hass, language, errors = [], missingVacuum, config }: SetupStateProps) {
   const checks = prerequisites(hass);
   return (
     <ha-card className="roborock-card setup-state">
@@ -37,6 +40,7 @@ export function SetupState({ hass, language, errors = [], missingVacuum }: Setup
           </div>
         )}
         <p className="setup-next">{t(language, 'setupOpenEditor')}</p>
+        <DiagnosticsButton hass={hass} config={config} labels={{ copy: t(language, 'copyDiagnostics'), copied: t(language, 'diagnosticsCopied'), manual: t(language, 'diagnosticsManual') }} />
       </div>
     </ha-card>
   );

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Troubleshooting guide
+    url: https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/docs/troubleshooting.md
+    about: Answers to the most common setup and usage problems.
+  - name: Supported models
+    url: https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/docs/models.md
+    about: What the card knows about each Roborock model.

@@ -1,6 +1,7 @@
 import { capabilitiesFromFlags, dockAbilities, modelName } from '../../catalog';
 import { detectCapabilities } from '../../capabilities';
-import type { EditorKey } from '../../i18n/editor';
+import { optionText } from '../../i18n';
+import { editorLanguage, type EditorKey } from '../../i18n/editor';
 import type { WizardStepProps } from './SetupWizard';
 
 export function RobotStep({ hass, draft, result, deviceFlags, t, onDraft, vacuums, vacuum, onVacuum }: WizardStepProps & {
@@ -32,7 +33,7 @@ export function RobotStep({ hass, draft, result, deviceFlags, t, onDraft, vacuum
       </article>
       <dl className="wizard-facts">
         <dt>{t('fact_smartplan')}</dt><dd>{yesNo(capabilities.hasSmartPlan)}</dd>
-        <dt>{t('fact_routes')}</dt><dd>{routes.length > 0 ? routes.join(', ') : t('none')}</dd>
+        <dt>{t('fact_routes')}</dt><dd>{routes.length > 0 ? routes.map((route) => optionText(editorLanguage(hass, draft.language), route)).join(', ') : t('none')}</dd>
         <dt>{t('fact_passes')}</dt><dd>{t(capabilities.roomRepeatStrategy === 'app_segment_clean' ? 'fact_passes_segment' : 'fact_passes_setting')}</dd>
         <dt>{t('fact_native_routine')}</dt><dd>{yesNo(native?.vac_then_mop)}</dd>
         <dt>{t('fact_dock')}</dt><dd>{dock ? Object.entries(dock).filter(([, value]) => value).map(([key]) => key.replace('_', ' ')).join(', ') || t('basicDock') : t('unknown')}</dd>

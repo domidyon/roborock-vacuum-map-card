@@ -1,5 +1,5 @@
 import { CircleCheck, CircleX } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadDeviceFlags, type DeviceFlags } from '../../catalog/device-flags';
 import { validateConfig } from '../../config';
 import { buildConfig, listRoborockVacuums, loadVacuumSegmentOptions, type DiscoveryResult } from '../../discovery';
@@ -63,6 +63,13 @@ export function SetupWizard({ hass, current, t, onFinish, onCancel }: {
   }, [vacuum]);
 
   const index = STEPS.indexOf(step);
+  // Move focus to the new step's heading so keyboard and screen-reader users follow along.
+  const heading = useRef<HTMLHeadingElement>(null);
+  const firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) { firstStep.current = false; return; }
+    heading.current?.focus();
+  }, [step]);
   const errors = draft ? validateConfig(draft) : [];
   const blocked = step === 'check' ? !canSetUp(checks) : !draft || !result || loading;
   const props = draft && result ? { hass, draft, result, deviceFlags, t, onDraft: setDraft } : undefined;
@@ -72,7 +79,7 @@ export function SetupWizard({ hass, current, t, onFinish, onCancel }: {
       <header className="editor-heading">
         <div>
           <small>{t('wizardStep', { n: index + 1, total: STEPS.length })}</small>
-          <h2>{t(`step_${step}` as EditorKey)}</h2>
+          <h2 ref={heading} tabIndex={-1}>{t(`step_${step}` as EditorKey)}</h2>
         </div>
         <button type="button" className="secondary" onClick={onCancel}>{t('close')}</button>
       </header>

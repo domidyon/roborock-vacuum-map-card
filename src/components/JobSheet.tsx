@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import type { PreflightResult } from '../preflight';
 import type { AvailablePreset } from '../presets';
 import { checkText } from './notices';
+import { useDialog } from './useDialog';
 import { draftFromPreset } from '../presets';
 import { optionText, t, type TranslationKey } from '../i18n';
 import type { CleaningCount, JobDraft, Language, MopRouteMode, RoborockCapabilities } from '../types';
@@ -99,6 +100,7 @@ export function JobSheet({
   onClose,
   onStart,
 }: JobSheetProps) {
+  const dialogRef = useDialog<HTMLElement>(onClose);
   const modeIds = zoneCleaning ? ZONE_MODE_IDS : MODE_IDS;
   // SmartPlan is hidden, not greyed out, on models whose app does not offer it.
   const appModes = modeIds
@@ -133,7 +135,7 @@ export function JobSheet({
   return (
     <div className="sheet-layer" role="presentation">
       <button type="button" className="sheet-backdrop" aria-label={t(language, 'close')} onClick={onClose} />
-      <section className="job-sheet" role="dialog" aria-modal="true" aria-labelledby="job-sheet-title">
+      <section className="job-sheet" role="dialog" aria-modal="true" aria-labelledby="job-sheet-title" ref={dialogRef} tabIndex={-1}>
         <div className="sheet-handle" />
         <header>
           <div>

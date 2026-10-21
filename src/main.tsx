@@ -43,11 +43,13 @@ abstract class ReactElement extends HTMLElement {
 export class RoborockVacuumMapCard extends ReactElement {
   private config?: RoborockVacuumMapCardConfig;
   private configErrors: string[] = [];
+  private rawConfig?: unknown;
   private language?: Language;
   private homeAssistant?: HomeAssistant;
 
   setConfig(config: RoborockVacuumMapCardConfig) {
     // An unusable config shows the setup state instead of Home Assistant's error card.
+    this.rawConfig = config;
     this.language = (config as Partial<RoborockVacuumMapCardConfig> | undefined)?.language;
     this.configErrors = validateConfig(config);
     this.config = this.configErrors.length === 0 ? normalizeConfig(config) : undefined;
@@ -64,7 +66,7 @@ export class RoborockVacuumMapCard extends ReactElement {
     const hass = this.homeAssistant;
     if (!hass) return;
     if (!this.config || !hass.states[this.config.entity]) {
-      this.renderReact(<SetupState hass={hass} language={this.language} errors={this.configErrors} missingVacuum={this.config?.entity} />);
+      this.renderReact(<SetupState hass={hass} language={this.language} errors={this.configErrors} missingVacuum={this.config?.entity} config={this.rawConfig} />);
       return;
     }
     this.renderReact(<VacuumCard hass={hass} config={this.config} />);

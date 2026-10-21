@@ -405,6 +405,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .editor-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
 .editor-toolbar button { display: inline-flex; align-items: center; gap: 6px; }
 .setup-wizard { display: grid; gap: 14px; }
+.setup-wizard header > div { display: grid; gap: 2px; }
 .setup-wizard header small { color: var(--rvm-muted); }
 .setup-wizard h2 { margin: 2px 0 0; }
 .wizard-step { display: grid; gap: 12px; }
@@ -441,6 +442,16 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .setup-problem ul { margin: 4px 0 0; padding-left: 18px; }
 .setup-next { margin: 0; font-weight: 600; }
 
+.card-banner { margin: 0 16px 12px; padding: 10px 14px; border-radius: 14px; font-size: 13px; font-weight: 600; }
+.card-banner.offline { color: var(--rvm-muted); background: var(--rvm-surface-2); }
+.card-banner.error { color: var(--rvm-danger); background: color-mix(in srgb, var(--rvm-danger) 10%, transparent); }
+.map-loading { position: absolute; inset: 0; display: grid; place-items: center; min-height: 220px; border-radius: 16px; color: var(--rvm-muted); background: linear-gradient(90deg, var(--rvm-surface-2), var(--rvm-surface), var(--rvm-surface-2)); background-size: 200% 100%; animation: rvm-shimmer 1.4s linear infinite; }
+@keyframes rvm-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.map-error button { margin-left: 10px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
 .health-notice { margin: 0 16px 12px; padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--rvm-warning) 50%, transparent); border-radius: 14px; background: color-mix(in srgb, var(--rvm-warning) 10%, transparent); font-size: 13px; }
 .health-notice summary { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; }
 .health-notice summary svg { width: 18px; height: 18px; color: var(--rvm-warning); }
@@ -469,7 +480,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .editor section { margin: 0 0 18px; padding: 16px; border: 1px solid var(--rvm-border); border-radius: 16px; background: var(--rvm-surface); }
 .editor h3 { margin: 0 0 12px; }
 .editor h4 { margin: 14px 0 8px; }
-.editor label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; text-transform: capitalize; }
+.editor label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .editor .checkbox { flex-direction: row; align-items: center; }
 .editor .checkbox input { width: 18px; min-height: auto; }
 .editor-errors { margin-bottom: 14px; padding: 12px; border-radius: 12px; color: var(--rvm-danger); background: color-mix(in srgb, var(--rvm-danger) 10%, transparent); font-size: 12px; }
