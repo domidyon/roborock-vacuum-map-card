@@ -156,6 +156,9 @@ export async function executeJob({
   }
   const areaIds = [...new Set(rooms.map((room) => room.area_id).filter((value): value is string => Boolean(value)))];
   if (!zone && areaIds.length === 0) throw new JobExecutionError('preflight', 'Select at least one room mapped to a Home Assistant area');
+  if (draft.cleaning_type === 'mop' && !config.enable_mop_only) {
+    throw new JobExecutionError('preflight', 'Mop only is disabled; set enable_mop_only: true for models that support it');
+  }
   if (zone && (draft.strategy !== 'custom' || !ZONE_CLEANING_TYPES.has(draft.cleaning_type))) {
     throw new JobExecutionError('preflight', 'Zone cleaning supports only Vacuum, Mop and Vac & Mop');
   }

@@ -64,7 +64,7 @@ describe('job executor', () => {
     });
     await executeJob({
       getHass: () => hass,
-      config: configFixture,
+      config: { ...configFixture, enable_mop_only: true },
       floor: configFixture.floors[0],
       rooms: [configFixture.floors[0].rooms[0]],
       draft: { preset_id: 'mop_only', strategy: 'custom', cleaning_type: 'mop', fan_speed: 'turbo', mop_mode: 'deep', mop_intensity: 'high', cleaning_count: 1 },
@@ -79,13 +79,27 @@ describe('job executor', () => {
     ]);
   });
 
+  it('refuses Mop only unless enable_mop_only is set', async () => {
+    const hass = createHass();
+    hass.callService = vi.fn();
+    await expect(executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: { preset_id: 'mop_only', strategy: 'custom', cleaning_type: 'mop', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 },
+      pollMs: 0,
+    })).rejects.toMatchObject({ operation: 'preflight' });
+    expect(hass.callService).not.toHaveBeenCalled();
+  });
+
   it('rejects Mop only when the cleaning-mode selector lacks mop', async () => {
     const hass = createHass();
     hass.states['select.cleaning_mode'].attributes.options = ['vacuum', 'vac_and_mop'];
     hass.callService = vi.fn();
     await expect(executeJob({
       getHass: () => hass,
-      config: configFixture,
+      config: { ...configFixture, enable_mop_only: true },
       floor: configFixture.floors[0],
       rooms: [configFixture.floors[0].rooms[0]],
       draft: { preset_id: 'mop_only', strategy: 'custom', cleaning_type: 'mop', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 },

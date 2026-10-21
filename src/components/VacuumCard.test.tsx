@@ -23,7 +23,7 @@ function drawZone(start = { x: 700, y: 200 }, end = { x: 900, y: 400 }) {
 }
 
 describe('vacuum card flows', () => {
-  it('draws a zone and offers only Vacuum, Vac & Mop and Mop before using the native action', async () => {
+  it('draws a zone and offers only Vacuum and Vac & Mop by default before using the native action', async () => {
     const hass = createHass();
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
     hass.callService = vi.fn(async (domain, service, data, target) => {
@@ -39,7 +39,7 @@ describe('vacuum card flows', () => {
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('tab', { name: 'Vacuum only' })).toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vac & Mop' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('tab', { name: 'Mop only' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('tab', { name: 'Mop only' })).not.toBeInTheDocument();
     expect(within(dialog).queryByRole('tab', { name: 'AI SmartPlan' })).not.toBeInTheDocument();
     expect(within(dialog).queryByRole('tab', { name: 'Vac followed by Mop' })).not.toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Start' }));
@@ -60,7 +60,7 @@ describe('vacuum card flows', () => {
   });
 
   it('offers Mop only without suction and limits routes per mode from config', async () => {
-    const config = { ...configFixture, mop_routes: { vacuum_and_mop: ['fast', 'standard'], mop: ['fast', 'standard', 'deep', 'deep_plus'] } };
+    const config = { ...configFixture, enable_mop_only: true, mop_routes: { vacuum_and_mop: ['fast', 'standard'], mop: ['fast', 'standard', 'deep', 'deep_plus'] } };
     render(<VacuumCard hass={createHass()} config={config} />);
     loadMap();
     await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
@@ -140,7 +140,7 @@ describe('vacuum card flows', () => {
     expect(within(dialog).getByRole('tab', { name: 'AI SmartPlan' })).toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vac followed by Mop' })).toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vac & Mop' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('tab', { name: 'Mop only' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('tab', { name: 'Mop only' })).not.toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vacuum only' })).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('tab', { name: 'Vac & Mop' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Prepare upstairs' }));
@@ -239,7 +239,7 @@ describe('vacuum card flows', () => {
   });
 
   it('translates mode names, descriptions and option values in Polish', async () => {
-    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'pl' }} />);
+    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'pl', enable_mop_only: true }} />);
     loadMap();
     await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
     await userEvent.click(screen.getByRole('button', { name: 'Ustaw sprzątanie' }));

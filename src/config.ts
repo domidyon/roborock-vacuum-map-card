@@ -88,6 +88,7 @@ export const cardConfigSchema = z
     presets: z.array(presetSchema).optional().default([]),
     default_preset: z.string().optional().default('vacuum_only'),
     vacuum_mode_fallback: z.literal('set_clean_motor_mode').optional(),
+    enable_mop_only: z.boolean().optional().default(false),
     mop_routes: z
       .object({
         vacuum_and_mop: z.array(z.string().min(1)).min(1).optional(),

@@ -6,6 +6,7 @@ describe('card config', () => {
   it('applies defaults and preserves unknown keys', () => {
     const parsed = normalizeConfig({ ...configFixture, language: undefined, future_option: { enabled: true } });
     expect(parsed.language).toBe('en');
+    expect(parsed.enable_mop_only).toBe(false);
     expect(parsed.entities).toBeDefined();
     expect(parsed.future_option).toEqual({ enabled: true });
   });

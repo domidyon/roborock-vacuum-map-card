@@ -149,6 +149,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
           <label key={key}>{label}<SelectEntity hass={hass} domain={domain} optional value={config.entities?.[key]} onChange={(value) => onChange({ ...config, entities: { ...config.entities, [key]: value } })} /></label>
         ))}
         <label className="checkbox"><input type="checkbox" checked={config.vacuum_mode_fallback === 'set_clean_motor_mode'} onChange={(event) => onChange({ ...config, vacuum_mode_fallback: event.target.checked ? 'set_clean_motor_mode' : undefined })} /> Use atomic Vacuum-mode fallback (Home Assistant 2026.7 and older)</label>
+        <label className="checkbox"><input type="checkbox" checked={config.enable_mop_only === true} onChange={(event) => onChange({ ...config, enable_mop_only: event.target.checked || undefined })} /> Enable Mop only (only for models whose Roborock app offers it, e.g. Saros 10R)</label>
       </section>
 
       <section>

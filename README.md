@@ -198,6 +198,7 @@ default_preset: vacuum_only
 | `presets` | No | Structured additional presets with optional `cleaning_count: 1` or `2`; arbitrary service YAML is intentionally unsupported |
 | `default_preset` | No | Built-in or configured preset ID |
 | `vacuum_mode_fallback` | No | `set_clean_motor_mode` enables true Vacuum mode on HA 2026.7 and older with one atomic Roborock command |
+| `enable_mop_only` | No | `true` shows the built-in Mop only mode. Defaults to `false` because some models (e.g. Qrevo Curv 2 Flow) list `mop` in the HA Cleaning mode select although the Roborock app has no Mop-only mode. Enable it only if your app offers Mop only (e.g. Saros 10R) |
 | `mop_routes` | No | Per-mode allow-list of mop routes shown in the sheet, e.g. `vacuum_and_mop: [fast, standard]` and `mop: [fast, standard, deep, deep_plus]`. Use it when Home Assistant lists routes your model does not offer in that mode. Defaults to `fast`, `standard`, `deep` filtered by the live `mop_mode` options |
 
 ## Service behavior
@@ -234,7 +235,7 @@ The onboard dirty-water drain is shown as unavailable because the current Python
 - **Room disabled:** assign an HA `area_id` in the visual editor and make sure that segment is mapped in Roborock entity settings.
 - **Preset unavailable:** its fan speed, mop mode, or intensity is absent from the live entity options. Use a supported value or another preset.
 - **Vacuum only is unavailable:** configure the Roborock high-level Cleaning mode select on Home Assistant 2026.8+, or set `vacuum_mode_fallback: set_clean_motor_mode` on older stable releases. The fallback is atomic and does not call the incompatible mop-intensity `off` select.
-- **Mop only is unavailable:** the configured `entities.cleaning_mode` select must offer the `mop` option.
+- **Mop only is missing or unavailable:** set `enable_mop_only: true` (only if your Roborock app offers Mop only), and make sure the configured `entities.cleaning_mode` select offers the `mop` option.
 - **Vac followed by Mop is unavailable:** configure `floor.vacuum_then_mop_routine`; for legacy two-phase orchestration, configure `entities.vacuum_then_mop_script` and a Cleaning mode entity that offers both `vacuum` and `mop`.
 - **Floor timeout:** verify `map_select_option` exactly matches a live option on `entities.map_select`.
 - **Card not found after install:** hard-refresh the browser and verify the HACS resource is loaded as a JavaScript module.

@@ -70,6 +70,10 @@ function missingOption(
   if (preset.cleaning_type === 'vacuum' && !canSetVacuumMode) {
     return 'cleaning mode “vacuum”';
   }
+  // HA can list "mop" on models whose app has no Mop-only mode, so it is opt-in.
+  if (preset.cleaning_type === 'mop' && !config.enable_mop_only) {
+    return 'Mop only (set enable_mop_only: true)';
+  }
   if (preset.cleaning_type === 'mop' && !capabilities.cleaningModes.includes('mop')) {
     return 'cleaning mode “mop”';
   }
@@ -96,7 +100,10 @@ export function getAvailablePresets(
   capabilities: RoborockCapabilities,
   floor?: FloorConfig,
 ): AvailablePreset[] {
-  return [...BUILT_IN_PRESETS, ...(config.presets ?? [])].map((preset) => {
+  const builtIns = config.enable_mop_only
+    ? BUILT_IN_PRESETS
+    : BUILT_IN_PRESETS.filter((preset) => preset.cleaning_type !== 'mop');
+  return [...builtIns, ...(config.presets ?? [])].map((preset) => {
     const missing = missingOption(config, capabilities, preset, floor);
     return {
       preset,

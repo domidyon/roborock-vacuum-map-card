@@ -153,6 +153,7 @@ export interface RoborockVacuumMapCardConfig {
   presets?: PresetConfig[];
   default_preset?: string;
   vacuum_mode_fallback?: 'set_clean_motor_mode';
+  enable_mop_only?: boolean;
   mop_routes?: Partial<Record<MopRouteMode, string[]>>;
   [key: string]: unknown;
 }
