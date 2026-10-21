@@ -1,23 +1,18 @@
-import { ArrowDown, ArrowUp, Plus, RefreshCw, Trash2, Wand2 } from 'lucide-react';
-import { useState } from 'react';
-import { BLUEPRINTS, blueprintImportUrl } from '../blueprints';
-import { detectCapabilities } from '../capabilities';
-import { compatibility, findCatalogModel } from '../catalog';
+import { RefreshCw, Wand2 } from 'lucide-react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { validateConfig } from '../config';
-import { parseRooms } from '../map';
-import { AreaPicker, SelectEntity } from './fields';
+import { buildConfig, resolveRoborockDevices } from '../discovery';
+import { editorLanguage, et, type EditorKey } from '../i18n/editor';
 import { needsSetup } from '../onboarding/prerequisites';
+import type { HomeAssistant, RoborockVacuumMapCardConfig } from '../types';
+import { AdvancedSection } from './editor/AdvancedSection';
+import { BasicsSection } from './editor/BasicsSection';
+import { DockSection } from './editor/DockSection';
+import { FloorsSection } from './editor/FloorsSection';
+import { PresetsSection } from './editor/PresetsSection';
+import type { SectionProps } from './editor/shared';
 import { SetupWizard } from './onboarding/SetupWizard';
-import { PresetScripts } from './PresetScripts';
 import { RedetectPanel } from './RedetectPanel';
-import type {
-  FloorConfig,
-  HomeAssistant,
-  Language,
-  PresetConfig,
-  RoborockVacuumMapCardConfig,
-  RoomConfig,
-} from '../types';
 
 interface CardEditorProps {
   hass: HomeAssistant;
@@ -25,209 +20,59 @@ interface CardEditorProps {
   onChange: (config: RoborockVacuumMapCardConfig) => void;
 }
 
-const MODEL_REPORT_URL = 'https://github.com/domidyon/roborock-vacuum-map-card/issues/new?template=model_report.yml';
-const PROFILE_STATUS = { tested: 'tested', community: 'community-tested', experimental: 'experimental, please report results' } as const;
-
-function ModelProfileNote({ hass, config }: { hass: HomeAssistant; config: RoborockVacuumMapCardConfig }) {
-  const { profile, model } = detectCapabilities(hass, config);
-  if (profile) return <p className="editor-hint">Model profile: {profile.label} ({PROFILE_STATUS[profile.status]}).</p>;
-  if (!model) return null;
-  const { verdict, name, protocol } = compatibility({ model });
-  if (verdict === 'unsupported') {
-    return <p className="editor-hint">{name ?? model} is not supported by this card{protocol ? ` (${protocol} protocol)` : ''}.</p>;
-  }
-  if (findCatalogModel(model)?.features) return <p className="editor-hint">Recognised model: {name ?? model} (feature data from python-roborock).</p>;
+function Section({ title, open = false, children }: { title: string; open?: boolean; children: ReactNode }) {
   return (
-    <p className="editor-hint">
-      No profile for {name ?? model} yet; options are detected from Home Assistant. <a href={MODEL_REPORT_URL} target="_blank" rel="noreferrer">Report your model</a>
-    </p>
+    <details className="editor-section" open={open}>
+      <summary><h3>{title}</h3></summary>
+      <div className="editor-section-body">{children}</div>
+    </details>
   );
-}
-
-function move<T>(items: T[], from: number, to: number): T[] {
-  const next = [...items];
-  const [item] = next.splice(from, 1);
-  next.splice(to, 0, item);
-  return next;
 }
 
 export function CardEditor({ hass, config, onChange }: CardEditorProps) {
   const [wizardOpen, setWizardOpen] = useState(() => needsSetup(hass, config));
   const [redetectOpen, setRedetectOpen] = useState(false);
+  const language = editorLanguage(hass, config.language);
+  const t = (key: EditorKey, values?: Record<string, string | number>) => et(language, key, values);
   const errors = validateConfig(config);
-  const updateFloor = (index: number, floor: FloorConfig) => {
-    const floors = [...config.floors];
-    floors[index] = floor;
-    onChange({ ...config, floors });
-  };
-  const mapOptions = config.entities?.map_select
-    ? (hass.states[config.entities.map_select]?.attributes.options as string[] | undefined) ?? []
-    : [];
-  const areas = Object.values(hass.areas ?? {}).sort((a, b) => a.name.localeCompare(b.name));
+  // Discovery for the auto-detected badges; registry data changes rarely, unlike states.
+  const discovery = useMemo(
+    () => (hass.entities && hass.states[config.entity] ? buildConfig(hass, config.entity).report : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hass.entities, hass.devices, config.entity],
+  );
+  const deviceIds = useMemo(() => {
+    const devices = resolveRoborockDevices(hass, config.entity);
+    return new Set([devices.robot?.id, devices.dock?.id, ...devices.companions.map((device) => device.id)].filter((id): id is string => Boolean(id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hass.entities, hass.devices, config.entity]);
 
   if (wizardOpen) {
     return (
       <div className="editor">
-        <SetupWizard hass={hass} current={config} onCancel={() => setWizardOpen(false)} onFinish={(next) => { onChange(next); setWizardOpen(false); }} />
+        <SetupWizard hass={hass} current={config} t={t} onCancel={() => setWizardOpen(false)} onFinish={(next) => { onChange(next); setWizardOpen(false); }} />
       </div>
     );
   }
 
+  const props: SectionProps = { hass, config, language, t, onChange };
+  const detected = discovery?.entities ?? {};
   return (
     <div className="editor">
-      <h2>Roborock Vacuum Map Card</h2>
-      <p>Configure the Roborock entities, calibrated maps, room mappings and job presets.</p>
+      <h2>{t('title')}</h2>
+      <p>{t('intro')}</p>
       <div className="editor-toolbar">
-        <button type="button" onClick={() => setWizardOpen(true)}><Wand2 /> Setup assistant</button>
-        <button type="button" disabled={!hass.states[config.entity]} onClick={() => setRedetectOpen(true)}><RefreshCw /> Re-detect</button>
+        <button type="button" onClick={() => setWizardOpen(true)}><Wand2 /> {t('setupAssistant')}</button>
+        <button type="button" disabled={!hass.states[config.entity]} onClick={() => setRedetectOpen(true)}><RefreshCw /> {t('redetect')}</button>
       </div>
-      {redetectOpen && <RedetectPanel hass={hass} config={config} onApply={(next) => { onChange(next); setRedetectOpen(false); }} onClose={() => setRedetectOpen(false)} />}
+      {redetectOpen && <RedetectPanel {...props} onApply={(next) => { onChange(next); setRedetectOpen(false); }} onClose={() => setRedetectOpen(false)} />}
       {errors.length > 0 && <div className="editor-errors" role="alert">{errors.map((error) => <div key={error}>{error}</div>)}</div>}
 
-      <section>
-        <h3>Card</h3>
-        <label>Name<input value={config.name ?? ''} placeholder="Use vacuum name" onChange={(event) => onChange({ ...config, name: event.target.value || undefined })} /></label>
-        <label>Language<select value={config.language ?? 'en'} onChange={(event) => onChange({ ...config, language: event.target.value as Language })}><option value="en">English</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="tr">Türkçe</option></select></label>
-        <label>Vacuum<SelectEntity hass={hass} domain="vacuum" value={config.entity} onChange={(entity) => entity && onChange({ ...config, entity })} /></label>
-        <ModelProfileNote hass={hass} config={config} />
-      </section>
-
-      <section>
-        <h3>Entities</h3>
-        {([
-          ['map_select', 'select', 'Floor selector'],
-          ['cleaning_mode', 'select', 'Cleaning mode'],
-          ['vacuum_then_mop_script', 'script', 'Legacy Vac followed by Mop script'],
-          ['mop_mode', 'select', 'Mop mode'],
-          ['mop_intensity', 'select', 'Mop intensity'],
-          ['dock_mop_drying', ['switch', 'binary_sensor'], 'Dock mop drying'],
-          ['dock_mop_drying_remaining_time', 'sensor', 'Dock mop drying remaining time'],
-          ['dock_child_lock', 'switch', 'Dock child lock'],
-          ['dock_mop_wash_frequency', 'input_select', 'Dock mop wash frequency'],
-          ['dock_wash_mode', 'input_select', 'Dock washing mode'],
-          ['dock_wash_temperature', 'input_select', 'Dock wash temperature'],
-          ['dock_auto_empty', 'input_boolean', 'Dock auto-empty'],
-          ['dock_empty_mode', 'input_select', 'Dock empty mode'],
-          ['dock_auto_dry', 'input_boolean', 'Dock auto-drying'],
-          ['dock_dry_duration', 'input_select', 'Dock drying duration'],
-          ['assisted_carry_stage', 'input_select', 'Assisted carry stage'],
-          ['assisted_carry_job', 'input_text', 'Assisted carry saved job'],
-          ['assisted_carry_prepare_script', 'script', 'Assisted carry prepare script'],
-          ['assisted_carry_start_script', 'script', 'Assisted carry start script'],
-          ['assisted_carry_finish_script', 'script', 'Assisted carry finish script'],
-          ['water_shortage', 'binary_sensor', 'Water shortage'],
-          ['mop_attached', 'binary_sensor', 'Mop attached'],
-          ['water_box_attached', 'binary_sensor', 'Water box attached'],
-          ['do_not_disturb', 'switch', 'Do not disturb'],
-          ['battery', 'sensor', 'Battery'],
-          ['current_room', 'sensor', 'Current room'],
-          ['cleaning_area', 'sensor', 'Cleaning area'],
-          ['cleaning_time', 'sensor', 'Cleaning time'],
-          ['cleaning_progress', 'sensor', 'Cleaning progress'],
-          ['status', 'sensor', 'Status'],
-          ['error', 'sensor', 'Error'],
-          ['last_clean_end', 'sensor', 'Last clean end'],
-          ['dock_clean_water_empty', 'binary_sensor', 'Dock clean water empty'],
-          ['dock_dirty_water_full', 'binary_sensor', 'Dock dirty water full'],
-          ['dock_error', 'sensor', 'Dock error'],
-          ['dock_clean_fluid_empty', 'binary_sensor', 'Dock cleaning fluid empty'],
-          ['dock_detergent_empty', 'binary_sensor', 'Dock detergent empty'],
-        ] as const).map(([key, domain, label]) => (
-          <label key={key}>{label}<SelectEntity hass={hass} domain={domain} optional value={config.entities?.[key]} onChange={(value) => onChange({ ...config, entities: { ...config.entities, [key]: value } })} /></label>
-        ))}
-        <p className="editor-hint">
-          Create the Vac followed by Mop and assisted-carry scripts from blueprints:{' '}
-          {Object.values(BLUEPRINTS).map((blueprint, index) => (
-            <span key={blueprint.file}>{index > 0 && ' · '}<a href={blueprintImportUrl(blueprint.file)} target="_blank" rel="noreferrer">{blueprint.label}</a></span>
-          ))}
-        </p>
-        {config.vacuum_mode_fallback && <label className="checkbox"><input type="checkbox" checked={config.vacuum_mode_fallback === 'set_clean_motor_mode'} onChange={(event) => onChange({ ...config, vacuum_mode_fallback: event.target.checked ? 'set_clean_motor_mode' : undefined })} /> Use deprecated Vacuum-mode fallback (Home Assistant 2026.7 and older; untick to remove)</label>}
-        <label className="checkbox"><input type="checkbox" checked={config.enable_mop_only === true} onChange={(event) => onChange({ ...config, enable_mop_only: event.target.checked || undefined })} /> Enable Mop only (only for models whose Roborock app offers it, e.g. Saros 10R)</label>
-      </section>
-
-      <section>
-        <div className="editor-heading"><h3>Floors</h3><button type="button" onClick={() => onChange({ ...config, floors: [...config.floors, { id: `floor_${config.floors.length + 1}`, name: `Floor ${config.floors.length + 1}`, map_entity: '', rooms: [] }] })}><Plus /> Add floor</button></div>
-        {config.floors.map((floor, floorIndex) => (
-          <article className="editor-card" key={`${floor.id}-${floorIndex}`}>
-            <div className="editor-heading">
-              <strong>{floor.name || `Floor ${floorIndex + 1}`}</strong>
-              <div>
-                <button type="button" aria-label="Move floor up" disabled={floorIndex === 0} onClick={() => onChange({ ...config, floors: move(config.floors, floorIndex, floorIndex - 1) })}><ArrowUp /></button>
-                <button type="button" aria-label="Move floor down" disabled={floorIndex === config.floors.length - 1} onClick={() => onChange({ ...config, floors: move(config.floors, floorIndex, floorIndex + 1) })}><ArrowDown /></button>
-                <button type="button" aria-label="Remove floor" disabled={config.floors.length === 1} onClick={() => onChange({ ...config, floors: config.floors.filter((_, index) => index !== floorIndex) })}><Trash2 /></button>
-              </div>
-            </div>
-            <div className="editor-grid">
-              <label>ID<input value={floor.id} onChange={(event) => updateFloor(floorIndex, { ...floor, id: event.target.value })} /></label>
-              <label>Name<input value={floor.name} onChange={(event) => updateFloor(floorIndex, { ...floor, name: event.target.value })} /></label>
-              <label>Custom map<SelectEntity hass={hass} domain="image" value={floor.map_entity} onChange={(map_entity) => {
-                if (!map_entity) return;
-                const discovered = parseRooms(hass.states[map_entity]);
-                const existing = new Map(floor.rooms.map((room) => [room.segment_id, room]));
-                const rooms: RoomConfig[] = discovered.map((room) => ({
-                  ...existing.get(room.segment_id),
-                  segment_id: room.segment_id,
-                  name: existing.get(room.segment_id)?.name ?? room.source_name,
-                  include_in_floor_clean: existing.get(room.segment_id)?.include_in_floor_clean ?? true,
-                }));
-                updateFloor(floorIndex, { ...floor, map_entity, rooms });
-              }} /></label>
-              <label>Selector option<select value={floor.map_select_option ?? ''} onChange={(event) => updateFloor(floorIndex, { ...floor, map_select_option: event.target.value || undefined })}><option value="">Not configured</option>{mapOptions.map((option) => <option key={option}>{option}</option>)}</select></label>
-              <label>Vac followed by Mop routine<SelectEntity hass={hass} domain="button" optional value={floor.vacuum_then_mop_routine} onChange={(vacuum_then_mop_routine) => updateFloor(floorIndex, { ...floor, vacuum_then_mop_routine })} /></label>
-              <label className="checkbox"><input type="checkbox" checked={floor.assisted_carry === true} onChange={(event) => updateFloor(floorIndex, { ...floor, assisted_carry: event.target.checked })} /> Guide this floor without its dock</label>
-            </div>
-
-            <h4>Discovered rooms</h4>
-            {floor.rooms.length === 0 ? <p>Select a calibrated custom-map image to discover rooms.</p> : (
-              <div className="room-editor-list">
-                {floor.rooms.map((room, roomIndex) => (
-                  <div className="room-editor" key={room.segment_id}>
-                    <strong>Segment {room.segment_id}</strong>
-                    <label>Name<input value={room.name} onChange={(event) => {
-                      const rooms = [...floor.rooms]; rooms[roomIndex] = { ...room, name: event.target.value }; updateFloor(floorIndex, { ...floor, rooms });
-                    }} /></label>
-                    <label>Area<AreaPicker areas={areas} value={room.area_id} onChange={(area_id) => {
-                      const rooms = [...floor.rooms]; rooms[roomIndex] = { ...room, area_id }; updateFloor(floorIndex, { ...floor, rooms });
-                    }} /></label>
-                    <label>Icon<input value={room.icon ?? ''} placeholder="mdi:floor-plan" onChange={(event) => {
-                      const rooms = [...floor.rooms]; rooms[roomIndex] = { ...room, icon: event.target.value || undefined }; updateFloor(floorIndex, { ...floor, rooms });
-                    }} /></label>
-                    <label className="checkbox"><input type="checkbox" checked={room.include_in_floor_clean !== false} onChange={(event) => {
-                      const rooms = [...floor.rooms]; rooms[roomIndex] = { ...room, include_in_floor_clean: event.target.checked }; updateFloor(floorIndex, { ...floor, rooms });
-                    }} /> Include in Entire floor</label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </article>
-        ))}
-      </section>
-
-      <section>
-        <div className="editor-heading"><h3>Additional presets</h3><button type="button" onClick={() => {
-          const next: PresetConfig = { id: `preset_${(config.presets?.length ?? 0) + 1}`, name: 'New preset', icon: 'mdi:tune', strategy: 'custom', cleaning_type: 'vacuum_and_mop', cleaning_count: 1 };
-          onChange({ ...config, presets: [...(config.presets ?? []), next] });
-        }}><Plus /> Add preset</button></div>
-        {(config.presets ?? []).map((preset, presetIndex) => (
-          <article className="editor-card" key={`${preset.id}-${presetIndex}`}>
-            <div className="editor-heading"><strong>{preset.name}</strong><div>
-              <button type="button" aria-label="Move preset up" disabled={presetIndex === 0} onClick={() => onChange({ ...config, presets: move(config.presets ?? [], presetIndex, presetIndex - 1) })}><ArrowUp /></button>
-              <button type="button" aria-label="Move preset down" disabled={presetIndex === (config.presets?.length ?? 0) - 1} onClick={() => onChange({ ...config, presets: move(config.presets ?? [], presetIndex, presetIndex + 1) })}><ArrowDown /></button>
-              <button type="button" aria-label="Remove preset" onClick={() => onChange({ ...config, presets: (config.presets ?? []).filter((_, index) => index !== presetIndex) })}><Trash2 /></button>
-            </div></div>
-            <div className="editor-grid">
-              {(['id', 'name', 'icon', 'fan_speed', 'mop_mode', 'mop_intensity'] as const).map((key) => <label key={key}>{key.replaceAll('_', ' ')}<input value={preset[key] ?? ''} onChange={(event) => {
-                const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, [key]: event.target.value || undefined }; onChange({ ...config, presets });
-              }} /></label>)}
-              <label>Strategy<select value={preset.strategy} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, strategy: event.target.value as PresetConfig['strategy'] }; onChange({ ...config, presets }); }}><option value="custom">Custom</option><option value="smartplan">SmartPlan</option></select></label>
-              <label>Cleaning type<select value={preset.cleaning_type ?? 'vacuum_and_mop'} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_type: event.target.value as PresetConfig['cleaning_type'] }; onChange({ ...config, presets }); }}><option value="vacuum">Vacuum only</option><option value="mop">Mop only</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="vacuum_then_mop">Vacuum followed by mop</option></select></label>
-              <label>Cleaning count<select value={preset.cleaning_count ?? 1} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_count: Number(event.target.value) as 1 | 2 }; onChange({ ...config, presets }); }}><option value="1">1</option><option value="2">2</option></select></label>
-            </div>
-          </article>
-        ))}
-        <label>Default preset<select value={config.default_preset ?? 'vacuum_only'} onChange={(event) => onChange({ ...config, default_preset: event.target.value })}><option value="smartplan">SmartPlan</option><option value="vacuum_then_mop">Vacuum followed by mop</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="vacuum_only">Vacuum only</option>{(config.presets ?? []).map((preset) => <option key={preset.id} value={preset.id}>{preset.name}</option>)}</select></label>
-        <PresetScripts hass={hass} config={config} />
-      </section>
+      <Section title={t('sectionBasics')} open><BasicsSection {...props} /></Section>
+      <Section title={t('sectionFloors')} open><FloorsSection {...props} detected={detected} deviceIds={deviceIds} /></Section>
+      <Section title={t('sectionDock')}><DockSection {...props} model={discovery?.model} detected={detected} deviceIds={deviceIds} /></Section>
+      <Section title={t('sectionPresets')}><PresetsSection {...props} /></Section>
+      <Section title={t('sectionAdvanced')}><AdvancedSection {...props} detected={detected} deviceIds={deviceIds} /></Section>
     </div>
   );
 }

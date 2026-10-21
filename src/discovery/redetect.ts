@@ -1,4 +1,5 @@
 import { areaMissing } from '../health';
+import type { EditorKey } from '../i18n/editor';
 import type { ConsumableConfig, FloorConfig, HomeAssistant, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
 import type { DiscoveryResult } from '.';
 import { normalizeName } from './maps';
@@ -114,17 +115,21 @@ export function applyChanges(current: RoborockVacuumMapCardConfig, changes: Conf
   return config;
 }
 
-/** One-line English description for the editor's Re-detect list. */
-export function describeChange(change: ConfigChange): string {
+/** One-line description for the editor's Re-detect list. */
+export function describeChange(change: ConfigChange, t: (key: EditorKey, values?: Record<string, string | number>) => string): string {
+  const none = t('none');
   switch (change.kind) {
-    case 'entity': return change.from ? `Replace missing ${change.key} ${change.from} with ${change.to}` : `Add ${change.key}: ${change.to}`;
-    case 'floor_added': return `Add floor ${change.floor.name} (${change.floor.rooms.length} rooms)`;
-    case 'floor_map': return `Floor ${change.floor_id}: map image ${change.from} → ${change.to}`;
-    case 'floor_option': return `Floor ${change.floor_id}: map ${change.from ?? '(none)'} → ${change.to}`;
-    case 'room_area': return `Room ${change.room}: area ${change.from ?? '(none)'} → ${change.to}`;
-    case 'room_added': return `Add room ${change.room.name} to floor ${change.floor_id}${change.room.area_id ? '' : ' (no area yet)'}`;
-    case 'consumables': return `Show ${change.to.length} parts in the maintenance view`;
-    case 'model_fact': return `Set ${change.key} from the robot's own feature flags`;
-    case 'config_version': return `Record config format version ${change.to}`;
+    case 'entity': {
+      const label = t(`entity_${change.key}` as EditorKey);
+      return change.from ? t('change_entity_replace', { label, from: change.from, to: change.to }) : t('change_entity_add', { label, to: change.to });
+    }
+    case 'floor_added': return t('change_floor_added', { name: change.floor.name, n: change.floor.rooms.length });
+    case 'floor_map': return t('change_floor_map', { floor: change.floor_id, from: change.from, to: change.to });
+    case 'floor_option': return t('change_floor_option', { floor: change.floor_id, from: change.from ?? none, to: change.to });
+    case 'room_area': return t('change_room_area', { room: change.room, from: change.from ?? none, to: change.to });
+    case 'room_added': return t(change.room.area_id ? 'change_room_added' : 'change_room_added_unmapped', { room: change.room.name, floor: change.floor_id });
+    case 'consumables': return t('change_consumables', { n: change.to.length });
+    case 'model_fact': return t('change_model_fact', { key: change.key });
+    case 'config_version': return t('change_config_version', { n: change.to });
   }
 }

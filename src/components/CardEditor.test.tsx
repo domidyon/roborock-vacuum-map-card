@@ -39,11 +39,12 @@ describe('editor model note', () => {
 });
 
 describe('editor blueprint links', () => {
-  it('links every script blueprint through My Home Assistant', () => {
-    const { container } = render(<CardEditor hass={createHass()} config={configFixture} onChange={() => undefined} />);
+  it('links the script blueprints through My Home Assistant where they are needed', () => {
+    const config = { ...configFixture, floors: configFixture.floors.map((floor, index) => ({ ...floor, assisted_carry: index === 1 })) };
+    const { container } = render(<CardEditor hass={createHass()} config={config} onChange={() => undefined} />);
     const links = [...container.querySelectorAll('a[href*="blueprint_import"]')].map((link) => decodeURIComponent(link.getAttribute('href') ?? ''));
     expect(links).toHaveLength(4);
-    expect(links[0]).toBe('https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/blueprints/script/roborock_vacuum_map_card/vacuum_then_mop.yaml');
+    expect(links).toContain('https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/blueprints/script/roborock_vacuum_map_card/vacuum_then_mop.yaml');
   });
 });
 
@@ -53,7 +54,7 @@ describe('editor entity fields', () => {
     hass.states['switch.dock_mop_drying'] = { entity_id: 'switch.dock_mop_drying', state: 'off', attributes: {} };
     const config = { ...configFixture, entities: { ...configFixture.entities, dock_mop_drying: 'switch.dock_mop_drying' } };
     render(<CardEditor hass={hass} config={config} onChange={() => undefined} />);
-    const select = screen.getByLabelText('Dock mop drying') as HTMLSelectElement;
+    const select = screen.getAllByLabelText(/^Mop drying/)[0] as HTMLSelectElement;
     expect(select.value).toBe('switch.dock_mop_drying');
     expect([...select.options].map((option) => option.value)).toContain('binary_sensor.mop_drying');
   });

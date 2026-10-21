@@ -2,10 +2,13 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { getStubConfig, validateConfig } from '../../config';
-import { createDiscoveryHass } from '../../test/discovery-hass';
+import { createDiscoveryHass as discoveryHass } from '../../test/discovery-hass';
 import liveConfig from '../../test/fixtures/qrevo-live-card-config.json';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from '../../types';
 import { CardEditor } from '../CardEditor';
+
+// The fixture's Home Assistant user is Dutch; these tests read the English editor.
+const createDiscoveryHass = () => discoveryHass(undefined, { locale: { language: 'en' } });
 
 async function next() {
   await userEvent.click(screen.getByRole('button', { name: 'Next' }));
@@ -60,7 +63,7 @@ describe('setup assistant', () => {
 
     const saved = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
     expect(validateConfig(saved)).toEqual([]);
-    expect(saved).toMatchObject({ entity: 'vacuum.qrevo_curv_2_flow', config_version: 1, language: 'nl' });
+    expect(saved).toMatchObject({ entity: 'vacuum.qrevo_curv_2_flow', config_version: 1 });
     expect(saved.floors.map((floor) => floor.id)).toEqual(['beneden', 'map_1', 'badkamer']);
     expect(saved.consumables).toHaveLength(5);
   });
@@ -74,7 +77,7 @@ describe('setup assistant', () => {
     await next();
     await next();
     await next();
-    await userEvent.click(screen.getByRole('button', { name: 'Create 7 helpers' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Create 7 missing helpers' }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Created 7 helpers.'));
     expect(calls.filter((type) => type.endsWith('/create'))).toHaveLength(7);
     await next();
@@ -120,5 +123,14 @@ describe('re-detect panel', () => {
     const applied = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
     expect(applied.floors.find((floor) => floor.id === 'bathroom')?.rooms[0].area_id).toBe('bathroom');
     expect(applied.floors.find((floor) => floor.id === 'upstairs')?.rooms).toHaveLength(4);
+  });
+});
+
+describe('editor language', () => {
+  it('follows the Home Assistant user language', async () => {
+    render(<CardEditor hass={discoveryHass()} config={getStubConfig()} onChange={() => undefined} />);
+    expect(screen.getByRole('heading', { name: 'Voordat je begint' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Volgende' }));
+    expect(await screen.findByText(/Ondersteund · profiel: getest/)).toBeInTheDocument();
   });
 });

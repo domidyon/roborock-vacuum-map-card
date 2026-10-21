@@ -156,7 +156,6 @@ The road to **1.0** is all about setup that just works:
 - ✅ On the beta branch now: setup assistant, Re-detect, model profiles and a model catalog,
   one-click dock helpers, presets as scripts, pre-start checks and maintenance
 - 🧰 Native dock entities instead of helpers, once Home Assistant's fixes ship and they pass every check
-- 🌍 A translated editor
 - 🩹 **Diagnostics export** for quick, useful bug reports
 
 Work happens on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)

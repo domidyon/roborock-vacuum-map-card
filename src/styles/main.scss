@@ -385,6 +385,23 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .field select, .editor input, .editor select { width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid var(--rvm-border); border-radius: 11px; color: var(--rvm-text); background: var(--rvm-surface); }
 .field .segmented { margin: 0; }
 
+.editor-section { margin: 0 0 10px; border: 1px solid var(--rvm-border); border-radius: 14px; }
+.editor-section > summary { display: flex; align-items: center; min-height: 48px; padding: 0 16px; cursor: pointer; list-style: none; }
+.editor-section > summary::-webkit-details-marker { display: none; }
+.editor-section > summary::after { content: '▸'; margin-left: auto; color: var(--rvm-muted); transition: transform 0.15s; }
+.editor-section[open] > summary::after { transform: rotate(90deg); }
+.editor-section > summary h3 { margin: 0; font-size: 15px; }
+.editor-section-body { display: grid; gap: 10px; padding: 0 16px 16px; }
+.entity-group { display: grid; gap: 8px; margin: 0; padding: 10px 12px; border: 1px solid var(--rvm-border); border-radius: 12px; }
+.entity-group legend { padding: 0 6px; font-weight: 600; }
+.entity-fields { display: grid; gap: 8px; }
+.entity-field label > span { display: flex; align-items: center; gap: 8px; }
+.entity-badge { padding: 1px 8px; border-radius: 9px; font-size: 11px; background: var(--rvm-surface-2); color: var(--rvm-muted); }
+.entity-badge.manual { color: var(--rvm-warning); }
+.link-button { padding: 2px 0; border: 0; background: none; color: var(--rvm-accent); font-size: 12px; cursor: pointer; text-align: left; }
+.consumable-list { margin: 0; padding-left: 18px; font-size: 13px; }
+.helper-provisioner { display: grid; gap: 8px; }
+
 .editor-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
 .editor-toolbar button { display: inline-flex; align-items: center; gap: 6px; }
 .setup-wizard { display: grid; gap: 14px; }

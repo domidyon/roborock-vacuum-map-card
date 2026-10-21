@@ -3,8 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { loadDeviceFlags, type DeviceFlags } from '../../catalog/device-flags';
 import { validateConfig } from '../../config';
 import { buildConfig, listRoborockVacuums, loadVacuumSegmentOptions, type DiscoveryResult } from '../../discovery';
-import { canSetUp, prerequisites, type PrerequisiteId } from '../../onboarding/prerequisites';
+import { canSetUp, prerequisites } from '../../onboarding/prerequisites';
+import type { EditorKey } from '../../i18n/editor';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from '../../types';
+import type { Translate } from '../editor/shared';
 import { toYaml } from '../../yaml';
 import { DockStep, PresetsStep } from './DockSteps';
 import { FloorsStep, RoomsStep } from './FloorSteps';
@@ -15,26 +17,12 @@ export interface WizardStepProps {
   draft: RoborockVacuumMapCardConfig;
   result: DiscoveryResult;
   deviceFlags?: DeviceFlags;
+  t: Translate;
   onDraft: (draft: RoborockVacuumMapCardConfig) => void;
 }
 
 const STEPS = ['check', 'robot', 'floors', 'rooms', 'dock', 'presets', 'review'] as const;
 type Step = typeof STEPS[number];
-const TITLES: Record<Step, string> = {
-  check: 'Before you start',
-  robot: 'Your robot',
-  floors: 'Floors',
-  rooms: 'Rooms',
-  dock: 'Dock and helpers',
-  presets: 'Presets',
-  review: 'Review and save',
-};
-const PREREQUISITES: Record<PrerequisiteId, string> = {
-  home_assistant_version: 'Home Assistant 2026.8 or newer',
-  roborock_integration: 'The Roborock integration with at least one vacuum',
-  custom_map: 'Roborock Custom Map, for calibrated maps with rooms',
-  administrator: 'An administrator account, to read room areas and create helpers',
-};
 
 /** Keeps what the user set up by hand when re-running the assistant for the same vacuum. */
 function carryOver(detected: RoborockVacuumMapCardConfig, current: RoborockVacuumMapCardConfig): RoborockVacuumMapCardConfig {
@@ -43,9 +31,10 @@ function carryOver(detected: RoborockVacuumMapCardConfig, current: RoborockVacuu
   return { ...detected, ...kept };
 }
 
-export function SetupWizard({ hass, current, onFinish, onCancel }: {
+export function SetupWizard({ hass, current, t, onFinish, onCancel }: {
   hass: HomeAssistant;
   current: RoborockVacuumMapCardConfig;
+  t: Translate;
   onFinish: (config: RoborockVacuumMapCardConfig) => void;
   onCancel: () => void;
 }) {
@@ -76,16 +65,16 @@ export function SetupWizard({ hass, current, onFinish, onCancel }: {
   const index = STEPS.indexOf(step);
   const errors = draft ? validateConfig(draft) : [];
   const blocked = step === 'check' ? !canSetUp(checks) : !draft || !result || loading;
-  const props = draft && result ? { hass, draft, result, deviceFlags, onDraft: setDraft } : undefined;
+  const props = draft && result ? { hass, draft, result, deviceFlags, t, onDraft: setDraft } : undefined;
 
   return (
     <div className="setup-wizard">
       <header className="editor-heading">
         <div>
-          <small>Setup assistant · step {index + 1} of {STEPS.length}</small>
-          <h2>{TITLES[step]}</h2>
+          <small>{t('wizardStep', { n: index + 1, total: STEPS.length })}</small>
+          <h2>{t(`step_${step}` as EditorKey)}</h2>
         </div>
-        <button type="button" className="secondary" onClick={onCancel}>Close</button>
+        <button type="button" className="secondary" onClick={onCancel}>{t('close')}</button>
       </header>
 
       {step === 'check' && (
@@ -93,13 +82,13 @@ export function SetupWizard({ hass, current, onFinish, onCancel }: {
           {checks.map((check) => (
             <li key={check.id} className={check.ok ? 'ok' : check.blocking ? 'missing' : 'optional'}>
               {check.ok ? <CircleCheck /> : <CircleX />}
-              <span>{PREREQUISITES[check.id]}</span>
-              {!check.ok && check.fix_url && <a href={check.fix_url} target="_blank" rel="noreferrer">Fix</a>}
+              <span>{t(`prereq_${check.id}` as EditorKey)}</span>
+              {!check.ok && check.fix_url && <a href={check.fix_url} target="_blank" rel="noreferrer">{t('fix')}</a>}
             </li>
           ))}
         </ul>
       )}
-      {step !== 'check' && loading && <p role="status">Looking at your Roborock devices…</p>}
+      {step !== 'check' && loading && <p role="status">{t('discovering')}</p>}
       {step === 'robot' && props && <RobotStep {...props} vacuums={vacuums} vacuum={vacuum} onVacuum={setVacuum} />}
       {step === 'floors' && props && <FloorsStep {...props} />}
       {step === 'rooms' && props && <RoomsStep {...props} />}
@@ -108,16 +97,16 @@ export function SetupWizard({ hass, current, onFinish, onCancel }: {
       {step === 'review' && draft && (
         <>
           {errors.length > 0 && <div className="editor-errors" role="alert">{errors.map((error) => <div key={error}>{error}</div>)}</div>}
-          <p>This is the card configuration the assistant will save. You can change everything later in the editor.</p>
+          <p>{t('reviewIntro')}</p>
           <pre className="yaml-preview">{toYaml(draft)}</pre>
         </>
       )}
 
       <footer className="wizard-nav">
-        <button type="button" className="secondary" disabled={index === 0} onClick={() => setStep(STEPS[index - 1])}>Back</button>
+        <button type="button" className="secondary" disabled={index === 0} onClick={() => setStep(STEPS[index - 1])}>{t('back')}</button>
         {step === 'review'
-          ? <button type="button" className="primary" disabled={!draft || errors.length > 0} onClick={() => draft && onFinish(draft)}>Save card</button>
-          : <button type="button" className="primary" disabled={blocked} onClick={() => setStep(STEPS[index + 1])}>Next</button>}
+          ? <button type="button" className="primary" disabled={!draft || errors.length > 0} onClick={() => draft && onFinish(draft)}>{t('saveCard')}</button>
+          : <button type="button" className="primary" disabled={blocked} onClick={() => setStep(STEPS[index + 1])}>{t('next')}</button>}
       </footer>
     </div>
   );

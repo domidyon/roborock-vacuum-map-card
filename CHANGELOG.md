@@ -31,6 +31,10 @@
 - Add Re-detect: per-change fixes for new entities, rooms and maps, renamed map images or options, deleted areas and consumables, without touching working choices.
 - Add presets as Home Assistant scripts (created by administrators, YAML for others).
 - Add `config_version` and an in-memory migration pipeline for future format changes.
+- Redesign the editor into collapsible sections (Basics, Floors and rooms, Dock, Presets, Advanced). Mark entities auto-detected or manual, offer detected entities for empty fields, and use Home Assistant's entity, area and icon pickers narrowed to the vacuum's devices.
+- Choose preset suction, route and water flow from the robot's supported options instead of free text.
+- Translate the editor, setup assistant, Re-detect and preset scripts into English, Dutch, Polish and Turkish, following the Home Assistant user language.
+- Fix the native area picker in the editor not receiving `hass`.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21

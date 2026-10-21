@@ -3,11 +3,13 @@ import { loadDeviceFlags } from '../catalog/device-flags';
 import { buildConfig, loadVacuumSegmentOptions } from '../discovery';
 import { applyChanges, describeChange, diffConfig, type ConfigChange } from '../discovery/redetect';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from '../types';
+import type { Translate } from './editor/shared';
 
 /** Runs discovery again and offers each fix or addition separately. */
-export function RedetectPanel({ hass, config, onApply, onClose }: {
+export function RedetectPanel({ hass, config, t, onApply, onClose }: {
   hass: HomeAssistant;
   config: RoborockVacuumMapCardConfig;
+  t: Translate;
   onApply: (config: RoborockVacuumMapCardConfig) => void;
   onClose: () => void;
 }) {
@@ -27,16 +29,16 @@ export function RedetectPanel({ hass, config, onApply, onClose }: {
   return (
     <section className="editor-card redetect-panel">
       <div className="editor-heading">
-        <strong>Re-detect</strong>
-        <button type="button" className="secondary" onClick={onClose}>Close</button>
+        <strong>{t('redetect')}</strong>
+        <button type="button" className="secondary" onClick={onClose}>{t('close')}</button>
       </div>
       {!changes && (
         <>
-          <p>Looks for new entities, maps, rooms and areas, and for values that no longer exist. Nothing changes until you apply it.</p>
-          <button type="button" className="primary" disabled={running} onClick={run}>{running ? 'Checking…' : 'Check now'}</button>
+          <p>{t('redetectIntro')}</p>
+          <button type="button" className="primary" disabled={running} onClick={run}>{running ? t('checking') : t('checkNow')}</button>
         </>
       )}
-      {changes?.length === 0 && <p role="status">Everything is up to date.</p>}
+      {changes?.length === 0 && <p role="status">{t('upToDate')}</p>}
       {changes && changes.length > 0 && (
         <>
           <ul className="redetect-changes">
@@ -52,7 +54,7 @@ export function RedetectPanel({ hass, config, onApply, onClose }: {
                       setSelected(next);
                     }}
                   />
-                  {describeChange(change)}
+                  {describeChange(change, t)}
                 </label>
               </li>
             ))}
@@ -63,7 +65,7 @@ export function RedetectPanel({ hass, config, onApply, onClose }: {
             disabled={selected.size === 0}
             onClick={() => onApply(applyChanges(config, changes.filter((change) => selected.has(change.id))))}
           >
-            Apply {selected.size} changes
+            {t('applyChanges', { n: selected.size })}
           </button>
         </>
       )}

@@ -68,7 +68,7 @@ if (dark) {
 // ?view=editor runs the visual editor against the redacted live Qrevo registry fixture.
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 if (params.get('view') === 'editor') {
-  const editorHass = createDiscoveryHass();
+  const editorHass = createDiscoveryHass(undefined, { locale: { language: params.get('lang') ?? 'en' } });
   root.render(<div className="editor"><CardEditor hass={editorHass} config={getStubConfig()} onChange={(next) => { window.__savedConfig = next; }} /></div>);
 } else {
   root.render(<VacuumCard hass={hass} config={config} />);

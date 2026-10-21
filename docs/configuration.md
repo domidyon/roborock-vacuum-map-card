@@ -26,6 +26,16 @@ and is always available from the toolbar. Its steps:
 
 Re-running the assistant for the same vacuum keeps your name, language and presets.
 
+The editor itself is grouped into collapsible sections: **Basics**, **Floors and rooms**
+(with assisted-carry entities when a floor uses it), **Dock** (remembered settings,
+helper creation, maintenance parts), **Presets** (suction, route and water flow chosen
+from what your robot supports) and **Advanced: entities**. Entity fields are marked
+*auto-detected* when they match discovery and *manual* when they differ, and an empty
+field offers the detected entity. Pickers use Home Assistant's own entity, area and icon
+pickers, narrowed to the vacuum's devices. The editor follows your Home Assistant
+language (English, Nederlands, Polski, Türkçe); the card's own language is set
+separately.
+
 **Re-detect** compares the config with a fresh discovery and lists each fix or addition
 separately: new entities, rooms and maps, renamed map images or options, deleted areas,
 consumables. It never replaces a working entity, a valid area, or your names and icons.
