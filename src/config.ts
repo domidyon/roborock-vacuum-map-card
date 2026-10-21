@@ -43,6 +43,7 @@ const presetSchema = z
 export const cardConfigSchema = z
   .object({
     type: z.literal('custom:roborock-vacuum-map-card').optional(),
+    config_version: z.number().int().positive().optional(),
     entity: entityId.refine((value) => value.startsWith('vacuum.'), 'Entity must be a vacuum'),
     name: z.string().optional(),
     language: z.enum(['en', 'nl', 'pl', 'tr']).optional().default('en'),
@@ -162,12 +163,40 @@ export const cardConfigSchema = z
     }
   });
 
+/** Version of the config format written by the setup assistant and Re-detect. */
+export const CONFIG_VERSION = 1;
+
+/** Upgrades a config from version `from` to `from + 1`. */
+export type ConfigMigration = (config: Record<string, unknown>) => Record<string, unknown>;
+
+/**
+ * Migrations by source version; index 0 upgrades version 1 to 2. Configs without
+ * `config_version` (every 0.x config) are version 1. Add a migration whenever a release
+ * changes the meaning of existing keys, and bump CONFIG_VERSION.
+ */
+export const MIGRATIONS: ConfigMigration[] = [];
+
+export function migrateConfig(
+  input: unknown,
+  migrations: ConfigMigration[] = MIGRATIONS,
+): { config: Record<string, unknown>; migrated: boolean } {
+  if (!input || typeof input !== 'object') return { config: input as Record<string, unknown>, migrated: false };
+  let config = input as Record<string, unknown>;
+  const start = typeof config.config_version === 'number' ? config.config_version : 1;
+  // Invalid versions are left for the schema to reject.
+  for (let version = start; Number.isInteger(version) && version >= 1 && version - 1 < migrations.length; version += 1) {
+    config = { ...migrations[version - 1](structuredClone(config)), config_version: version + 1 };
+  }
+  return { config, migrated: config !== input };
+}
+
+/** Parses a config in memory, migrating older formats first. Never writes the config back. */
 export function normalizeConfig(input: unknown): RoborockVacuumMapCardConfig {
-  return cardConfigSchema.parse(input) as RoborockVacuumMapCardConfig;
+  return cardConfigSchema.parse(migrateConfig(input).config) as RoborockVacuumMapCardConfig;
 }
 
 export function validateConfig(input: unknown): string[] {
-  const result = cardConfigSchema.safeParse(input);
+  const result = cardConfigSchema.safeParse(migrateConfig(input).config);
   if (result.success) return [];
   return result.error.issues.map((issue) => `${issue.path.join('.') || 'config'}: ${issue.message}`);
 }

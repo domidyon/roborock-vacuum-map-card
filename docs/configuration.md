@@ -4,15 +4,45 @@ Everything the visual editor sets can also be written in YAML. This page is the 
 
 ## Visual editor setup
 
-The editor supports the complete setup without hand-written YAML:
+**Add card** starts from a discovered config: the first Roborock vacuum, its entities
+(matched by Home Assistant's translation keys, not entity ids), one floor per Roborock
+map, its rooms, and the areas Home Assistant's Roborock settings map them to. Model
+facts come from the model profile, the robot's own feature flags (read from Home
+Assistant's Roborock diagnostics, administrators only) or the python-roborock catalog.
 
-1. Select the vacuum and optional status/settings entities.
-2. Add each floor and select its Roborock Custom Map image.
-3. The editor discovers segments from the image entity's `rooms` attribute.
-4. Map each segment to a Home Assistant area, then set its label, icon, and **Include in Entire floor** value.
-5. Add optional presets and select a default.
+The **setup assistant** in the editor opens by itself for a card that can't work yet,
+and is always available from the toolbar. Its steps:
+
+1. **Before you start:** Home Assistant version, Roborock integration, Roborock Custom
+   Map, administrator rights, each with a link to fix it.
+2. **Your robot:** compatibility, model profile, SmartPlan, routes, how two passes are
+   sent, dock abilities, and the Mop only switch.
+3. **Floors:** which maps to show, their names, Vac followed by Mop routines, and assisted carry.
+4. **Rooms:** names, areas, icons, Entire floor membership.
+5. **Dock and helpers:** creates the missing dock helpers (administrators) or shows
+   `configuration.yaml`. Assisted carry links its blueprints.
+6. **Presets:** the default mode and an optional Evening preset.
+7. **Review and save:** the generated YAML.
+
+Re-running the assistant for the same vacuum keeps your name, language and presets.
+
+**Re-detect** compares the config with a fresh discovery and lists each fix or addition
+separately: new entities, rooms and maps, renamed map images or options, deleted areas,
+consumables. It never replaces a working entity, a valid area, or your names and icons.
+
+**Presets as scripts:** the editor's preset section can turn any available preset into
+a Home Assistant script with `floor` and optional `areas` fields, so automations,
+schedules and voice assistants can run it. Administrators create it directly
+(`script.rvmc_<vacuum>_<preset>`); others get YAML. The script mirrors what the card does
+and is a snapshot, so create it again after changing the preset.
 
 If areas are missing, configure segment-to-area mapping in the Roborock vacuum entity settings first.
+
+### Config versions
+
+Configs written by the assistant include `config_version: 1`. Configs without it are
+treated as version 1. When a future release changes the format, the card migrates older
+configs in memory, and the editor offers to save the new format.
 
 For Roborock multi-level homes, enable **Multi-level** and **Manual Selection** in
 the Roborock app. Smart Recognition can override Home Assistant's selected map

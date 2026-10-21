@@ -25,6 +25,12 @@
 - Add a *Setup needs attention* notice for config drift (missing areas or entities, renamed maps, lost calibration). Rooms whose area was deleted are disabled with a reason.
 - Discover the dock water-tank and dock-error sensors.
 - Fix the editor hiding a configured dock mop-drying switch (Home Assistant replaced the binary sensor with a switch).
+- Add the setup assistant in the editor (checks, robot, floors, rooms, dock helpers, presets, review). It opens by itself for cards that can't work yet.
+- "Add card" now starts from a discovered config for the first Roborock vacuum, including Home Assistant's room-to-area mapping and the robot's feature flags.
+- Show a localized *Finish setting up* state with fix links instead of Home Assistant's error card when the config is unusable or the vacuum is gone.
+- Add Re-detect: per-change fixes for new entities, rooms and maps, renamed map images or options, deleted areas and consumables, without touching working choices.
+- Add presets as Home Assistant scripts (created by administrators, YAML for others).
+- Add `config_version` and an in-memory migration pipeline for future format changes.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21

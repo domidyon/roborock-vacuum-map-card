@@ -122,3 +122,14 @@ export function compatibility(options: {
     protocol,
   };
 }
+
+/** What the dock can do: the robot's own flags, then the profile, then the catalog. */
+export function dockAbilities(model?: string, deviceFlags?: FeatureFlags): FlagDockAbilities | undefined {
+  if (deviceFlags) return capabilitiesFromFlags(deviceFlags).dock;
+  const profile = findProfile(model)?.dock;
+  if (profile) return profile;
+  const features = findCatalogModel(model)?.features;
+  return features ? capabilitiesFromFlags(new Set(features)).dock : undefined;
+}
+
+type FlagDockAbilities = Partial<ReturnType<typeof capabilitiesFromFlags>['dock']>;

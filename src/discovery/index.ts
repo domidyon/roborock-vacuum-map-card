@@ -1,4 +1,5 @@
 import { compatibility, modelFacts, type Compatibility } from '../catalog';
+import { CONFIG_VERSION } from '../config';
 import type { DeviceFlags } from '../catalog/device-flags';
 import type { ModelProfile } from '../profiles';
 import type { ConsumableConfig, FloorConfig, HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
@@ -219,6 +220,7 @@ export function buildConfig(
   const localeLanguage = hass.locale?.language?.split('-')[0] as Language | undefined;
   const config: RoborockVacuumMapCardConfig = {
     type: 'custom:roborock-vacuum-map-card',
+    config_version: CONFIG_VERSION,
     entity: vacuum,
     ...(localeLanguage && LANGUAGES.includes(localeLanguage) && localeLanguage !== 'en' ? { language: localeLanguage } : {}),
     entities: entities as RoborockEntityConfig,

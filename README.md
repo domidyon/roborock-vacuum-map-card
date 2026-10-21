@@ -94,10 +94,13 @@ See [supported models](docs/models.md) for what each model profile changes.
 ## 🚀 Quick start
 
 1. Edit a dashboard → **Add card** → **Roborock Vacuum Map Card**.
-2. Pick your vacuum and the optional status/dock entities.
-3. Add a floor and select its **Roborock Custom Map** image. Rooms are discovered automatically.
-4. Map each room to a Home Assistant area and choose icons.
-5. Save, tap a room, and press **Start**.
+2. The card starts with your vacuum, maps, rooms and areas already filled in. Open the
+   editor and the **setup assistant** *(beta)* walks you through checking them: floors,
+   rooms, dock helpers and a default mode.
+3. Save, tap a room, and press **Start**.
+
+Changed something in Home Assistant later? **Re-detect** in the editor offers the fixes
+(new rooms, renamed maps, deleted areas) one by one.
 
 A minimal YAML config looks like this:
 
@@ -150,10 +153,10 @@ More answers are in the [full troubleshooting guide](docs/configuration.md#troub
 
 The road to **1.0** is all about setup that just works:
 
-- 🪄 **Setup assistant:** pick your vacuum, and floors, rooms, areas and entities are detected automatically
-- 🧬 **Model profiles:** per-model defaults (mop modes, routes, dock features) applied for you
-- 🧰 **One-click dock helpers:** helpers created for you, or native dock entities used where available
-- 🤖 **Presets as scripts:** run your presets from automations, schedules and voice assistants
+- ✅ On the beta branch now: setup assistant, Re-detect, model profiles and a model catalog,
+  one-click dock helpers, presets as scripts, pre-start checks and maintenance
+- 🧰 Native dock entities instead of helpers, once Home Assistant's fixes ship and they pass every check
+- 🌍 A translated editor
 - 🩹 **Diagnostics export** for quick, useful bug reports
 
 Work happens on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)

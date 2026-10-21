@@ -58,3 +58,24 @@ describe('editor entity fields', () => {
     expect([...select.options].map((option) => option.value)).toContain('binary_sensor.mop_drying');
   });
 });
+
+describe('editor preset scripts', () => {
+  it('creates a preset script for administrators and shows YAML otherwise', async () => {
+    const hass = createHass();
+    hass.user = { is_admin: true };
+    hass.callApi = vi.fn(async () => ({ result: 'ok' })) as never;
+    const { unmount } = render(<CardEditor hass={hass} config={configFixture} onChange={() => undefined} />);
+    const row = screen.getByText('Vacuum only', { selector: '.preset-script-row > span' }).closest('.preset-script-row') as HTMLElement;
+    await userEvent.click(row.querySelector('button')!);
+    expect(hass.callApi).toHaveBeenCalledWith('POST', 'config/script/config/rvmc_roborock_vacuum_only', expect.objectContaining({ mode: 'single' }));
+    expect(row).toHaveTextContent('Created script.rvmc_roborock_vacuum_only');
+    unmount();
+
+    const viewer = createHass();
+    viewer.user = { is_admin: false };
+    render(<CardEditor hass={viewer} config={configFixture} onChange={() => undefined} />);
+    const viewerRow = screen.getByText('Vacuum only', { selector: '.preset-script-row > span' }).closest('.preset-script-row') as HTMLElement;
+    await userEvent.click(viewerRow.querySelector('button')!);
+    expect(viewerRow.querySelector('.yaml-preview')).toHaveTextContent('rvmc_roborock_vacuum_only:');
+  });
+});

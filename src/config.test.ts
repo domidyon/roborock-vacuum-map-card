@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeConfig, validateConfig } from './config';
+import { CONFIG_VERSION, migrateConfig, normalizeConfig, validateConfig } from './config';
 import { configFixture } from './test/fixtures';
 
 describe('card config', () => {
@@ -50,5 +50,29 @@ describe('card config', () => {
       rooms: [{ segment_id: 1, area_id: 'bathroom', name: 'Bathroom' }],
     };
     expect(validateConfig({ ...configFixture, floors: [...configFixture.floors, extraFloor] })).toEqual([]);
+  });
+});
+
+describe('config versions', () => {
+  it('leaves current and unversioned configs untouched', () => {
+    expect(migrateConfig(configFixture)).toEqual({ config: configFixture, migrated: false });
+    expect(migrateConfig({ ...configFixture, config_version: CONFIG_VERSION }).migrated).toBe(false);
+  });
+
+  it('runs migrations in order from the config version', () => {
+    const migrations = [
+      (config: Record<string, unknown>) => ({ ...config, renamed: config.old, old: undefined }),
+      (config: Record<string, unknown>) => ({ ...config, step2: true }),
+    ];
+    expect(migrateConfig({ entity: 'vacuum.x', old: 1 }, migrations)).toEqual({
+      config: { entity: 'vacuum.x', renamed: 1, old: undefined, step2: true, config_version: 3 },
+      migrated: true,
+    });
+    expect(migrateConfig({ entity: 'vacuum.x', config_version: 2 }, migrations).config).toEqual({ entity: 'vacuum.x', step2: true, config_version: 3 });
+  });
+
+  it('accepts config_version in the schema', () => {
+    expect(validateConfig({ ...configFixture, config_version: 1 })).toEqual([]);
+    expect(validateConfig({ ...configFixture, config_version: 0 }).join()).toContain('config_version');
   });
 });

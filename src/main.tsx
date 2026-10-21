@@ -1,8 +1,11 @@
 import ReactDOM from 'react-dom/client';
 import { CardEditor } from './components/CardEditor';
+import { SetupState } from './components/SetupState';
 import { VacuumCard } from './components/VacuumCard';
-import { getStubConfig, normalizeConfig } from './config';
-import type { HomeAssistant, RoborockVacuumMapCardConfig } from './types';
+import { loadDeviceFlags } from './catalog/device-flags';
+import { buildConfig, listRoborockVacuums, loadVacuumSegmentOptions } from './discovery';
+import { getStubConfig, normalizeConfig, validateConfig } from './config';
+import type { HomeAssistant, Language, RoborockVacuumMapCardConfig } from './types';
 import styles from './styles/main.scss?inline';
 
 const VERSION = __CARD_VERSION__;
@@ -39,11 +42,16 @@ abstract class ReactElement extends HTMLElement {
 
 export class RoborockVacuumMapCard extends ReactElement {
   private config?: RoborockVacuumMapCardConfig;
+  private configErrors: string[] = [];
+  private language?: Language;
   private homeAssistant?: HomeAssistant;
 
   setConfig(config: RoborockVacuumMapCardConfig) {
-    this.config = normalizeConfig(config);
-    if (this.config.vacuum_mode_fallback) warnDeprecatedVacuumModeFallback();
+    // An unusable config shows the setup state instead of Home Assistant's error card.
+    this.language = (config as Partial<RoborockVacuumMapCardConfig> | undefined)?.language;
+    this.configErrors = validateConfig(config);
+    this.config = this.configErrors.length === 0 ? normalizeConfig(config) : undefined;
+    if (this.config?.vacuum_mode_fallback) warnDeprecatedVacuumModeFallback();
     this.render();
   }
 
@@ -53,8 +61,13 @@ export class RoborockVacuumMapCard extends ReactElement {
   }
 
   private render() {
-    if (!this.config || !this.homeAssistant) return;
-    this.renderReact(<VacuumCard hass={this.homeAssistant} config={this.config} />);
+    const hass = this.homeAssistant;
+    if (!hass) return;
+    if (!this.config || !hass.states[this.config.entity]) {
+      this.renderReact(<SetupState hass={hass} language={this.language} errors={this.configErrors} missingVacuum={this.config?.entity} />);
+      return;
+    }
+    this.renderReact(<VacuumCard hass={hass} config={this.config} />);
   }
 
   getCardSize() {
@@ -69,8 +82,15 @@ export class RoborockVacuumMapCard extends ReactElement {
     return document.createElement('roborock-vacuum-map-card-editor');
   }
 
-  static getStubConfig() {
-    return getStubConfig();
+  /**
+   * "Add card" starts from a discovered config for the first Roborock vacuum. Home
+   * Assistant awaits this and passes `hass`; without a vacuum the plain stub is used.
+   */
+  static async getStubConfig(hass?: HomeAssistant): Promise<RoborockVacuumMapCardConfig> {
+    const vacuum = hass ? listRoborockVacuums(hass)[0] : undefined;
+    if (!hass || !vacuum || !hass.entities) return getStubConfig();
+    const [segmentOptions, deviceFlags] = await Promise.all([loadVacuumSegmentOptions(hass, vacuum), loadDeviceFlags(hass, vacuum)]);
+    return buildConfig(hass, vacuum, segmentOptions, deviceFlags).config;
   }
 }
 

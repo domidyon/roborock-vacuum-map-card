@@ -1,0 +1,124 @@
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { getStubConfig, validateConfig } from '../../config';
+import { createDiscoveryHass } from '../../test/discovery-hass';
+import liveConfig from '../../test/fixtures/qrevo-live-card-config.json';
+import type { HomeAssistant, RoborockVacuumMapCardConfig } from '../../types';
+import { CardEditor } from '../CardEditor';
+
+async function next() {
+  await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+}
+
+function helperHass(): { hass: HomeAssistant; calls: string[] } {
+  const hass = createDiscoveryHass();
+  const calls: string[] = [];
+  const fallback = hass.callWS!;
+  hass.callWS = vi.fn(async (message: Record<string, unknown>) => {
+    const type = String(message.type);
+    if (type.endsWith('/create') || type.endsWith('/update')) {
+      calls.push(type);
+      return { id: message.name ?? message[`${type.split('/')[0]}_id`] } as never;
+    }
+    return fallback(message);
+  }) as HomeAssistant['callWS'];
+  hass.callService = vi.fn(async () => undefined);
+  return { hass, calls };
+}
+
+describe('setup assistant', () => {
+  it('opens for a new card and walks from discovery to a saved, valid config', async () => {
+    const onChange = vi.fn();
+    render(<CardEditor hass={createDiscoveryHass()} config={getStubConfig()} onChange={onChange} />);
+
+    expect(screen.getByRole('heading', { name: 'Before you start' })).toBeInTheDocument();
+    expect(screen.getByText('Roborock Custom Map, for calibrated maps with rooms').closest('li')).toHaveClass('ok');
+    await next();
+
+    expect(await screen.findByText('Qrevo Curv 2 Flow')).toBeInTheDocument();
+    expect(screen.getByText(/Supported · tested profile/)).toBeInTheDocument();
+    await next();
+
+    // Four maps from the live fixture; drop "Onder Bed".
+    const floors = screen.getAllByRole('checkbox', { checked: true }).filter((box) => box.closest('label')?.textContent?.includes('rooms'));
+    expect(floors).toHaveLength(4);
+    await userEvent.click(floors[3]);
+    await next();
+
+    expect(screen.getByRole('heading', { name: 'Rooms' })).toBeInTheDocument();
+    expect(screen.getAllByDisplayValue('Keuken')).toHaveLength(1);
+    await next();
+
+    expect(screen.getByText(/7 helpers are missing/)).toBeInTheDocument();
+    await next();
+    await next();
+
+    expect(screen.getByRole('heading', { name: 'Review and save' })).toBeInTheDocument();
+    expect(screen.getByText(/entity: vacuum.qrevo_curv_2_flow/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
+
+    const saved = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
+    expect(validateConfig(saved)).toEqual([]);
+    expect(saved).toMatchObject({ entity: 'vacuum.qrevo_curv_2_flow', config_version: 1, language: 'nl' });
+    expect(saved.floors.map((floor) => floor.id)).toEqual(['beneden', 'map_1', 'badkamer']);
+    expect(saved.consumables).toHaveLength(5);
+  });
+
+  it('creates the missing dock helpers and wires them into the config', async () => {
+    const { hass, calls } = helperHass();
+    const onChange = vi.fn();
+    render(<CardEditor hass={hass} config={getStubConfig()} onChange={onChange} />);
+    await next();
+    await screen.findByText('Qrevo Curv 2 Flow');
+    await next();
+    await next();
+    await next();
+    await userEvent.click(screen.getByRole('button', { name: 'Create 7 helpers' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Created 7 helpers.'));
+    expect(calls.filter((type) => type.endsWith('/create'))).toHaveLength(7);
+    await next();
+    await next();
+    await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
+    const saved = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
+    expect(saved.entities?.dock_empty_mode).toBe('input_select.rvmc_qrevo_curv_2_flow_dock_empty_mode');
+  });
+
+  it('keeps hand-made name, presets and default when re-run for the same vacuum', async () => {
+    const onChange = vi.fn();
+    const current = { ...(liveConfig as RoborockVacuumMapCardConfig), name: 'Robbie', presets: [{ id: 'avond', name: 'Avond', strategy: 'custom' as const, cleaning_type: 'vacuum' as const, fan_speed: 'quiet' }], default_preset: 'avond' };
+    render(<CardEditor hass={createDiscoveryHass()} config={current} onChange={onChange} />);
+    await userEvent.click(screen.getByRole('button', { name: /Setup assistant/ }));
+    await next();
+    await screen.findByText('Qrevo Curv 2 Flow');
+    for (let step = 0; step < 5; step += 1) await next();
+    await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
+    expect(onChange.mock.calls.at(-1)?.[0]).toMatchObject({ name: 'Robbie', default_preset: 'avond', presets: [{ id: 'avond' }] });
+  });
+
+  it('stops at the checks when Roborock Custom Map is missing', () => {
+    const hass = createDiscoveryHass();
+    for (const [id, entry] of Object.entries(hass.entities!)) if (entry.platform === 'roborock_custom_map') delete hass.entities![id];
+    render(<CardEditor hass={hass} config={getStubConfig()} onChange={() => undefined} />);
+    const check = screen.getByText('Roborock Custom Map, for calibrated maps with rooms').closest('li')!;
+    expect(check).toHaveClass('missing');
+    expect(within(check).getByRole('link', { name: 'Fix' })).toHaveAttribute('href', expect.stringContaining('RoborockCustomMap'));
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+  });
+});
+
+describe('re-detect panel', () => {
+  it('lists changes for the live config and applies the selected ones', async () => {
+    const onChange = vi.fn();
+    render(<CardEditor hass={createDiscoveryHass()} config={liveConfig as RoborockVacuumMapCardConfig} onChange={onChange} />);
+    await userEvent.click(screen.getByRole('button', { name: /Re-detect/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Check now' }));
+    const change = await screen.findByLabelText('Room Badkamer: area badkamer → bathroom');
+    expect(change).toBeChecked();
+    await userEvent.click(screen.getByLabelText('Add room Room to floor upstairs (no area yet)'));
+    await userEvent.click(screen.getByRole('button', { name: 'Apply 7 changes' }));
+    const applied = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
+    expect(applied.floors.find((floor) => floor.id === 'bathroom')?.rooms[0].area_id).toBe('bathroom');
+    expect(applied.floors.find((floor) => floor.id === 'upstairs')?.rooms).toHaveLength(4);
+  });
+});

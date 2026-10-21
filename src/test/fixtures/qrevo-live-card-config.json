@@ -1,0 +1,62 @@
+{
+  "type": "custom:roborock-vacuum-map-card",
+  "entity": "vacuum.qrevo_curv_2_flow",
+  "name": "Qrevo Curv 2 Flow",
+  "language": "nl",
+  "entities": {
+    "map_select": "select.qrevo_curv_2_flow_selected_map",
+    "cleaning_mode": "select.woonkamer_qrevo_curv_2_flow_cleaning_mode",
+    "mop_mode": "select.qrevo_curv_2_flow_mop_mode",
+    "mop_intensity": "select.qrevo_curv_2_flow_mop_intensity",
+    "dock_mop_drying": "switch.woonkamer_qrevo_curv_2_flow_dock_mop_drying",
+    "dock_mop_drying_remaining_time": "sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time",
+    "battery": "sensor.qrevo_curv_2_flow_battery",
+    "current_room": "sensor.qrevo_curv_2_flow_current_room",
+    "cleaning_area": "sensor.qrevo_curv_2_flow_cleaning_area",
+    "cleaning_time": "sensor.qrevo_curv_2_flow_cleaning_time",
+    "cleaning_progress": "sensor.qrevo_curv_2_flow_cleaning_progress",
+    "status": "sensor.qrevo_curv_2_flow_status",
+    "error": "sensor.qrevo_curv_2_flow_vacuum_error",
+    "dock_child_lock": "switch.qrevo_curv_2_flow_dock_child_lock",
+    "dock_mop_wash_frequency": "input_select.qrevo_dock_mop_wash_frequency",
+    "dock_wash_mode": "input_select.qrevo_dock_washing_mode",
+    "dock_wash_temperature": "input_select.qrevo_dock_wash_temperature",
+    "dock_auto_empty": "input_boolean.qrevo_dock_auto_empty",
+    "dock_empty_mode": "input_select.qrevo_dock_empty_mode",
+    "dock_auto_dry": "input_boolean.qrevo_dock_auto_dry",
+    "dock_dry_duration": "input_select.qrevo_dock_drying_duration",
+    "assisted_carry_stage": "input_select.qrevo_upstairs_stage",
+    "assisted_carry_job": "input_text.qrevo_upstairs_job",
+    "assisted_carry_prepare_script": "script.qrevo_upstairs_prepare",
+    "assisted_carry_start_script": "script.qrevo_upstairs_start",
+    "assisted_carry_finish_script": "script.qrevo_upstairs_finish",
+    "water_shortage": "binary_sensor.qrevo_curv_2_flow_water_shortage",
+    "mop_attached": "binary_sensor.qrevo_curv_2_flow_mop_attached",
+    "water_box_attached": "binary_sensor.qrevo_curv_2_flow_water_box_attached",
+    "do_not_disturb": "switch.qrevo_curv_2_flow_do_not_disturb",
+    "last_clean_end": "sensor.qrevo_curv_2_flow_last_clean_end"
+  },
+  "floors": [
+    { "id": "downstairs", "name": "Beneden", "map_entity": "image.woonkamer_qrevo_curv_2_flow_beneden_custom", "map_select_option": "Beneden",
+      "vacuum_then_mop_routine": "button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop",
+      "rooms": [
+        { "segment_id": 1, "area_id": "kitchen", "name": "Keuken", "icon": "mdi:countertop", "include_in_floor_clean": true },
+        { "segment_id": 2, "area_id": "hallway", "name": "Hal", "icon": "mdi:coat-rack", "include_in_floor_clean": true },
+        { "segment_id": 4, "area_id": "living_room", "name": "Woonkamer", "icon": "mdi:sofa", "include_in_floor_clean": true }
+      ] },
+    { "id": "upstairs", "name": "Boven", "map_entity": "image.woonkamer_qrevo_curv_2_flow_map_1_custom", "map_select_option": "Map 1", "assisted_carry": true,
+      "vacuum_then_mop_routine": "button.woonkamer_qrevo_curv_2_flow_boven_vacmop",
+      "rooms": [
+        { "segment_id": 1, "area_id": "bedroom", "name": "Slaapkamer", "icon": "mdi:bed-king", "include_in_floor_clean": true },
+        { "segment_id": 2, "area_id": "waskamer", "name": "Waskamer", "icon": "mdi:washing-machine", "include_in_floor_clean": true },
+        { "segment_id": 3, "area_id": "overloop", "name": "Overloop", "icon": "mdi:stairs", "include_in_floor_clean": true },
+        { "segment_id": 5, "name": "Kantoor", "include_in_floor_clean": true, "area_id": "office", "icon": "mdi:desk" }
+      ] },
+    { "id": "bathroom", "name": "Badkamer", "map_entity": "image.woonkamer_qrevo_curv_2_flow_badkamer_custom", "map_select_option": "Badkamer", "assisted_carry": true,
+      "rooms": [ { "segment_id": 1, "area_id": "badkamer", "name": "Badkamer", "icon": "mdi:shower", "include_in_floor_clean": true } ] },
+    { "id": "under_bed", "name": "Onder Bed", "map_entity": "image.woonkamer_qrevo_curv_2_flow_onder_bed_custom", "map_select_option": "Onder Bed", "assisted_carry": true,
+      "rooms": [ { "segment_id": 2, "area_id": "bedroom", "name": "Onder Bed", "icon": "mdi:bed-king-outline", "include_in_floor_clean": true } ] }
+  ],
+  "default_preset": "vacuum_only",
+  "grid_options": { "columns": "full", "rows": "auto" }
+}

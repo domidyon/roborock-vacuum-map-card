@@ -167,6 +167,16 @@ const en = {
   roomAreaMissing: "area no longer exists",
   dismiss: "Dismiss",
   maintenanceBadge: "Maintenance due",
+  setupTitle: "Finish setting up the Roborock card",
+  setupIntro: "A few things are needed before this card can control your vacuum.",
+  prereq_home_assistant_version: "Home Assistant 2026.8 or newer",
+  prereq_roborock_integration: "Roborock integration with a vacuum",
+  prereq_custom_map: "Roborock Custom Map integration",
+  prereq_administrator: "Administrator account (for room areas and helpers)",
+  setupFix: "Fix",
+  setupOpenEditor: "Then edit this card and choose Setup assistant.",
+  setupConfigErrors: "The card configuration needs attention:",
+  setupVacuumMissing: "The configured vacuum doesn't exist:",
 };
 
 const nl: typeof en = {
@@ -340,6 +350,16 @@ const nl: typeof en = {
   roomAreaMissing: "gebied bestaat niet meer",
   dismiss: "Sluiten",
   maintenanceBadge: "Onderhoud nodig",
+  setupTitle: "Rond de installatie van de Roborock-kaart af",
+  setupIntro: "Er is nog iets nodig voordat deze kaart je stofzuiger kan bedienen.",
+  prereq_home_assistant_version: "Home Assistant 2026.8 of nieuwer",
+  prereq_roborock_integration: "Roborock-integratie met een stofzuiger",
+  prereq_custom_map: "Roborock Custom Map-integratie",
+  prereq_administrator: "Beheerdersaccount (voor ruimtegebieden en helpers)",
+  setupFix: "Oplossen",
+  setupOpenEditor: "Bewerk daarna deze kaart en kies Installatie-assistent.",
+  setupConfigErrors: "De kaartconfiguratie vraagt aandacht:",
+  setupVacuumMissing: "De ingestelde stofzuiger bestaat niet:",
 };
 
 const tr: typeof en = {
@@ -585,6 +605,16 @@ const tr: typeof en = {
   roomAreaMissing: "alan artık mevcut değil",
   dismiss: "Kapat",
   maintenanceBadge: "Bakım gerekli",
+  setupTitle: "Roborock kartının kurulumunu tamamlayın",
+  setupIntro: "Bu kartın süpürgenizi kontrol edebilmesi için birkaç şey gerekiyor.",
+  prereq_home_assistant_version: "Home Assistant 2026.8 veya daha yenisi",
+  prereq_roborock_integration: "Süpürge içeren Roborock entegrasyonu",
+  prereq_custom_map: "Roborock Custom Map entegrasyonu",
+  prereq_administrator: "Yönetici hesabı (oda alanları ve yardımcılar için)",
+  setupFix: "Düzelt",
+  setupOpenEditor: "Ardından bu kartı düzenleyin ve Kurulum asistanını seçin.",
+  setupConfigErrors: "Kart yapılandırması ilgi gerektiriyor:",
+  setupVacuumMissing: "Yapılandırılan süpürge mevcut değil:",
 };
 
 const pl: typeof en = {
@@ -754,6 +784,16 @@ const pl: typeof en = {
   roomAreaMissing: "obszar już nie istnieje",
   dismiss: "Zamknij",
   maintenanceBadge: "Wymagana konserwacja",
+  setupTitle: "Dokończ konfigurację karty Roborock",
+  setupIntro: "Zanim ta karta będzie mogła sterować odkurzaczem, potrzeba jeszcze kilku rzeczy.",
+  prereq_home_assistant_version: "Home Assistant 2026.8 lub nowszy",
+  prereq_roborock_integration: "Integracja Roborock z odkurzaczem",
+  prereq_custom_map: "Integracja Roborock Custom Map",
+  prereq_administrator: "Konto administratora (dla obszarów pomieszczeń i pomocników)",
+  setupFix: "Napraw",
+  setupOpenEditor: "Następnie edytuj tę kartę i wybierz Asystenta konfiguracji.",
+  setupConfigErrors: "Konfiguracja karty wymaga uwagi:",
+  setupVacuumMissing: "Skonfigurowany odkurzacz nie istnieje:",
 };
 
 export type TranslationKey = keyof typeof en;

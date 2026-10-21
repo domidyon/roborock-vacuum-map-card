@@ -1,10 +1,15 @@
 import ReactDOM from 'react-dom/client';
+import { CardEditor } from '../../src/components/CardEditor';
 import { VacuumCard } from '../../src/components/VacuumCard';
+import { getStubConfig } from '../../src/config';
+import { createDiscoveryHass } from '../../src/test/discovery-hass';
+import type { RoborockVacuumMapCardConfig } from '../../src/types';
 import { configFixture, createHass } from '../../src/test/fixtures';
 import styles from '../../src/styles/main.scss?inline';
 
 declare global {
   interface Window {
+    __savedConfig?: RoborockVacuumMapCardConfig;
     __serviceCalls: Array<{ domain: string; service: string; data?: Record<string, unknown>; target?: Record<string, unknown> }>;
   }
 }
@@ -60,4 +65,11 @@ if (dark) {
   document.documentElement.style.setProperty('--text-primary-color', '#fff');
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<VacuumCard hass={hass} config={config} />);
+// ?view=editor runs the visual editor against the redacted live Qrevo registry fixture.
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+if (params.get('view') === 'editor') {
+  const editorHass = createDiscoveryHass();
+  root.render(<div className="editor"><CardEditor hass={editorHass} config={getStubConfig()} onChange={(next) => { window.__savedConfig = next; }} /></div>);
+} else {
+  root.render(<VacuumCard hass={hass} config={config} />);
+}

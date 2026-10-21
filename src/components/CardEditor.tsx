@@ -1,10 +1,15 @@
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ArrowDown, ArrowUp, Plus, RefreshCw, Trash2, Wand2 } from 'lucide-react';
+import { useState } from 'react';
 import { BLUEPRINTS, blueprintImportUrl } from '../blueprints';
 import { detectCapabilities } from '../capabilities';
 import { compatibility, findCatalogModel } from '../catalog';
 import { validateConfig } from '../config';
 import { parseRooms } from '../map';
+import { AreaPicker, SelectEntity } from './fields';
+import { needsSetup } from '../onboarding/prerequisites';
+import { SetupWizard } from './onboarding/SetupWizard';
+import { PresetScripts } from './PresetScripts';
+import { RedetectPanel } from './RedetectPanel';
 import type {
   FloorConfig,
   HomeAssistant,
@@ -46,72 +51,9 @@ function move<T>(items: T[], from: number, to: number): T[] {
   return next;
 }
 
-function entityOptions(hass: HomeAssistant, domain: string | readonly string[]): string[] {
-  const domains = typeof domain === 'string' ? [domain] : domain;
-  return Object.keys(hass.states).filter((id) => domains.includes(id.split('.')[0])).sort();
-}
-
-function SelectEntity({
-  hass,
-  domain,
-  value,
-  optional,
-  onChange,
-}: {
-  hass: HomeAssistant;
-  domain: string | readonly string[];
-  value?: string;
-  optional?: boolean;
-  onChange: (value?: string) => void;
-}) {
-  const options = entityOptions(hass, domain);
-  return (
-    <select value={value ?? ''} onChange={(event) => onChange(event.target.value || undefined)}>
-      <option value="">{optional ? 'Not configured' : `Select ${typeof domain === 'string' ? domain : domain.join(' / ')}`}</option>
-      {options.map((entityId) => <option key={entityId}>{entityId}</option>)}
-      {/* Keep a configured value visible even when it no longer matches the domain filter. */}
-      {value && !options.includes(value) && <option value={value}>{value}</option>}
-    </select>
-  );
-}
-
-function AreaPicker({
-  areas,
-  value,
-  onChange,
-}: {
-  areas: Array<{ area_id: string; name: string }>;
-  value?: string;
-  onChange: (value?: string) => void;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  const [nativeAvailable, setNativeAvailable] = useState(() => Boolean(customElements.get('ha-area-picker')));
-
-  useEffect(() => {
-    if (!nativeAvailable) customElements.whenDefined('ha-area-picker').then(() => setNativeAvailable(true));
-  }, [nativeAvailable]);
-
-  useEffect(() => {
-    const element = ref.current as (HTMLElement & { value?: string; noAdd?: boolean }) | null;
-    if (!element) return;
-    element.value = value;
-    element.noAdd = true;
-    const changed = (event: Event) => onChange((event as CustomEvent<{ value?: string }>).detail.value || undefined);
-    element.addEventListener('value-changed', changed);
-    return () => element.removeEventListener('value-changed', changed);
-  }, [nativeAvailable, onChange, value]);
-
-  if (nativeAvailable) return <ha-area-picker ref={ref} value={value ?? ''} no-add />;
-  return (
-    <select value={value ?? ''} onChange={(event) => onChange(event.target.value || undefined)}>
-      <option value="">Unmapped</option>
-      {areas.map((area) => <option key={area.area_id} value={area.area_id}>{area.name} ({area.area_id})</option>)}
-      {value && !areas.some((area) => area.area_id === value) && <option value={value}>{value}</option>}
-    </select>
-  );
-}
-
 export function CardEditor({ hass, config, onChange }: CardEditorProps) {
+  const [wizardOpen, setWizardOpen] = useState(() => needsSetup(hass, config));
+  const [redetectOpen, setRedetectOpen] = useState(false);
   const errors = validateConfig(config);
   const updateFloor = (index: number, floor: FloorConfig) => {
     const floors = [...config.floors];
@@ -123,10 +65,23 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
     : [];
   const areas = Object.values(hass.areas ?? {}).sort((a, b) => a.name.localeCompare(b.name));
 
+  if (wizardOpen) {
+    return (
+      <div className="editor">
+        <SetupWizard hass={hass} current={config} onCancel={() => setWizardOpen(false)} onFinish={(next) => { onChange(next); setWizardOpen(false); }} />
+      </div>
+    );
+  }
+
   return (
     <div className="editor">
       <h2>Roborock Vacuum Map Card</h2>
       <p>Configure the Roborock entities, calibrated maps, room mappings and job presets.</p>
+      <div className="editor-toolbar">
+        <button type="button" onClick={() => setWizardOpen(true)}><Wand2 /> Setup assistant</button>
+        <button type="button" disabled={!hass.states[config.entity]} onClick={() => setRedetectOpen(true)}><RefreshCw /> Re-detect</button>
+      </div>
+      {redetectOpen && <RedetectPanel hass={hass} config={config} onApply={(next) => { onChange(next); setRedetectOpen(false); }} onClose={() => setRedetectOpen(false)} />}
       {errors.length > 0 && <div className="editor-errors" role="alert">{errors.map((error) => <div key={error}>{error}</div>)}</div>}
 
       <section>
@@ -271,6 +226,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
           </article>
         ))}
         <label>Default preset<select value={config.default_preset ?? 'vacuum_only'} onChange={(event) => onChange({ ...config, default_preset: event.target.value })}><option value="smartplan">SmartPlan</option><option value="vacuum_then_mop">Vacuum followed by mop</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="vacuum_only">Vacuum only</option>{(config.presets ?? []).map((preset) => <option key={preset.id} value={preset.id}>{preset.name}</option>)}</select></label>
+        <PresetScripts hass={hass} config={config} />
       </section>
     </div>
   );
