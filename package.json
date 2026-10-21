@@ -22,7 +22,7 @@
   "dependencies": {
     "lucide-react": "^0.563.0",
     "preact": "^10.29.8",
-    "react-zoom-pan-pinch": "^4.0.3",
+    "react-zoom-pan-pinch": "^4.2.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
