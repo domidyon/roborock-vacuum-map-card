@@ -192,4 +192,4 @@ unofficial community project and is not affiliated with or endorsed by Roborock.
 
 ## 📄 License
 
-[MIT](LICENSE) © Dyon Heintjes
+[MIT](LICENSE) © [domidyon](https://github.com/domidyon)
