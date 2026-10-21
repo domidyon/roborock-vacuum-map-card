@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest an improvement or a new feature.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: This is a hobby project, so not every idea can be built, but every one is read.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe the problem or the situation, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could the card help?
+  - type: input
+    id: model
+    attributes:
+      label: Your Roborock model
+      placeholder: Qrevo Curv 2 Flow
