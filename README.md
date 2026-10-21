@@ -149,6 +149,9 @@ The road to **1.0** is all about setup that just works:
 - 🪄 **Setup assistant:** pick your vacuum, and floors, rooms, areas and entities are detected automatically
 - 🧬 **Model profiles:** per-model defaults (mop modes, routes, dock features) applied for you
 - 🧰 **One-click dock helpers:** helpers created for you, or native dock entities used where available
+- 🚰 **Pre-start checks:** a warning before a mop job starts with an empty clean-water tank or a full dirty-water tank
+- 🧹 **Maintenance view:** brush, filter and sensor life with one-tap resets
+- 🤖 **Presets as scripts:** run your presets from automations, schedules and voice assistants
 - 🩹 **Diagnostics export** for quick, useful bug reports
 
 Work happens on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)
