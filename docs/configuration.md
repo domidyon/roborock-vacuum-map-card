@@ -178,7 +178,7 @@ Zone mode uses the same validated cleaning-profile sequence, converts the drawn 
 
 Vac followed by Mop presses the active floor's `floor.vacuum_then_mop_routine`. It is always treated as a whole-floor job, and the card deliberately hides suction, water flow, cleaning count, and route because those settings belong to the saved Roborock routine. If a floor has no native routine configured, the older `entities.vacuum_then_mop_script` two-phase orchestration remains available as a compatibility fallback.
 
-A complete, commented starting point is provided in [`docs/vacuum-then-mop-script.yaml`](vacuum-then-mop-script.yaml). Replace its five Roborock entity IDs with your own, create or import the script, and select that script in the card editor.
+The easiest way to create this script is the [Vac followed by Mop blueprint](#script-blueprints). The same script is also available as plain YAML in [`docs/vacuum-then-mop-script.yaml`](vacuum-then-mop-script.yaml); replace its five Roborock entity IDs with your own. Then select the script in the card editor.
 
 SmartPlan atomically sets Roborock's complete AI bundle (`fan_power: 110`, `water_box_mode: 209`, `mop_mode: 306`) and does not send manual overrides. An Entire-floor selection that excludes configured rooms stays on `vacuum.clean_area`; only a true all-room selection uses `vacuum.start`.
 
@@ -189,6 +189,67 @@ Pause, resume, stop, and dock use `vacuum.pause`, `vacuum.start`, `vacuum.stop`,
 Dock settings use `vacuum.send_command` with the device-native Roborock payload and update the configured HA helper only after the device accepts the command. This avoids displaying a successful value after a rejected setting. The helpers are optional; without them, the panel uses the documented defaults for its initial display. Empty, Wash, Dry, and Drain are deliberately separate from settings and always require confirmation before starting. The dryer setting command cannot start the dryer; the guarded Dry action uses the distinct dryer-status command.
 
 The onboard dirty-water drain is shown as unavailable because the current Python Roborock transport rewrites the command's required empty-object payload as an empty list. Use the Roborock app for this maintenance action until the upstream transport preserves `{}`.
+
+## Dock settings: helpers and native entities
+
+Home Assistant cannot read most dock settings back from the robot, so the card stores the
+last setting the dock accepted in a helper. Native entities replace a helper only after
+they pass every check: a 1:1 value mapping, app changes showing up in Home Assistant,
+settings from Home Assistant accepted and kept after a restart, and confirmation on a
+second model.
+
+| Card setting | Native Home Assistant entity | Status (2026-10-22) |
+|---|---|---|
+| Empty mode | Dock `select` *Empty mode* (`dust_collection_mode`) | Helper for now. Home Assistant 2026.10 and older send this command in a format docks reject; fixed in core PR #186486 (expected in 2026.11). Re-check after that release |
+| Auto-empty on/off | none | Helper. The dock *Dust emptying* switch starts emptying right away; it's an action, not this setting |
+| Mop wash frequency | none | Helper |
+| Washing mode | none | Helper |
+| Wash temperature | none | Helper |
+| Auto-drying on/off | none | Helper. The dock *Mop drying* switch starts or stops drying right away; it's an action, not this setting |
+| Drying duration | none | Helper |
+| Child lock | Dock `switch` *Child lock* | Native |
+
+The dock's *Dust emptying*, *Mop washing* and *Mop drying* switches are the same actions
+as the card's Empty, Wash and Dry buttons.
+
+### Creating the helpers
+
+The upcoming setup assistant creates the missing helpers for you: it asks first, needs an
+administrator, and reuses helpers you already have. They are named
+`rvmc_<vacuum>_<setting>`, for example `input_select.rvmc_qrevo_curv_2_flow_dock_empty_mode`.
+To create them by hand, add them in **Settings → Devices & services → Helpers** with exactly
+the options listed in [Configuration fields](#configuration-fields), or in `configuration.yaml`:
+
+```yaml
+input_select:
+  rvmc_my_roborock_dock_empty_mode:
+    name: My Roborock dock empty mode
+    icon: mdi:delete-variant
+    options: [smart, light, balanced, max]
+input_boolean:
+  rvmc_my_roborock_dock_auto_dry:
+    name: My Roborock dock auto-drying
+    icon: mdi:fan
+```
+
+Don't set `initial`: it resets the helper on every Home Assistant restart.
+
+## Script blueprints
+
+Script blueprints for the optional scripts are in
+[`blueprints/script/roborock_vacuum_map_card`](../blueprints/script/roborock_vacuum_map_card).
+Import them with the links in the card editor, then create a script from each and pick
+your Roborock entities.
+
+| Blueprint | Card setting | What it does |
+|---|---|---|
+| Vac followed by Mop | `entities.vacuum_then_mop_script` | Two-phase fallback for floors without a native Roborock routine |
+| Assisted carry: prepare | `entities.assisted_carry_prepare_script` | Checks the robot, prepares the mop, drives to the pickup point |
+| Assisted carry: start | `entities.assisted_carry_start_script` | Runs the saved job on the carried-to map |
+| Assisted carry: finish | `entities.assisted_carry_finish_script` | Docks, empties, washes and dries after the carry back |
+
+The assisted-carry blueprints need the stage (`input_select`) and job (`input_text`)
+helpers; the setup assistant can create those too.
 
 ## Troubleshooting
 

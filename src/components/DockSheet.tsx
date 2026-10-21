@@ -1,5 +1,6 @@
 import { Droplets, Lock, Trash2, Waves, Wind, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { DOCK_SETTING_DEFAULTS, DOCK_SETTING_ENTITIES, DOCK_SETTING_OPTIONS } from '../dock-settings';
 import { t } from '../i18n';
 import type {
   DockAction,
@@ -24,42 +25,14 @@ interface DockSheetProps {
   onChildLock: (enabled: boolean) => void;
 }
 
-const OPTIONS: Record<Exclude<DockSettingKey, 'auto_empty' | 'auto_dry'>, string[]> = {
-  mop_wash_frequency: ['smart', '10_min', '15_min', '20_min', '25_min', '30_min'],
-  wash_mode: ['smart', 'light', 'balanced', 'deep'],
-  wash_temperature: ['normal', 'warm', 'hot'],
-  empty_mode: ['smart', 'light', 'balanced', 'max'],
-  dry_duration: ['2h', '3h', '4h'],
-};
-
-const FALLBACKS: Record<DockSettingKey, string | boolean> = {
-  mop_wash_frequency: 'smart',
-  wash_mode: 'smart',
-  wash_temperature: 'hot',
-  auto_empty: false,
-  empty_mode: 'smart',
-  auto_dry: true,
-  dry_duration: '3h',
-};
-
-const ENTITY_KEYS: Record<DockSettingKey, keyof NonNullable<RoborockVacuumMapCardConfig['entities']>> = {
-  mop_wash_frequency: 'dock_mop_wash_frequency',
-  wash_mode: 'dock_wash_mode',
-  wash_temperature: 'dock_wash_temperature',
-  auto_empty: 'dock_auto_empty',
-  empty_mode: 'dock_empty_mode',
-  auto_dry: 'dock_auto_dry',
-  dry_duration: 'dock_dry_duration',
-};
-
 function currentSetting(
   hass: HomeAssistant,
   config: RoborockVacuumMapCardConfig,
   setting: DockSettingKey,
 ): string | boolean {
-  const entityId = config.entities?.[ENTITY_KEYS[setting]];
+  const entityId = config.entities?.[DOCK_SETTING_ENTITIES[setting]];
   const state = entityId ? hass.states[entityId]?.state : undefined;
-  if (!state || ['unknown', 'unavailable'].includes(state)) return FALLBACKS[setting];
+  if (!state || ['unknown', 'unavailable'].includes(state)) return DOCK_SETTING_DEFAULTS[setting];
   if (setting === 'auto_empty' || setting === 'auto_dry') return state === 'on';
   return state;
 }
@@ -106,7 +79,7 @@ function SettingSelect({
     <label className="dock-setting-row">
       <span>{label}</span>
       <select aria-label={label} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
-        {OPTIONS[setting].map((option) => <option key={option} value={option}>{optionLabel(language, option)}</option>)}
+        {DOCK_SETTING_OPTIONS[setting].map((option) => <option key={option} value={option}>{optionLabel(language, option)}</option>)}
       </select>
     </label>
   );

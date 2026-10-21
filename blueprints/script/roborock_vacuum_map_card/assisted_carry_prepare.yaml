@@ -1,0 +1,328 @@
+blueprint:
+  name: 'Roborock Vacuum Map Card: assisted carry prepare'
+  description: |-
+    Assisted carry, step 1 of 3. Checks the robot is docked and charged, prepares the mop for mop jobs, and drives to the pickup point so it can be carried to a floor without its dock.
+
+    Create all three scripts from these blueprints and select them in the card editor (assisted carry prepare/start/finish). The card drives them through its stage and job helpers.
+  domain: script
+  author: domidyon
+  homeassistant:
+    min_version: 2026.8.0
+  source_url: >-
+    https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/blueprints/script/roborock_vacuum_map_card/assisted_carry_prepare.yaml
+  input:
+    battery_sensor:
+      name: Battery sensor
+      description: The Roborock 'Battery' sensor.
+      selector:
+        entity:
+          filter:
+          - domain: sensor
+            integration: roborock
+    dock_map:
+      name: Dock map
+      description: Exact name of the map that has the dock, as listed by the 'Selected map' select.
+      selector:
+        text: {}
+    job_helper:
+      name: Assisted carry job helper
+      description: The input_text the card uses as entities.assisted_carry_job.
+      selector:
+        entity:
+          filter:
+          - domain: input_text
+    map_select:
+      name: Selected map
+      description: The Roborock 'Selected map' select.
+      selector:
+        entity:
+          filter:
+          - domain: select
+            integration: roborock
+    mop_attached:
+      name: Mop attached
+      description: The Roborock 'Mop attached' binary sensor.
+      selector:
+        entity:
+          filter:
+          - domain: binary_sensor
+            integration: roborock
+    mop_drying_switch:
+      name: Dock mop drying
+      description: The Roborock dock 'Mop drying' switch.
+      selector:
+        entity:
+          filter:
+          - domain: switch
+            integration: roborock
+    pickup_x:
+      name: Pickup point X
+      description: >-
+        Robot coordinate (mm) on the dock map where you pick the robot up, as used by roborock.set_vacuum_goto_position.
+      selector:
+        number:
+          min: 0
+          max: 100000
+          mode: box
+    pickup_y:
+      name: Pickup point Y
+      description: Robot coordinate (mm) on the dock map where you pick the robot up.
+      selector:
+        number:
+          min: 0
+          max: 100000
+          mode: box
+    stage_helper:
+      name: Assisted carry stage helper
+      description: The input_select the card uses as entities.assisted_carry_stage.
+      selector:
+        entity:
+          filter:
+          - domain: input_select
+    status_sensor:
+      name: Status sensor
+      description: The Roborock 'Status' sensor.
+      selector:
+        entity:
+          filter:
+          - domain: sensor
+            integration: roborock
+    vacuum:
+      name: Roborock vacuum
+      description: The vacuum the card controls.
+      selector:
+        entity:
+          filter:
+          - domain: vacuum
+            integration: roborock
+    water_box_attached:
+      name: Water box attached
+      description: The Roborock 'Water box attached' binary sensor.
+      selector:
+        entity:
+          filter:
+          - domain: binary_sensor
+            integration: roborock
+    water_shortage:
+      name: Water shortage
+      description: The Roborock 'Water shortage' binary sensor.
+      selector:
+        entity:
+          filter:
+          - domain: binary_sensor
+            integration: roborock
+variables:
+  job_helper: !input job_helper
+icon: mdi:stairs-up
+mode: restart
+sequence:
+- alias: Load whether the saved mode can use the mop
+  variables:
+    saved_job: "{{ states(job_helper) | from_json }}"
+    effective_strategy: "{{ saved_job.get('g', 'custom') }}"
+    effective_cleaning_type: "{{ saved_job.get('t', 'vacuum_and_mop') }}"
+    mop_required: "{{ effective_strategy == 'smartplan' or effective_cleaning_type != 'vacuum' }}"
+- alias: Mark preparation active
+  action: input_select.select_option
+  target:
+    entity_id: !input stage_helper
+  data:
+    option: preparing
+- alias: Require the robot to be docked
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input vacuum
+      state: docked
+  then:
+  - action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: error
+  - stop: The robot must be docked before upstairs preparation.
+    error: true
+- alias: Require enough battery
+  if:
+  - condition: not
+    conditions:
+    - condition: numeric_state
+      entity_id: !input battery_sensor
+      above: 20
+  then:
+  - action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: error
+  - stop: Battery must be above 20 percent.
+    error: true
+- alias: Require water and mop hardware only for a mop-capable job
+  if:
+  - "{{ mop_required }}"
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: !input water_shortage
+      state: 'on'
+    - condition: state
+      entity_id: !input mop_attached
+      state: 'off'
+    - condition: state
+      entity_id: !input water_box_attached
+      state: 'off'
+  then:
+  - action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: error
+  - stop: Water or mop hardware is not ready.
+    error: true
+- alias: Keep the downstairs map selected
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input map_select
+      state: !input dock_map
+  then:
+  - action: select.select_option
+    target:
+      entity_id: !input map_select
+    data:
+      option: !input dock_map
+- alias: Stop an existing drying cycle before departure
+  if:
+  - condition: state
+    entity_id: !input mop_drying_switch
+    state: 'on'
+  then:
+  - action: switch.turn_off
+    target:
+      entity_id: !input mop_drying_switch
+- alias: Wet the mop only for a mop-capable non-test job
+  if:
+  - "{{ mop_required }}"
+  then:
+  - alias: Wash and wet the mop
+    action: vacuum.send_command
+    target:
+      entity_id: !input vacuum
+    data:
+      command: app_start_wash
+  - alias: Wait for washing to start
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state:
+        - washing_the_mop
+        - washing_the_mop_2
+        - clean_mop_cleaning
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: washing_the_mop
+      - trigger: state
+        entity_id: !input status_sensor
+        to: washing_the_mop_2
+      - trigger: state
+        entity_id: !input status_sensor
+        to: clean_mop_cleaning
+      timeout: '00:02:00'
+      continue_on_timeout: true
+    - alias: Abort on wash-start timeout
+      if:
+      - "{{ not wait.completed }}"
+      then:
+      - action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: Mop washing did not start in time.
+        error: true
+  - alias: Wait for washing to finish
+    wait_for_trigger:
+    - trigger: state
+      entity_id: !input status_sensor
+      to: charging
+    - trigger: state
+      entity_id: !input status_sensor
+      to: charging_complete
+    - trigger: state
+      entity_id: !input status_sensor
+      to: idle
+    timeout: '00:15:00'
+    continue_on_timeout: true
+  - alias: Abort on wash-finish timeout
+    if:
+    - "{{ not wait.completed }}"
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: error
+    - stop: Mop washing did not finish in time.
+      error: true
+- alias: Drive to the living-room pickup point
+  action: roborock.set_vacuum_goto_position
+  target:
+    entity_id: !input vacuum
+  data:
+    x: !input pickup_x
+    y: !input pickup_y
+- alias: Wait for pickup movement to start
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input status_sensor
+      state: going_to_target
+  then:
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: !input status_sensor
+      to: going_to_target
+    timeout: '00:02:00'
+    continue_on_timeout: true
+  - alias: Abort on pickup-movement timeout
+    if:
+    - "{{ not wait.completed }}"
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: error
+    - stop: Robot did not start moving to the pickup point.
+      error: true
+- alias: Wait at the pickup point
+  wait_for_trigger:
+  - trigger: state
+    entity_id: !input status_sensor
+    to: idle
+  timeout: '00:10:00'
+  continue_on_timeout: true
+- alias: Abort on pickup-arrival timeout
+  if:
+  - "{{ not wait.completed }}"
+  then:
+  - action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: error
+  - stop: Robot did not reach the pickup point.
+    error: true
+- alias: Ask for the upstairs carry
+  action: input_select.select_option
+  target:
+    entity_id: !input stage_helper
+  data:
+    option: carry_upstairs

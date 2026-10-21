@@ -1,0 +1,658 @@
+blueprint:
+  name: 'Roborock Vacuum Map Card: assisted carry finish'
+  description: |-
+    Assisted carry, step 3 of 3. After the robot is carried back, switches to the dock map, docks, empties the bin, washes the mop and verifies drying for mop jobs.
+
+    Create all three scripts from these blueprints and select them in the card editor (assisted carry prepare/start/finish). The card drives them through its stage and job helpers.
+  domain: script
+  author: domidyon
+  homeassistant:
+    min_version: 2026.8.0
+  source_url: >-
+    https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/blueprints/script/roborock_vacuum_map_card/assisted_carry_finish.yaml
+  input:
+    auto_dry_helper:
+      name: Dock auto-drying helper
+      description: The input_boolean the card uses as entities.dock_auto_dry.
+      selector:
+        entity:
+          filter:
+          - domain: input_boolean
+    do_not_disturb:
+      name: Do not disturb
+      description: The Roborock 'Do not disturb' switch. It is switched back on after the job.
+      selector:
+        entity:
+          filter:
+          - domain: switch
+            integration: roborock
+    dock_map:
+      name: Dock map
+      description: Exact name of the map that has the dock, as listed by the 'Selected map' select.
+      selector:
+        text: {}
+    job_helper:
+      name: Assisted carry job helper
+      description: The input_text the card uses as entities.assisted_carry_job.
+      selector:
+        entity:
+          filter:
+          - domain: input_text
+    map_select:
+      name: Selected map
+      description: The Roborock 'Selected map' select.
+      selector:
+        entity:
+          filter:
+          - domain: select
+            integration: roborock
+    mop_drying_switch:
+      name: Dock mop drying
+      description: The Roborock dock 'Mop drying' switch.
+      selector:
+        entity:
+          filter:
+          - domain: switch
+            integration: roborock
+    stage_helper:
+      name: Assisted carry stage helper
+      description: The input_select the card uses as entities.assisted_carry_stage.
+      selector:
+        entity:
+          filter:
+          - domain: input_select
+    status_sensor:
+      name: Status sensor
+      description: The Roborock 'Status' sensor.
+      selector:
+        entity:
+          filter:
+          - domain: sensor
+            integration: roborock
+    vacuum:
+      name: Roborock vacuum
+      description: The vacuum the card controls.
+      selector:
+        entity:
+          filter:
+          - domain: vacuum
+            integration: roborock
+variables:
+  job_helper: !input job_helper
+  status_sensor: !input status_sensor
+icon: mdi:home-import-outline
+mode: restart
+sequence:
+- alias: Load whether the completed mode used the mop
+  variables:
+    saved_job: "{{ states(job_helper) | from_json }}"
+    effective_strategy: "{{ saved_job.get('g', 'custom') }}"
+    effective_cleaning_type: "{{ saved_job.get('t', 'vacuum_and_mop') }}"
+    mop_used: "{{ effective_strategy == 'smartplan' or effective_cleaning_type != 'vacuum' }}"
+- alias: Require the carry-downstairs stage
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input stage_helper
+      state: carry_downstairs
+  then:
+  - action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: error
+  - stop: The upstairs job is not ready to finish.
+    error: true
+- alias: Mark dock finishing active
+  action: input_select.select_option
+  target:
+    entity_id: !input stage_helper
+  data:
+    option: finishing
+- alias: Restore the downstairs map when needed
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input map_select
+      state: !input dock_map
+  then:
+  - action: select.select_option
+    target:
+      entity_id: !input map_select
+    data:
+      option: !input dock_map
+    continue_on_error: true
+  - alias: Wait for a delayed downstairs map load
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input map_select
+        state: !input dock_map
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input map_select
+        to: !input dock_map
+      timeout: '00:02:00'
+      continue_on_timeout: true
+  - alias: Abort when the downstairs map did not become active
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input map_select
+        state: !input dock_map
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: error
+    - stop: The downstairs map did not become active.
+      error: true
+- alias: Return to the dock when not placed there directly
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input vacuum
+      state: docked
+  then:
+  - action: vacuum.return_to_base
+    target:
+      entity_id: !input vacuum
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: !input vacuum
+      to: docked
+    - trigger: state
+      entity_id: !input status_sensor
+      to: charging
+    - trigger: state
+      entity_id: !input status_sensor
+      to: charging_complete
+    timeout: '00:15:00'
+    continue_on_timeout: true
+  - alias: Abort on docking timeout
+    if:
+    - "{{ not wait.completed }}"
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: error
+    - stop: Robot did not reach the dock in time.
+      error: true
+- alias: Allow automatic dock activity to announce itself
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input status_sensor
+      state:
+      - emptying_the_bin
+      - washing_the_mop
+      - washing_the_mop_2
+      - clean_mop_cleaning
+  then:
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: !input status_sensor
+      to: emptying_the_bin
+    - trigger: state
+      entity_id: !input status_sensor
+      to: washing_the_mop
+    - trigger: state
+      entity_id: !input status_sensor
+      to: washing_the_mop_2
+    - trigger: state
+      entity_id: !input status_sensor
+      to: clean_mop_cleaning
+    timeout: '00:00:15'
+    continue_on_timeout: true
+- alias: Suppress mop service when the saved job did not use the mop
+  if:
+  - "{{ not mop_used }}"
+  then:
+  - alias: Remember whether automatic dock service started
+    variables:
+      automatic_dock_service_seen: >-
+        {{ states(status_sensor) in ['emptying_the_bin', 'washing_the_mop', 'washing_the_mop_2', 'clean_mop_cleaning']
+        }}
+  - alias: Let automatic dust emptying finish or hand off
+    if:
+    - condition: state
+      entity_id: !input status_sensor
+      state: emptying_the_bin
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: washing_the_mop
+      - trigger: state
+        entity_id: !input status_sensor
+        to: washing_the_mop_2
+      - trigger: state
+        entity_id: !input status_sensor
+        to: clean_mop_cleaning
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging_complete
+      timeout: '00:10:00'
+      continue_on_timeout: true
+    - alias: Abort on empty-handoff timeout
+      if:
+      - "{{ not wait.completed }}"
+      then:
+      - action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: Dock emptying did not hand off in time.
+        error: true
+  - alias: Stop automatic mop washing during the short test
+    if:
+    - condition: state
+      entity_id: !input status_sensor
+      state:
+      - washing_the_mop
+      - washing_the_mop_2
+      - clean_mop_cleaning
+    then:
+    - action: vacuum.send_command
+      target:
+        entity_id: !input vacuum
+      data:
+        command: app_stop_wash
+  - alias: Wait until the dock is ready
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state:
+        - charging
+        - charging_complete
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging_complete
+      timeout: '00:02:00'
+      continue_on_timeout: true
+  - alias: Run missing dust emptying for the no-mop path
+    if:
+    - "{{ not automatic_dock_service_seen }}"
+    - condition: state
+      entity_id: !input do_not_disturb
+      state: 'off'
+    - condition: state
+      entity_id: !input status_sensor
+      state:
+      - charging
+      - charging_complete
+    then:
+    - alias: Empty the dustbin
+      action: vacuum.send_command
+      target:
+        entity_id: !input vacuum
+      data:
+        command: app_start_collect_dust
+    - alias: Wait for explicit emptying to start
+      if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: !input status_sensor
+          state: emptying_the_bin
+      then:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: !input status_sensor
+          to: emptying_the_bin
+        timeout: '00:01:00'
+        continue_on_timeout: true
+    - alias: Abort when explicit emptying did not start
+      if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: !input status_sensor
+          state: emptying_the_bin
+      then:
+      - action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: Dock emptying did not start.
+        error: true
+    - alias: Wait for explicit emptying to finish
+      wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging_complete
+      timeout: '00:10:00'
+      continue_on_timeout: true
+    - alias: Abort on explicit empty-finish timeout
+      if:
+      - "{{ not wait.completed }}"
+      then:
+      - action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: Dock emptying did not finish in time.
+        error: true
+  else:
+  - alias: Reuse automatic dock service or run missing service
+    if:
+    - condition: state
+      entity_id: !input status_sensor
+      state:
+      - emptying_the_bin
+      - washing_the_mop
+      - washing_the_mop_2
+      - clean_mop_cleaning
+    then:
+    - alias: Wait for automatic emptying to hand off
+      if:
+      - condition: state
+        entity_id: !input status_sensor
+        state: emptying_the_bin
+      then:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: !input status_sensor
+          to: washing_the_mop
+        - trigger: state
+          entity_id: !input status_sensor
+          to: washing_the_mop_2
+        - trigger: state
+          entity_id: !input status_sensor
+          to: clean_mop_cleaning
+        - trigger: state
+          entity_id: !input status_sensor
+          to: charging
+        - trigger: state
+          entity_id: !input status_sensor
+          to: charging_complete
+        timeout: '00:10:00'
+        continue_on_timeout: true
+      - alias: Abort on empty-handoff timeout
+        if:
+        - "{{ not wait.completed }}"
+        then:
+        - action: input_select.select_option
+          target:
+            entity_id: !input stage_helper
+          data:
+            option: error
+        - stop: Dock emptying did not hand off in time.
+          error: true
+    - alias: Finish automatic mop washing, or add it when only emptying ran
+      if:
+      - condition: state
+        entity_id: !input status_sensor
+        state:
+        - washing_the_mop
+        - washing_the_mop_2
+        - clean_mop_cleaning
+      then:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: !input status_sensor
+          to: charging
+        - trigger: state
+          entity_id: !input status_sensor
+          to: charging_complete
+        timeout: '00:15:00'
+        continue_on_timeout: true
+      - alias: Abort on wash-finish timeout
+        if:
+        - "{{ not wait.completed }}"
+        then:
+        - action: input_select.select_option
+          target:
+            entity_id: !input stage_helper
+          data:
+            option: error
+        - stop: Automatic mop washing did not finish in time.
+          error: true
+      else:
+      - alias: Wash the mop
+        action: vacuum.send_command
+        target:
+          entity_id: !input vacuum
+        data:
+          command: app_start_wash
+      - alias: Wait for explicit mop washing to start
+        if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: !input status_sensor
+            state:
+            - washing_the_mop
+            - washing_the_mop_2
+            - clean_mop_cleaning
+        then:
+        - wait_for_trigger:
+          - trigger: state
+            entity_id: !input status_sensor
+            to: washing_the_mop
+          - trigger: state
+            entity_id: !input status_sensor
+            to: washing_the_mop_2
+          - trigger: state
+            entity_id: !input status_sensor
+            to: clean_mop_cleaning
+          timeout: '00:02:00'
+          continue_on_timeout: true
+        - alias: Abort on wash-start timeout
+          if:
+          - "{{ not wait.completed }}"
+          then:
+          - action: input_select.select_option
+            target:
+              entity_id: !input stage_helper
+            data:
+              option: error
+          - stop: Mop washing did not start in time.
+            error: true
+      - alias: Wait for explicit mop washing to finish
+        wait_for_trigger:
+        - trigger: state
+          entity_id: !input status_sensor
+          to: charging
+        - trigger: state
+          entity_id: !input status_sensor
+          to: charging_complete
+        timeout: '00:15:00'
+        continue_on_timeout: true
+      - alias: Abort on wash-finish timeout
+        if:
+        - "{{ not wait.completed }}"
+        then:
+        - action: input_select.select_option
+          target:
+            entity_id: !input stage_helper
+          data:
+            option: error
+        - stop: Mop washing did not finish in time.
+          error: true
+    else:
+    - alias: Empty the dustbin outside do-not-disturb mode
+      if:
+      - condition: state
+        entity_id: !input do_not_disturb
+        state: 'off'
+      then:
+      - action: vacuum.send_command
+        target:
+          entity_id: !input vacuum
+        data:
+          command: app_start_collect_dust
+      - alias: Wait for emptying to start
+        if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: !input status_sensor
+            state: emptying_the_bin
+        then:
+        - wait_for_trigger:
+          - trigger: state
+            entity_id: !input status_sensor
+            to: emptying_the_bin
+          timeout: '00:01:00'
+          continue_on_timeout: true
+      - alias: Wait for emptying to finish
+        if:
+        - condition: state
+          entity_id: !input status_sensor
+          state: emptying_the_bin
+        then:
+        - wait_for_trigger:
+          - trigger: state
+            entity_id: !input status_sensor
+            to: charging
+          - trigger: state
+            entity_id: !input status_sensor
+            to: charging_complete
+          timeout: '00:10:00'
+          continue_on_timeout: true
+        - alias: Abort on empty-finish timeout
+          if:
+          - "{{ not wait.completed }}"
+          then:
+          - action: input_select.select_option
+            target:
+              entity_id: !input stage_helper
+            data:
+              option: error
+          - stop: Dock emptying did not finish in time.
+            error: true
+    - alias: Wash the mop
+      action: vacuum.send_command
+      target:
+        entity_id: !input vacuum
+      data:
+        command: app_start_wash
+    - alias: Wait for explicit mop washing to start
+      if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: !input status_sensor
+          state:
+          - washing_the_mop
+          - washing_the_mop_2
+          - clean_mop_cleaning
+      then:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: !input status_sensor
+          to: washing_the_mop
+        - trigger: state
+          entity_id: !input status_sensor
+          to: washing_the_mop_2
+        - trigger: state
+          entity_id: !input status_sensor
+          to: clean_mop_cleaning
+        timeout: '00:02:00'
+        continue_on_timeout: true
+      - alias: Abort on wash-start timeout
+        if:
+        - "{{ not wait.completed }}"
+        then:
+        - action: input_select.select_option
+          target:
+            entity_id: !input stage_helper
+          data:
+            option: error
+        - stop: Mop washing did not start in time.
+          error: true
+    - alias: Wait for explicit mop washing to finish
+      wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging
+      - trigger: state
+        entity_id: !input status_sensor
+        to: charging_complete
+      timeout: '00:15:00'
+      continue_on_timeout: true
+    - alias: Abort on wash-finish timeout
+      if:
+      - "{{ not wait.completed }}"
+      then:
+      - action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: Mop washing did not finish in time.
+        error: true
+- alias: Verify configured automatic drying only after a mop-capable job
+  if:
+  - "{{ mop_used }}"
+  - condition: state
+    entity_id: !input auto_dry_helper
+    state: 'on'
+  then:
+  - alias: Wait for automatic drying
+    if:
+    - condition: state
+      entity_id: !input mop_drying_switch
+      state: 'off'
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input mop_drying_switch
+        to: 'on'
+      timeout: '00:01:30'
+      continue_on_timeout: true
+  - alias: Start drying only when automatic drying did not begin
+    if:
+    - condition: state
+      entity_id: !input mop_drying_switch
+      state: 'off'
+    then:
+    - action: switch.turn_on
+      target:
+        entity_id: !input mop_drying_switch
+- alias: Reassert the downstairs map after docking
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input map_select
+      state: !input dock_map
+  then:
+  - action: select.select_option
+    target:
+      entity_id: !input map_select
+    data:
+      option: !input dock_map
+- alias: Mark the assisted job complete
+  action: input_select.select_option
+  target:
+    entity_id: !input stage_helper
+  data:
+    option: complete

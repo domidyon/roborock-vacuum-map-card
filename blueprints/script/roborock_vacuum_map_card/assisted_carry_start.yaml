@@ -1,0 +1,858 @@
+blueprint:
+  name: 'Roborock Vacuum Map Card: assisted carry start'
+  description: |-
+    Assisted carry, step 2 of 3. Runs the job saved by the card on the carried-to map: the floor's native Vac followed by Mop routine when it has one, otherwise the saved mode and settings.
+
+    Create all three scripts from these blueprints and select them in the card editor (assisted carry prepare/start/finish). The card drives them through its stage and job helpers.
+  domain: script
+  author: domidyon
+  homeassistant:
+    min_version: 2026.8.0
+  source_url: >-
+    https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/blueprints/script/roborock_vacuum_map_card/assisted_carry_start.yaml
+  input:
+    cleaning_mode:
+      name: Cleaning mode
+      description: The Roborock 'Cleaning mode' select (vacuum / vac_and_mop / mop).
+      selector:
+        entity:
+          filter:
+          - domain: select
+            integration: roborock
+    job_helper:
+      name: Assisted carry job helper
+      description: The input_text the card uses as entities.assisted_carry_job.
+      selector:
+        entity:
+          filter:
+          - domain: input_text
+    map_select:
+      name: Selected map
+      description: The Roborock 'Selected map' select.
+      selector:
+        entity:
+          filter:
+          - domain: select
+            integration: roborock
+    mop_intensity:
+      name: Water flow
+      description: The Roborock 'Mop intensity' select.
+      selector:
+        entity:
+          filter:
+          - domain: select
+            integration: roborock
+    mop_mode:
+      name: Mop route
+      description: The Roborock 'Mop mode' select.
+      selector:
+        entity:
+          filter:
+          - domain: select
+            integration: roborock
+    stage_helper:
+      name: Assisted carry stage helper
+      description: The input_select the card uses as entities.assisted_carry_stage.
+      selector:
+        entity:
+          filter:
+          - domain: input_select
+    status_sensor:
+      name: Status sensor
+      description: The Roborock 'Status' sensor.
+      selector:
+        entity:
+          filter:
+          - domain: sensor
+            integration: roborock
+    vacuum:
+      name: Roborock vacuum
+      description: The vacuum the card controls.
+      selector:
+        entity:
+          filter:
+          - domain: vacuum
+            integration: roborock
+variables:
+  job_helper: !input job_helper
+  map_select: !input map_select
+icon: mdi:robot-vacuum
+mode: single
+fields:
+  cleaning_area_id:
+    name: Upstairs areas
+    required: false
+    selector:
+      area:
+        multiple: true
+  strategy:
+    name: Strategy
+    required: false
+    selector:
+      select:
+        options:
+        - custom
+        - smartplan
+  cleaning_type:
+    name: Cleaning type
+    required: false
+    selector:
+      select:
+        options:
+        - vacuum
+        - vacuum_and_mop
+        - vacuum_then_mop
+  fan_speed:
+    name: Suction
+    required: false
+    selector:
+      select:
+        options:
+        - quiet
+        - balanced
+        - turbo
+        - max
+        - max_plus
+  mop_mode:
+    name: Route
+    required: false
+    selector:
+      select:
+        options:
+        - fast
+        - standard
+        - deep
+  mop_intensity:
+    name: Water flow
+    required: false
+    selector:
+      select:
+        options:
+        - slight
+        - low
+        - medium
+        - moderate
+        - high
+        - extreme
+  cleaning_count:
+    name: Passes
+    required: false
+    selector:
+      number:
+        min: 1
+        max: 2
+        step: 1
+        mode: box
+sequence:
+- alias: Load the saved assisted job
+  variables:
+    saved_job: "{{ states(job_helper) | from_json }}"
+    effective_cleaning_area_id: >-
+      {% if cleaning_area_id is defined and cleaning_area_id %}{{ cleaning_area_id }}{% else %}{{ saved_job.get('a',
+      []) }}{% endif %}
+    effective_strategy: "{{ strategy if strategy is defined and strategy else saved_job.get('g', 'custom')
+      }}"
+    effective_cleaning_type: >-
+      {{ cleaning_type if cleaning_type is defined and cleaning_type else saved_job.get('t', 'vacuum_and_mop')
+      }}
+    effective_fan_speed: "{{ fan_speed if fan_speed is defined and fan_speed else saved_job.get('f', 'balanced')
+      }}"
+    effective_mop_mode: "{{ mop_mode if mop_mode is defined and mop_mode else saved_job.get('m', 'standard')
+      }}"
+    effective_mop_intensity: "{{ mop_intensity if mop_intensity is defined and mop_intensity else saved_job.get('w',
+      'medium') }}"
+    effective_cleaning_count: "{{ cleaning_count if cleaning_count is defined and cleaning_count else
+      saved_job.get('c', 1) }}"
+    run_strategy: "{{ effective_strategy }}"
+    run_cleaning_type: "{{ effective_cleaning_type }}"
+    run_cleaning_count: >-
+      {{ 1 if run_strategy == 'smartplan' or run_cleaning_type == 'vacuum_then_mop' else effective_cleaning_count
+      | int(1) }}
+    effective_map_option: "{{ saved_job.get('o', '') }}"
+    effective_whole_floor: "{{ saved_job.get('e', 0) | int == 1 }}"
+    effective_routine: "{{ saved_job.get('r', '') }}"
+    run_native_routine: "{{ run_cleaning_type == 'vacuum_then_mop' and effective_routine | length > 0
+      }}"
+- alias: Require the carry-upstairs stage
+  if:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: !input stage_helper
+      state: carry_upstairs
+  then:
+  - alias: Mark an invalid start
+    action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: error
+  - stop: The upstairs job is not ready to start.
+    error: true
+- alias: Mark upstairs cleaning active
+  action: input_select.select_option
+  target:
+    entity_id: !input stage_helper
+  data:
+    option: cleaning_upstairs
+- alias: Request the saved isolated map when needed
+  if:
+  - "{{ not is_state(map_select, effective_map_option) }}"
+  then:
+  - alias: Request the saved isolated map
+    action: select.select_option
+    target:
+      entity_id: !input map_select
+    data:
+      option: "{{ effective_map_option }}"
+    continue_on_error: true
+- alias: Wait for the saved isolated map
+  if:
+  - "{{ not is_state(map_select, effective_map_option) }}"
+  then:
+  - wait_template: "{{ is_state(map_select, effective_map_option) }}"
+    timeout: '00:01:30'
+    continue_on_timeout: true
+- alias: Reject a saved map that never becomes active
+  if:
+  - "{{ not is_state(map_select, effective_map_option) }}"
+  then:
+  - action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: carry_upstairs
+  - stop: The saved isolated map did not become active within 90 seconds.
+    error: false
+- alias: Allow the saved isolated map to settle
+  delay: '00:00:03'
+- alias: Run a saved native Vac followed by Mop routine when this map has one
+  if:
+  - "{{ run_native_routine }}"
+  then:
+  - alias: Press the Vac followed by Mop routine
+    action: button.press
+    target:
+      entity_id: "{{ effective_routine }}"
+  - alias: Wait for the routine to reach a real cleaning state
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state:
+        - cleaning
+        - segment_cleaning
+        - segment_mopping
+        - segment_clean_mop_cleaning
+        - segment_clean_mop_mopping
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: cleaning
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_cleaning
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_mopping
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_clean_mop_cleaning
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_clean_mop_mopping
+      - trigger: state
+        entity_id: !input status_sensor
+        to: error
+      timeout: '00:03:00'
+      continue_on_timeout: true
+  - alias: Reject a routine that did not start
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state:
+        - cleaning
+        - segment_cleaning
+        - segment_mopping
+        - segment_clean_mop_cleaning
+        - segment_clean_mop_mopping
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: error
+    - stop: the Vac followed by Mop routine did not reach a cleaning state.
+      error: true
+  - alias: Wait for the Vac followed by Mop routine to finish
+    wait_for_trigger:
+    - trigger: state
+      entity_id: !input status_sensor
+      to: idle
+    - trigger: state
+      entity_id: !input status_sensor
+      to: error
+    timeout: '03:00:00'
+    continue_on_timeout: true
+  - alias: Reject a routine timeout or error
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state: idle
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: error
+    - stop: the Vac followed by Mop routine did not finish cleanly.
+      error: true
+  - alias: Ask for the downstairs carry
+    action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: carry_downstairs
+  else:
+  - alias: Apply the saved mode without cross-mode overrides
+    choose:
+    - conditions:
+      - "{{ run_strategy == 'smartplan' }}"
+      sequence:
+      - alias: Apply the atomic SmartPlan bundle
+        action: vacuum.send_command
+        target:
+          entity_id: !input vacuum
+        data:
+          command: set_clean_motor_mode
+          params:
+          - fan_power: 110
+            water_box_mode: 209
+            mop_mode: 306
+      - alias: Keep SmartPlan at one pass
+        action: vacuum.send_command
+        target:
+          entity_id: !input vacuum
+        data:
+          command: set_clean_repeat_times
+          params:
+            repeat: 1
+    default:
+    - alias: Select Vacuum, Vac and Mop, or the vacuum first phase
+      action: select.select_option
+      target:
+        entity_id: !input cleaning_mode
+      data:
+        option: "{{ 'vac_and_mop' if run_cleaning_type == 'vacuum_and_mop' else 'vacuum' }}"
+    - alias: Apply mop controls only to simultaneous Vac and Mop
+      if:
+      - "{{ run_cleaning_type == 'vacuum_and_mop' }}"
+      then:
+      - alias: Leave SmartPlan before a manual route
+        if:
+        - condition: state
+          entity_id: !input mop_mode
+          state: smart_mode
+        then:
+        - action: select.select_option
+          target:
+            entity_id: !input mop_mode
+          data:
+            option: custom
+      - alias: Apply mop route
+        action: select.select_option
+        target:
+          entity_id: !input mop_mode
+        data:
+          option: "{{ effective_mop_mode }}"
+      - alias: Apply water flow
+        action: select.select_option
+        target:
+          entity_id: !input mop_intensity
+        data:
+          option: "{{ effective_mop_intensity }}"
+    - alias: Apply suction
+      action: vacuum.set_fan_speed
+      target:
+        entity_id: !input vacuum
+      data:
+        fan_speed: "{{ effective_fan_speed }}"
+    - alias: Apply cleaning count
+      action: vacuum.send_command
+      target:
+        entity_id: !input vacuum
+      data:
+        command: set_clean_repeat_times
+        params:
+          repeat: "{{ run_cleaning_count | int(1) }}"
+  - alias: Reassert the saved map before the first phase
+    action: select.select_option
+    target:
+      entity_id: !input map_select
+    data:
+      option: "{{ effective_map_option }}"
+    continue_on_error: true
+  - alias: Wait for the saved map before the first phase
+    if:
+    - "{{ not is_state(map_select, effective_map_option) }}"
+    then:
+    - wait_template: "{{ is_state(map_select, effective_map_option) }}"
+      timeout: '00:01:30'
+      continue_on_timeout: true
+  - alias: Allow the saved map to settle before the first phase
+    delay: '00:00:03'
+  - alias: Reject an unstable map before the first phase
+    if:
+    - "{{ not is_state(map_select, effective_map_option) }}"
+    then:
+    - alias: Return to the upstairs carry handoff
+      action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: carry_upstairs
+    - stop: The saved isolated map did not remain selected before the first phase.
+      error: false
+  - alias: Start the first phase on the whole isolated map or selected areas
+    if:
+    - "{{ effective_whole_floor }}"
+    then:
+    - action: vacuum.start
+      target:
+        entity_id: !input vacuum
+    else:
+    - action: vacuum.clean_area
+      target:
+        entity_id: !input vacuum
+      data:
+        cleaning_area_id: "{{ effective_cleaning_area_id }}"
+  - alias: Wait for the first phase to reach a real cleaning state
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state:
+        - cleaning
+        - segment_cleaning
+        - segment_mopping
+        - segment_clean_mop_cleaning
+        - segment_clean_mop_mopping
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: cleaning
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_cleaning
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_mopping
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_clean_mop_cleaning
+      - trigger: state
+        entity_id: !input status_sensor
+        to: segment_clean_mop_mopping
+      - trigger: state
+        entity_id: !input status_sensor
+        to: idle
+      - trigger: state
+        entity_id: !input status_sensor
+        to: error
+      - trigger: state
+        entity_id: !input vacuum
+        to: error
+      timeout: '00:03:00'
+      continue_on_timeout: true
+  - alias: Reject the first phase positioning failure
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state:
+        - cleaning
+        - segment_cleaning
+        - segment_mopping
+        - segment_clean_mop_cleaning
+        - segment_clean_mop_mopping
+    then:
+    - alias: Stop an active positioning attempt
+      if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: !input vacuum
+          state: idle
+      then:
+      - action: vacuum.stop
+        target:
+          entity_id: !input vacuum
+    - alias: Record the first phase positioning failure
+      action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: carry_upstairs
+    - stop: the first phase did not reach a room segment.
+      error: false
+  - alias: Require 45 seconds of sustained the first phase
+    wait_for_trigger:
+    - trigger: state
+      entity_id: !input status_sensor
+      to: idle
+    - trigger: state
+      entity_id: !input vacuum
+      to: idle
+    - trigger: state
+      entity_id: !input status_sensor
+      to: error
+    - trigger: state
+      entity_id: !input vacuum
+      to: error
+    timeout: '00:00:45'
+    continue_on_timeout: true
+  - alias: Reject a transient the first phase state
+    if:
+    - "{{ wait.completed }}"
+    then:
+    - alias: Record transient the first phase failure
+      action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: carry_upstairs
+    - stop: the first phase ended before 45 seconds of sustained cleaning.
+      error: false
+  - alias: Run the no-dock mop phase only for Vac followed by Mop
+    if:
+    - "{{ run_cleaning_type == 'vacuum_then_mop' }}"
+    then:
+    - alias: Wait for the vacuum phase to finish upstairs
+      if:
+      - condition: not
+        conditions:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: !input status_sensor
+            state: idle
+          - condition: state
+            entity_id: !input vacuum
+            state: idle
+          - condition: state
+            entity_id: !input status_sensor
+            state: error
+          - condition: state
+            entity_id: !input vacuum
+            state: error
+      then:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: !input status_sensor
+          to: idle
+        - trigger: state
+          entity_id: !input vacuum
+          to: idle
+        - trigger: state
+          entity_id: !input status_sensor
+          to: error
+        - trigger: state
+          entity_id: !input vacuum
+          to: error
+        timeout: '03:00:00'
+        continue_on_timeout: true
+    - alias: Reject the vacuum phase timeout or error
+      if:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: !input status_sensor
+          state: error
+        - condition: state
+          entity_id: !input vacuum
+          state: error
+        - condition: not
+          conditions:
+          - condition: or
+            conditions:
+            - condition: state
+              entity_id: !input status_sensor
+              state: idle
+            - condition: state
+              entity_id: !input vacuum
+              state: idle
+      then:
+      - alias: Record the vacuum phase failure
+        action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: the vacuum phase did not finish cleanly.
+        error: false
+    - alias: Prevent a cancelled job from starting the mop phase
+      if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: !input stage_helper
+          state: cleaning_upstairs
+      then:
+      - stop: The assisted job was cancelled before the mop phase.
+        error: false
+    - alias: Select Mop mode upstairs
+      action: select.select_option
+      target:
+        entity_id: !input cleaning_mode
+      data:
+        option: mop
+    - alias: Leave SmartPlan before the saved mop route
+      if:
+      - condition: state
+        entity_id: !input mop_mode
+        state: smart_mode
+      then:
+      - action: select.select_option
+        target:
+          entity_id: !input mop_mode
+        data:
+          option: custom
+    - alias: Apply the saved mop route
+      action: select.select_option
+      target:
+        entity_id: !input mop_mode
+      data:
+        option: "{{ effective_mop_mode }}"
+    - alias: Apply the saved water flow
+      action: select.select_option
+      target:
+        entity_id: !input mop_intensity
+      data:
+        option: "{{ effective_mop_intensity }}"
+    - alias: Keep the mop phase at one pass
+      action: vacuum.send_command
+      target:
+        entity_id: !input vacuum
+      data:
+        command: set_clean_repeat_times
+        params:
+          repeat: 1
+    - alias: Reassert the saved map before the mop phase
+      action: select.select_option
+      target:
+        entity_id: !input map_select
+      data:
+        option: "{{ effective_map_option }}"
+      continue_on_error: true
+    - alias: Wait for the saved map before the mop phase
+      if:
+      - "{{ not is_state(map_select, effective_map_option) }}"
+      then:
+      - wait_template: "{{ is_state(map_select, effective_map_option) }}"
+        timeout: '00:01:30'
+        continue_on_timeout: true
+    - alias: Allow the saved map to settle before the mop phase
+      delay: '00:00:03'
+    - alias: Reject an unstable map before the mop phase
+      if:
+      - "{{ not is_state(map_select, effective_map_option) }}"
+      then:
+      - alias: Return to the upstairs carry handoff
+        action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: carry_upstairs
+      - stop: The saved isolated map did not remain selected before the mop phase.
+        error: false
+    - alias: Start the mop phase on the whole isolated map or selected areas
+      if:
+      - "{{ effective_whole_floor }}"
+      then:
+      - action: vacuum.start
+        target:
+          entity_id: !input vacuum
+      else:
+      - action: vacuum.clean_area
+        target:
+          entity_id: !input vacuum
+        data:
+          cleaning_area_id: "{{ effective_cleaning_area_id }}"
+    - alias: Wait for the mop phase to reach a real cleaning state
+      if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: !input status_sensor
+          state:
+          - cleaning
+          - segment_cleaning
+          - segment_mopping
+          - segment_clean_mop_cleaning
+          - segment_clean_mop_mopping
+      then:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: !input status_sensor
+          to: cleaning
+        - trigger: state
+          entity_id: !input status_sensor
+          to: segment_cleaning
+        - trigger: state
+          entity_id: !input status_sensor
+          to: segment_mopping
+        - trigger: state
+          entity_id: !input status_sensor
+          to: segment_clean_mop_cleaning
+        - trigger: state
+          entity_id: !input status_sensor
+          to: segment_clean_mop_mopping
+        - trigger: state
+          entity_id: !input status_sensor
+          to: idle
+        - trigger: state
+          entity_id: !input status_sensor
+          to: error
+        - trigger: state
+          entity_id: !input vacuum
+          to: error
+        timeout: '00:03:00'
+        continue_on_timeout: true
+    - alias: Reject the mop phase positioning failure
+      if:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: !input status_sensor
+          state:
+          - cleaning
+          - segment_cleaning
+          - segment_mopping
+          - segment_clean_mop_cleaning
+          - segment_clean_mop_mopping
+      then:
+      - alias: Stop an active positioning attempt
+        if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: !input vacuum
+            state: idle
+        then:
+        - action: vacuum.stop
+          target:
+            entity_id: !input vacuum
+      - alias: Record the mop phase positioning failure
+        action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: the mop phase did not reach a room segment.
+        error: false
+    - alias: Require 45 seconds of sustained the mop phase
+      wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: idle
+      - trigger: state
+        entity_id: !input vacuum
+        to: idle
+      - trigger: state
+        entity_id: !input status_sensor
+        to: error
+      - trigger: state
+        entity_id: !input vacuum
+        to: error
+      timeout: '00:00:45'
+      continue_on_timeout: true
+    - alias: Reject a transient the mop phase state
+      if:
+      - "{{ wait.completed }}"
+      then:
+      - alias: Record transient the mop phase failure
+        action: input_select.select_option
+        target:
+          entity_id: !input stage_helper
+        data:
+          option: error
+      - stop: the mop phase ended before 45 seconds of sustained cleaning.
+        error: false
+  - alias: Wait for the final phase to finish upstairs
+    if:
+    - condition: not
+      conditions:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: !input status_sensor
+          state: idle
+        - condition: state
+          entity_id: !input vacuum
+          state: idle
+        - condition: state
+          entity_id: !input status_sensor
+          state: error
+        - condition: state
+          entity_id: !input vacuum
+          state: error
+    then:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: !input status_sensor
+        to: idle
+      - trigger: state
+        entity_id: !input vacuum
+        to: idle
+      - trigger: state
+        entity_id: !input status_sensor
+        to: error
+      - trigger: state
+        entity_id: !input vacuum
+        to: error
+      timeout: '03:00:00'
+      continue_on_timeout: true
+  - alias: Reject the final phase timeout or error
+    if:
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: !input status_sensor
+        state: error
+      - condition: state
+        entity_id: !input vacuum
+        state: error
+      - condition: not
+        conditions:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: !input status_sensor
+            state: idle
+          - condition: state
+            entity_id: !input vacuum
+            state: idle
+    then:
+    - alias: Record the final phase failure
+      action: input_select.select_option
+      target:
+        entity_id: !input stage_helper
+      data:
+        option: error
+    - stop: the final phase did not finish cleanly.
+      error: false
+  - alias: Ask for the downstairs carry
+    action: input_select.select_option
+    target:
+      entity_id: !input stage_helper
+    data:
+      option: carry_downstairs

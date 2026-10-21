@@ -2,19 +2,9 @@ import type {
   DockAction,
   DockSettingKey,
   HomeAssistant,
-  RoborockEntityConfig,
   RoborockVacuumMapCardConfig,
 } from './types';
-
-const SETTING_ENTITIES: Record<DockSettingKey, keyof RoborockEntityConfig> = {
-  mop_wash_frequency: 'dock_mop_wash_frequency',
-  wash_mode: 'dock_wash_mode',
-  wash_temperature: 'dock_wash_temperature',
-  auto_empty: 'dock_auto_empty',
-  empty_mode: 'dock_empty_mode',
-  auto_dry: 'dock_auto_dry',
-  dry_duration: 'dock_dry_duration',
-};
+import { DOCK_SETTING_ENTITIES } from './dock-settings';
 
 const WASH_MODE_CODES: Record<string, number> = {
   light: 0,
@@ -85,7 +75,7 @@ async function updateHelper(
   setting: DockSettingKey,
   value: string | boolean,
 ): Promise<void> {
-  const entityId = config.entities?.[SETTING_ENTITIES[setting]];
+  const entityId = config.entities?.[DOCK_SETTING_ENTITIES[setting]];
   if (!entityId) return;
   const domain = entityId.split('.')[0];
   if (typeof value === 'boolean') {

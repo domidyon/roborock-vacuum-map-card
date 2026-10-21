@@ -37,3 +37,12 @@ describe('editor model note', () => {
     expect(note('roborock.vacuum.zz1')).toContain('No profile for roborock.vacuum.zz1 yet');
   });
 });
+
+describe('editor blueprint links', () => {
+  it('links every script blueprint through My Home Assistant', () => {
+    const { container } = render(<CardEditor hass={createHass()} config={configFixture} onChange={() => undefined} />);
+    const links = [...container.querySelectorAll('a[href*="blueprint_import"]')].map((link) => decodeURIComponent(link.getAttribute('href') ?? ''));
+    expect(links).toHaveLength(4);
+    expect(links[0]).toBe('https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/blueprints/script/roborock_vacuum_map_card/vacuum_then_mop.yaml');
+  });
+});
