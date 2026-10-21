@@ -7,7 +7,7 @@
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?logo=homeassistantcommunitystore&logoColor=white)](https://hacs.xyz/docs/faq/custom_repositories/)
 [![GitHub release](https://img.shields.io/github/v/release/domidyon/roborock-vacuum-map-card?logo=github)](https://github.com/domidyon/roborock-vacuum-map-card/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/domidyon/roborock-vacuum-map-card/ci.yml?branch=main&label=CI&logo=githubactions&logoColor=white)](https://github.com/domidyon/roborock-vacuum-map-card/actions/workflows/ci.yml)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.3%2B-18BCF2?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/integrations/roborock/)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-18BCF2?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/integrations/roborock/)
 [![License: MIT](https://img.shields.io/github/license/domidyon/roborock-vacuum-map-card)](LICENSE)
 
 [![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=domidyon&repository=roborock-vacuum-map-card&category=plugin)
@@ -67,7 +67,7 @@ integration supports. Features adapt to the entities your model exposes.
 
 ## 📋 Requirements
 
-- **Home Assistant 2026.3** or newer (for native `vacuum.clean_area`; 2026.8+ recommended)
+- **Home Assistant 2026.8** or newer (for native `vacuum.clean_area` and the Roborock *Cleaning mode* select)
 - The official **[Roborock integration](https://www.home-assistant.io/integrations/roborock/)**, with map segments mapped to Home Assistant areas
 - **[Roborock Custom Map](https://github.com/Python-roborock/RoborockCustomMap)**, which provides the calibrated map images with room data
 - [HACS](https://hacs.xyz) (recommended)
@@ -150,7 +150,6 @@ The road to **1.0** is all about setup that just works:
 - 🧬 **Model profiles:** per-model defaults (mop modes, routes, dock features) applied for you
 - 🧰 **One-click dock helpers:** helpers created for you, or native dock entities used where available
 - 🩹 **Diagnostics export** for quick, useful bug reports
-- ⬆️ Minimum Home Assistant version raised to **2026.8**
 
 Work happens on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)
 branch. See the [CHANGELOG](CHANGELOG.md) for what has already shipped.

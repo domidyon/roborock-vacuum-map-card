@@ -1,11 +1,13 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig(({ command }) => ({
   plugins: [react()],
-  define: command === 'build' ? {
-    'process.env.NODE_ENV': JSON.stringify('production'),
-  } : {},
+  define: {
+    __CARD_VERSION__: JSON.stringify(pkg.version),
+    ...(command === 'build' ? { 'process.env.NODE_ENV': JSON.stringify('production') } : {}),
+  },
   build: {
     lib: {
       entry: 'src/main.tsx',

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Require Home Assistant 2026.8 or newer, which provides the Roborock Cleaning mode select.
+- Deprecate `vacuum_mode_fallback`. Existing configs keep working and log a console notice; the option is hidden from the editor unless already set.
+- Report the card version from `package.json` instead of a hand-maintained constant.
+- Add a backward-compatibility test suite for v0.8.0 configs.
+- Run CI and HACS validation on the `beta` branch.
+
 ## 0.8.0 — 2026-10-21
 
 - Add an explicitly opt-in Mop-only mode for supported Roborock models without exposing it on the Qrevo Curv 2 Flow by default.

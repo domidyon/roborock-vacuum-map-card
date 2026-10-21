@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { expect, test } from '@playwright/test';
+import pkg from '../../package.json' with { type: 'json' };
 
 test('production bundle registers without a Node process global', async ({ page }) => {
   const pageErrors: string[] = [];
@@ -31,4 +32,20 @@ test('production card requests content-driven section height', async ({ page }) 
   });
 
   expect(gridOptions).toEqual({ columns: 12, rows: 'auto', min_rows: 10 });
+});
+
+test('production bundle reports the package.json version', async ({ page }) => {
+  const banners: string[] = [];
+  page.on('console', (message) => {
+    if (message.text().includes('ROBOROCK-VACUUM-MAP-CARD')) banners.push(message.text());
+  });
+
+  await page.goto('/');
+  await page.addScriptTag({
+    path: path.resolve('dist/roborock-vacuum-map-card.js'),
+    type: 'module',
+  });
+
+  await expect.poll(() => banners.length).toBe(1);
+  expect(banners[0]).toContain(`v${pkg.version}`);
 });

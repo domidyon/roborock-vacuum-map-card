@@ -28,7 +28,6 @@ language: nl
 
 entities:
   map_select: select.qrevo_curv_2_flow_selected_map
-  # Home Assistant 2026.8+.
   cleaning_mode: select.woonkamer_qrevo_curv_2_flow_cleaning_mode
   # Legacy fallback when a floor has no native Roborock routine.
   vacuum_then_mop_script: script.roborock_vacuum_then_mop
@@ -131,7 +130,7 @@ default_preset: vacuum_only
 | `entity` | Yes | Roborock `vacuum.*` entity |
 | `language` | No | `en` (default), `nl`, `pl`, or `tr` |
 | `entities.map_select` | For 2+ floors | Select entity and live floor options |
-| `entities.cleaning_mode` | Recommended | High-level Roborock mode select (`vacuum`, `vac_and_mop`, and optionally `mop`) from Home Assistant 2026.8+ |
+| `entities.cleaning_mode` | Recommended | High-level Roborock mode select (`vacuum`, `vac_and_mop`, and optionally `mop`) |
 | `entities.vacuum_then_mop_script` | Legacy fallback | Cancellable two-phase HA script used only when the active floor has no native routine |
 | `entities.mop_mode` | No | Roborock mop route/mode select |
 | `entities.mop_intensity` | No | Roborock mop intensity select |
@@ -157,7 +156,7 @@ default_preset: vacuum_only
 | `floor.assisted_carry` | No | Enables the guided no-dock carry workflow for this floor; multiple isolated maps can share the durable workflow helpers |
 | `presets` | No | Structured additional presets with optional `cleaning_count: 1` or `2`; arbitrary service YAML is intentionally unsupported |
 | `default_preset` | No | Built-in or configured preset ID |
-| `vacuum_mode_fallback` | No | `set_clean_motor_mode` enables true Vacuum mode on HA 2026.7 and older with one atomic Roborock command |
+| `vacuum_mode_fallback` | No | **Deprecated.** `set_clean_motor_mode` enabled true Vacuum mode on HA 2026.7 and older. It still works for existing configs but is hidden from the editor; configure `entities.cleaning_mode` instead |
 | `enable_mop_only` | No | `true` shows the built-in Mop only mode. Defaults to `false` because some models (e.g. Qrevo Curv 2 Flow) list `mop` in the HA Cleaning mode select although the Roborock app has no Mop-only mode. Enable it only if your app offers Mop only (e.g. Saros 10R) |
 | `mop_routes` | No | Per-mode allow-list of mop routes shown in the sheet, e.g. `vacuum_and_mop: [fast, standard]` and `mop: [fast, standard, deep, deep_plus]`. Use it when Home Assistant lists routes your model does not offer in that mode. Defaults to `fast`, `standard`, `deep` filtered by the live `mop_mode` options |
 
@@ -166,7 +165,7 @@ default_preset: vacuum_only
 Start validates every requested option against live entity options. It then:
 
 1. Selects and confirms the target floor when necessary.
-2. Applies the Home Assistant 2026.8+ high-level `cleaning_mode` for Vacuum, Mop, or Vac & Mop when configured. Mop only requires the `mop` option and never sends a fan speed, so suction stays off. On HA 2026.7 and older, the explicit fallback uses one atomic `set_clean_motor_mode` command for Vacuum mode.
+2. Applies the high-level `cleaning_mode` for Vacuum, Mop, or Vac & Mop when configured. Mop only requires the `mop` option and never sends a fan speed, so suction stays off. Existing configs with the deprecated `vacuum_mode_fallback` still use one atomic `set_clean_motor_mode` command for Vacuum mode.
 3. Applies only the app-supported manual route, water-flow, and suction values selected in the sheet.
 4. For room and floor jobs, sets the robot's native cleaning count with `set_clean_repeat_times` using the device-required `{ repeat: 1|2 }` object. Zone jobs pass the count directly to the zoned-cleaning action.
 5. Starts one native whole-map job with `vacuum.start` when every configured
@@ -194,7 +193,7 @@ The onboard dirty-water drain is shown as unavailable because the current Python
 - **Calibration/rooms missing:** confirm the selected image comes from `roborock_custom_map`, then reload that integration after the core Roborock integration is loaded.
 - **Room disabled:** assign an HA `area_id` in the visual editor and make sure that segment is mapped in Roborock entity settings.
 - **Preset unavailable:** its fan speed, mop mode, or intensity is absent from the live entity options. Use a supported value or another preset.
-- **Vacuum only is unavailable:** configure the Roborock high-level Cleaning mode select on Home Assistant 2026.8+, or set `vacuum_mode_fallback: set_clean_motor_mode` on older stable releases. The fallback is atomic and does not call the incompatible mop-intensity `off` select.
+- **Vacuum only is unavailable:** configure `entities.cleaning_mode` with the Roborock high-level Cleaning mode select.
 - **Mop only is missing or unavailable:** set `enable_mop_only: true` (only if your Roborock app offers Mop only), and make sure the configured `entities.cleaning_mode` select offers the `mop` option.
 - **Vac followed by Mop is unavailable:** configure `floor.vacuum_then_mop_routine`; for legacy two-phase orchestration, configure `entities.vacuum_then_mop_script` and a Cleaning mode entity that offers both `vacuum` and `mop`.
 - **Floor timeout:** verify `map_select_option` exactly matches a live option on `entities.map_select`.

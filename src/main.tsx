@@ -5,7 +5,17 @@ import { getStubConfig, normalizeConfig } from './config';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from './types';
 import styles from './styles/main.scss?inline';
 
-const VERSION = '0.8.0';
+const VERSION = __CARD_VERSION__;
+
+let warnedVacuumModeFallback = false;
+
+function warnDeprecatedVacuumModeFallback() {
+  if (warnedVacuumModeFallback) return;
+  warnedVacuumModeFallback = true;
+  console.warn(
+    'roborock-vacuum-map-card: `vacuum_mode_fallback` is deprecated. Home Assistant 2026.8+ provides the Cleaning mode select; configure `entities.cleaning_mode` instead.',
+  );
+}
 
 abstract class ReactElement extends HTMLElement {
   protected root?: ReactDOM.Root;
@@ -33,6 +43,7 @@ export class RoborockVacuumMapCard extends ReactElement {
 
   setConfig(config: RoborockVacuumMapCardConfig) {
     this.config = normalizeConfig(config);
+    if (this.config.vacuum_mode_fallback) warnDeprecatedVacuumModeFallback();
     this.render();
   }
 

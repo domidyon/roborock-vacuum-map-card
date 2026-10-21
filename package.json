@@ -1,6 +1,6 @@
 {
   "name": "roborock-vacuum-map-card",
-  "version": "0.8.0",
+  "version": "0.9.0-dev",
   "description": "A Roborock-native, room-aware Home Assistant dashboard card",
   "type": "module",
   "license": "MIT",

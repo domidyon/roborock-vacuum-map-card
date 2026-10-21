@@ -1,0 +1,193 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`v0.8.0 README multi-floor config > normalizes to the same result 1`] = `
+{
+  "default_preset": "vacuum_only",
+  "enable_mop_only": false,
+  "entities": {
+    "assisted_carry_finish_script": "script.qrevo_upstairs_finish",
+    "assisted_carry_job": "input_text.qrevo_upstairs_job",
+    "assisted_carry_prepare_script": "script.qrevo_upstairs_prepare",
+    "assisted_carry_stage": "input_select.qrevo_upstairs_stage",
+    "assisted_carry_start_script": "script.qrevo_upstairs_start",
+    "battery": "sensor.qrevo_curv_2_flow_battery",
+    "cleaning_area": "sensor.qrevo_curv_2_flow_cleaning_area",
+    "cleaning_mode": "select.woonkamer_qrevo_curv_2_flow_cleaning_mode",
+    "cleaning_progress": "sensor.qrevo_curv_2_flow_cleaning_progress",
+    "cleaning_time": "sensor.qrevo_curv_2_flow_cleaning_time",
+    "current_room": "sensor.qrevo_curv_2_flow_current_room",
+    "do_not_disturb": "switch.qrevo_curv_2_flow_do_not_disturb",
+    "dock_auto_dry": "input_boolean.qrevo_dock_auto_dry",
+    "dock_auto_empty": "input_boolean.qrevo_dock_auto_empty",
+    "dock_child_lock": "switch.qrevo_curv_2_flow_dock_child_lock",
+    "dock_dry_duration": "input_select.qrevo_dock_drying_duration",
+    "dock_empty_mode": "input_select.qrevo_dock_empty_mode",
+    "dock_mop_drying": "binary_sensor.qrevo_curv_2_flow_dock_mop_drying",
+    "dock_mop_drying_remaining_time": "sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time",
+    "dock_mop_wash_frequency": "input_select.qrevo_dock_mop_wash_frequency",
+    "dock_wash_mode": "input_select.qrevo_dock_washing_mode",
+    "dock_wash_temperature": "input_select.qrevo_dock_wash_temperature",
+    "error": "sensor.qrevo_curv_2_flow_vacuum_error",
+    "map_select": "select.qrevo_curv_2_flow_selected_map",
+    "mop_attached": "binary_sensor.qrevo_curv_2_flow_mop_attached",
+    "mop_intensity": "select.qrevo_curv_2_flow_mop_intensity",
+    "mop_mode": "select.qrevo_curv_2_flow_mop_mode",
+    "status": "sensor.qrevo_curv_2_flow_status",
+    "vacuum_then_mop_script": "script.roborock_vacuum_then_mop",
+    "water_box_attached": "binary_sensor.qrevo_curv_2_flow_water_box_attached",
+    "water_shortage": "binary_sensor.qrevo_curv_2_flow_water_shortage",
+  },
+  "entity": "vacuum.qrevo_curv_2_flow",
+  "floors": [
+    {
+      "assisted_carry": false,
+      "id": "downstairs",
+      "map_entity": "image.woonkamer_qrevo_curv_2_flow_beneden_custom",
+      "map_select_option": "Beneden",
+      "name": "Beneden",
+      "rooms": [
+        {
+          "area_id": "kitchen",
+          "icon": "mdi:countertop",
+          "include_in_floor_clean": true,
+          "name": "Keuken",
+          "segment_id": 1,
+        },
+        {
+          "area_id": "hallway",
+          "icon": "mdi:coat-rack",
+          "include_in_floor_clean": true,
+          "name": "Hal",
+          "segment_id": 2,
+        },
+        {
+          "area_id": "living_room",
+          "icon": "mdi:sofa",
+          "include_in_floor_clean": true,
+          "name": "Woonkamer",
+          "segment_id": 4,
+        },
+      ],
+      "vacuum_then_mop_routine": "button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop",
+    },
+    {
+      "assisted_carry": true,
+      "id": "upstairs",
+      "map_entity": "image.woonkamer_qrevo_curv_2_flow_bovenverdieping_custom",
+      "map_select_option": "Bovenverdieping",
+      "name": "Boven",
+      "rooms": [
+        {
+          "area_id": "office",
+          "icon": "mdi:desk",
+          "include_in_floor_clean": true,
+          "name": "Kantoor",
+          "segment_id": 1,
+        },
+        {
+          "area_id": "overloop",
+          "icon": "mdi:stairs",
+          "include_in_floor_clean": true,
+          "name": "Overloop",
+          "segment_id": 2,
+        },
+        {
+          "area_id": "bedroom",
+          "icon": "mdi:bed-king",
+          "include_in_floor_clean": true,
+          "name": "Slaapkamer",
+          "segment_id": 3,
+        },
+        {
+          "area_id": "waskamer",
+          "icon": "mdi:washing-machine",
+          "include_in_floor_clean": true,
+          "name": "Waskamer",
+          "segment_id": 4,
+        },
+      ],
+      "vacuum_then_mop_routine": "button.woonkamer_qrevo_curv_2_flow_boven_vacmop",
+    },
+  ],
+  "language": "nl",
+  "presets": [
+    {
+      "cleaning_count": 1,
+      "cleaning_type": "vacuum",
+      "fan_speed": "quiet",
+      "icon": "mdi:weather-night",
+      "id": "avond",
+      "mop_mode": "standard",
+      "name": "Avond",
+      "strategy": "custom",
+    },
+  ],
+  "type": "custom:roborock-vacuum-map-card",
+}
+`;
+
+exports[`v0.8.0 opt-in flags config > normalizes to the same result 1`] = `
+{
+  "card_mod": {
+    "style": "ha-card { border-radius: 24px; }",
+  },
+  "default_preset": "deep_mop",
+  "enable_mop_only": true,
+  "entities": {
+    "cleaning_mode": "select.saros_10r_cleaning_mode",
+    "mop_mode": "select.saros_10r_mop_mode",
+  },
+  "entity": "vacuum.saros_10r",
+  "floors": [
+    {
+      "assisted_carry": false,
+      "id": "home",
+      "map_entity": "image.saros_10r_home_custom",
+      "name": "Home",
+      "rooms": [
+        {
+          "area_id": "kitchen",
+          "include_in_floor_clean": true,
+          "name": "Kitchen",
+          "segment_id": 16,
+        },
+        {
+          "include_in_floor_clean": false,
+          "name": "Unmapped room",
+          "segment_id": 17,
+        },
+      ],
+    },
+  ],
+  "language": "en",
+  "mop_routes": {
+    "mop": [
+      "fast",
+      "standard",
+      "deep",
+      "deep_plus",
+    ],
+    "vacuum_and_mop": [
+      "fast",
+      "standard",
+    ],
+  },
+  "presets": [
+    {
+      "cleaning_count": 2,
+      "cleaning_type": "mop",
+      "id": "deep_mop",
+      "mop_mode": "deep",
+      "name": "Deep mop",
+      "strategy": "custom",
+    },
+    {
+      "id": "ai",
+      "name": "AI",
+      "strategy": "smartplan",
+    },
+  ],
+  "type": "custom:roborock-vacuum-map-card",
+  "vacuum_mode_fallback": "set_clean_motor_mode",
+}
+`;
