@@ -10794,6 +10794,8 @@ const p0 = [
     sources: ["Maintainer's daily driver (Home Assistant 2026.10)"],
     // HA lists `mop` as a Cleaning mode, but the app has no Mop-only mode.
     mop_only: !1,
+    // The app's third route is Deep+; HA no longer lists plain `deep` for this model.
+    mop_routes: { vacuum_and_mop: ["fast", "standard", "deep_plus"] },
     repeat: "set_clean_repeat_times",
     smartplan: !0,
     dock: { auto_empty: !0, mop_wash: !0, hot_water: !0, mop_dry: !0 }

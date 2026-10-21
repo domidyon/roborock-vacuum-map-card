@@ -11,6 +11,7 @@
 - Add model profiles (`src/profiles.ts`, `docs/models.md`) for the Qrevo Curv 2 Flow, Saros 10R and S7/S7+. They decide SmartPlan, Mop only, mop routes and how the cleaning count is sent. Explicit config wins over the profile, and the profile wins over live-option detection.
 - Support the S7/S7+ (issue #2, from PR #3): no `set_clean_repeat_times`, two-pass room jobs via `app_segment_clean`, mild/standard/intense water flow, and SmartPlan hidden.
 - Add the `enable_smartplan` and `cleaning_count_command` config overrides.
+- Offer the Deep+ route on the Qrevo Curv 2 Flow, whose app has Deep+ rather than Deep.
 - Show the matched model profile in the editor and add a model-report issue form.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 

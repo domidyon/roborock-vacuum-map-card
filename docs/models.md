@@ -9,7 +9,7 @@ override the profile; "auto" means the card detects it from your entities.
 
 | Model | Model id | Status | SmartPlan | Mop only | Mop routes | 2-pass rooms | Notes |
 |---|---|---|---|---|---|---|---|
-| Qrevo Curv 2 Flow | `roborock.vacuum.a245` | ✅ Tested | yes | no | auto | setting |  |
+| Qrevo Curv 2 Flow | `roborock.vacuum.a245` | ✅ Tested | yes | no | Vac & Mop: fast, standard, deep_plus | setting |  |
 | Saros 10R | `roborock.vacuum.a144` | 🟢 Community | yes | yes | Vac & Mop: fast, standard<br>Mop: fast, standard, deep, deep_plus | setting |  |
 | S7 / S7+ | `roborock.vacuum.a15` | 🟡 Experimental | no | opt-in | auto | per segment | No cleaning-count setting, so two-pass room jobs use the per-segment repeat. Awaiting hardware confirmation (issue #2). |
 

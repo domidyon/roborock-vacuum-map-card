@@ -144,11 +144,11 @@ describe('device discovery (live Qrevo Curv 2 Flow fixture)', () => {
 });
 
 describe('model profiles in discovery', () => {
-  it('reports the tested Qrevo profile without adding opt-in flags', async () => {
+  it('reports the tested Qrevo profile and its Deep+ route without enabling Mop only', async () => {
     const { config, report } = await discover();
     expect(report.profile?.status).toBe('tested');
     expect(config.enable_mop_only).toBeUndefined();
-    expect(config.mop_routes).toBeUndefined();
+    expect(config.mop_routes).toEqual({ vacuum_and_mop: ['fast', 'standard', 'deep_plus'] });
   });
 
   it('writes profile facts into the config for models that need them', () => {

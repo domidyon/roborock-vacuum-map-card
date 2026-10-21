@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { configFixture, createHass, createS7Hass } from '../test/fixtures';
+import { configFixture, createHass, createS7Hass, withModel } from '../test/fixtures';
 import { VacuumCard } from './VacuumCard';
 
 function loadMap() {
@@ -75,6 +75,21 @@ describe('vacuum card flows', () => {
     expect(within(dialog).queryByText('Suction')).not.toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Deep' })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Deep+' })).toBeInTheDocument();
+  });
+
+  it('offers Deep+ instead of Deep on the Qrevo Curv 2 Flow profile', async () => {
+    const hass = withModel(createHass(), 'roborock.vacuum.a245');
+    hass.states['select.mop_mode'].attributes.options = ['standard', 'deep_plus', 'fast', 'smart_mode', 'custom'];
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Vac & Mop' }));
+    expect(within(dialog).getByRole('button', { name: 'Fast' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Standard' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Deep+' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Deep' })).not.toBeInTheDocument();
   });
 
   it('submits the first allowed route when a mode preset defaults to an excluded route', async () => {

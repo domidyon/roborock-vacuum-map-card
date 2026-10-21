@@ -37,6 +37,8 @@ export const MODEL_PROFILES: ModelProfile[] = [
     sources: ["Maintainer's daily driver (Home Assistant 2026.10)"],
     // HA lists `mop` as a Cleaning mode, but the app has no Mop-only mode.
     mop_only: false,
+    // The app's third route is Deep+; HA no longer lists plain `deep` for this model.
+    mop_routes: { vacuum_and_mop: ['fast', 'standard', 'deep_plus'] },
     repeat: 'set_clean_repeat_times',
     smartplan: true,
     dock: { auto_empty: true, mop_wash: true, hot_water: true, mop_dry: true },
