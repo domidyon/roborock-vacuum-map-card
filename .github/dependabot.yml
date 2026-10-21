@@ -1,4 +1,6 @@
 version: 2
+# One grouped pull request per ecosystem per month, against beta. Major versions are
+# skipped; upgrade those deliberately (they often need code or workflow changes).
 updates:
   - package-ecosystem: npm
     directory: /
@@ -6,11 +8,21 @@ updates:
     schedule:
       interval: monthly
     groups:
-      dev-dependencies:
-        dependency-type: development
-    open-pull-requests-limit: 5
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 2
   - package-ecosystem: github-actions
     directory: /
     target-branch: beta
     schedule:
       interval: monthly
+    groups:
+      github-actions:
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 1
