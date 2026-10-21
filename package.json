@@ -23,7 +23,7 @@
     "lucide-react": "^0.563.0",
     "preact": "^10.29.8",
     "react-zoom-pan-pinch": "^4.0.3",
-    "zod": "^4.3.6"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
