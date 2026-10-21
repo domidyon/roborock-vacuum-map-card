@@ -45,6 +45,8 @@ guesses room boundaries.
 | 🧽 **Dock control** | Empty, wash, dry, wash frequency/mode/temperature, auto-empty, drying duration, child lock, with confirmation before anything noisy |
 | 🪜 **Assisted carry** | A guided, reload-safe workflow for cleaning a floor that has no dock |
 | 🛡️ **Safe by design** | Settings stay a draft until you press Start. Every option is validated against live entities, and a failed step aborts before cleaning |
+| 🚰 **Pre-start checks** *(beta)* | An empty clean-water tank or a detached mop blocks a mop job; a full dirty tank, a dock error or low battery gets a warning first |
+| 🧹 **Maintenance** *(beta)* | Brush, filter, sensor and strainer life in the dock panel, a badge when something is due, and resets with confirmation |
 | 📱 **Feels native** | Mobile bottom sheet, desktop dialog, light and dark themes, keyboard support |
 | 🌍 **Translated** | English, Nederlands, Polski, Türkçe ([add yours](#-translations)) |
 | 🧩 **Visual editor** | Room discovery, area mapping, floor and preset ordering, lossless YAML round-tripping |
@@ -151,8 +153,6 @@ The road to **1.0** is all about setup that just works:
 - 🪄 **Setup assistant:** pick your vacuum, and floors, rooms, areas and entities are detected automatically
 - 🧬 **Model profiles:** per-model defaults (mop modes, routes, dock features) applied for you
 - 🧰 **One-click dock helpers:** helpers created for you, or native dock entities used where available
-- 🚰 **Pre-start checks:** a warning before a mop job starts with an empty clean-water tank or a full dirty-water tank
-- 🧹 **Maintenance view:** brush, filter and sensor life with one-tap resets
 - 🤖 **Presets as scripts:** run your presets from automations, schedules and voice assistants
 - 🩹 **Diagnostics export** for quick, useful bug reports
 

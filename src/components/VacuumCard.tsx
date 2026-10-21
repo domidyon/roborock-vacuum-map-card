@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Battery, Clock3, History, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Sparkles, Square, Timer, X } from 'lucide-react';
+import { Battery, Clock3, History, Home, MapPin, Pause, Play, ScanLine, SlidersHorizontal, Sparkles, Square, Timer, TriangleAlert, X } from 'lucide-react';
 import {
   AssistedCarryError,
   assistedFloor,
@@ -16,7 +16,10 @@ import {
 import { detectCapabilities, isVacuumActive } from '../capabilities';
 import { DockExecutionError, executeDockAction, executeDockSetting } from '../dock-executor';
 import { executeJob, JobExecutionError, ZONE_CLEANING_TYPES } from '../executor';
+import { configHealth, roomUsable } from '../health';
 import { t } from '../i18n';
+import { maintenanceStatus, overdueCount, type ConsumableStatus } from '../maintenance';
+import { preflightChecks } from '../preflight';
 import { mapZoneToVacuumZone, parseCalibrationPoints } from '../map';
 import { draftFromPreset, getAvailablePresets } from '../presets';
 import type {
@@ -34,6 +37,7 @@ import type {
 import { DockSheet } from './DockSheet';
 import { JobSheet } from './JobSheet';
 import { MapView } from './MapView';
+import { healthText } from './notices';
 import { AssistedCarryPanel } from './AssistedCarryPanel';
 
 interface VacuumCardProps {
@@ -114,6 +118,12 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const [toast, setToast] = useState<string>();
   const [execution, setExecution] = useState<JobExecutionState>({ phase: 'idle' });
   const capabilities = useMemo(() => detectCapabilities(hass, config), [hass, config]);
+  const maintenance = useMemo(() => maintenanceStatus(hass, config), [hass, config]);
+  const overdue = overdueCount(maintenance);
+  const health = useMemo(() => configHealth(hass, config), [hass, config]);
+  const healthKey = JSON.stringify(health);
+  // Dismissal lasts until the set of issues changes.
+  const [dismissedHealth, setDismissedHealth] = useState<string>();
   const presets = useMemo(() => getAvailablePresets(config, capabilities, floor), [config, capabilities, floor]);
   const defaultPreset = presets.find(({ preset, available }) => preset.id === config.default_preset && available)?.preset
     ?? presets.find(({ available }) => available)?.preset;
@@ -264,7 +274,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     }
     if (!assisted && draft.cleaning_type === 'vacuum_then_mop' && floor.vacuum_then_mop_routine) {
       const included = floor.rooms
-        .filter((room) => room.include_in_floor_clean !== false && room.area_id)
+        .filter((room) => room.include_in_floor_clean !== false && roomUsable(hass, room))
         .map((room) => room.segment_id);
       setSelected(new Set(included));
     }
@@ -274,7 +284,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
 
   const selectEntireFloor = () => {
     const included = floor.rooms
-      .filter((room) => room.include_in_floor_clean !== false && room.area_id)
+      .filter((room) => room.include_in_floor_clean !== false && roomUsable(hass, room))
       .map((room) => room.segment_id);
     setSelected(new Set(included));
     openJobSheet(Boolean(floor.assisted_carry));
@@ -283,7 +293,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
   const changeDraft = (nextDraft: JobDraft) => {
     if (nextDraft.cleaning_type === 'vacuum_then_mop' && floor.vacuum_then_mop_routine) {
       const included = floor.rooms
-        .filter((room) => room.include_in_floor_clean !== false && room.area_id)
+        .filter((room) => room.include_in_floor_clean !== false && roomUsable(hass, room))
         .map((room) => room.segment_id);
       setSelected(new Set(included));
     }
@@ -451,6 +461,20 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     }
   };
 
+  const resetConsumable = async (consumable: ConsumableStatus) => {
+    if (dockPending || !consumable.reset_button) return;
+    if (!window.confirm(t(language, 'confirmResetConsumable'))) return;
+    setDockPending(t(language, 'dockActionSent'));
+    try {
+      await hassRef.current.callService('button', 'press', {}, { entity_id: consumable.reset_button });
+      setToast(t(language, 'dockActionSent'));
+    } catch (error) {
+      setToast(`reset_${consumable.kind}: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setDockPending(undefined);
+    }
+  };
+
   const runDockAction = async (action: DockAction, active: boolean) => {
     if (dockPending) return;
     if (!active) {
@@ -512,6 +536,14 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           </div>
         )}
       </div>
+
+      {health.length > 0 && dismissedHealth !== healthKey && (
+        <details className="health-notice">
+          <summary><TriangleAlert />{t(language, 'setupAttention')} ({health.length})</summary>
+          <ul>{health.map((issue) => <li key={JSON.stringify(issue)}>{healthText(language, issue)}</li>)}</ul>
+          <button type="button" className="secondary" onClick={() => setDismissedHealth(healthKey)}>{t(language, 'dismiss')}</button>
+        </details>
+      )}
 
       {config.floors.length > 1 && (
         <div className="floor-tabs" role="tablist" aria-label={t(language, 'floor')}>
@@ -628,7 +660,10 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         {capabilities.canDock && (
           <button type="button" onClick={() => transport('return_to_base')}><Home />{t(language, 'dock')}</button>
         )}
-        <button type="button" onClick={() => setDockOpen(true)}><SlidersHorizontal />{t(language, 'dockStation')}</button>
+        <button type="button" onClick={() => setDockOpen(true)}>
+          <SlidersHorizontal />{t(language, 'dockStation')}
+          {overdue > 0 && <span className="maintenance-badge" title={t(language, 'maintenanceBadge')} aria-label={t(language, 'maintenanceBadge')}>{overdue}</span>}
+        </button>
       </div>
 
       {sheetOpen && (
@@ -642,6 +677,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           assistedCarry={assistedConfiguring}
           zoneCleaning={selectionMode === 'zone'}
           mopRoutes={capabilities.mopRoutes}
+          checks={assistedConfiguring ? undefined : preflightChecks(hass, config, draft)}
           onDraftChange={changeDraft}
           onClose={() => execution.phase !== 'submitting' && !assistedPending && setSheetOpen(false)}
           onStart={submit}
@@ -662,6 +698,8 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           onAction={runDockAction}
           onSetting={changeDockSetting}
           onChildLock={changeChildLock}
+          maintenance={maintenance}
+          onResetConsumable={resetConsumable}
         />
       )}
 

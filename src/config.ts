@@ -80,6 +80,11 @@ export const cardConfigSchema = z
         status: optionalEntityId,
         error: optionalEntityId,
         last_clean_end: optionalEntityId,
+        dock_clean_water_empty: optionalEntityId,
+        dock_dirty_water_full: optionalEntityId,
+        dock_error: optionalEntityId,
+        dock_clean_fluid_empty: optionalEntityId,
+        dock_detergent_empty: optionalEntityId,
       })
       .passthrough()
       .optional()
@@ -94,6 +99,15 @@ export const cardConfigSchema = z
         vacuum_and_mop: z.array(z.string().min(1)).min(1).optional(),
         mop: z.array(z.string().min(1)).min(1).optional(),
       })
+      .optional(),
+    consumables: z
+      .array(
+        z.object({
+          kind: z.enum(['main_brush', 'side_brush', 'filter', 'sensors', 'strainer', 'mop', 'roller', 'cleaning_brush']),
+          sensor: entityId,
+          reset_button: entityId.refine((value) => value.startsWith('button.'), 'Reset must be a button entity').optional(),
+        }),
+      )
       .optional(),
     enable_smartplan: z.boolean().optional(),
     cleaning_count_command: z.enum(['set_clean_repeat_times', 'app_segment_clean']).optional(),

@@ -1,7 +1,9 @@
-import { Droplets, Lock, Trash2, Waves, Wind, X } from 'lucide-react';
+import { Droplets, Lock, Trash2, Waves, Wind, Wrench, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { DOCK_SETTING_DEFAULTS, DOCK_SETTING_ENTITIES, DOCK_SETTING_OPTIONS } from '../dock-settings';
-import { t } from '../i18n';
+import { t, type TranslationKey } from '../i18n';
+import type { ConsumableStatus } from '../maintenance';
+import { levelText, remainingText } from './notices';
 import type {
   DockAction,
   DockSettingKey,
@@ -23,6 +25,8 @@ interface DockSheetProps {
   onAction: (action: DockAction, active: boolean) => void;
   onSetting: (setting: DockSettingKey, value: string | boolean) => void;
   onChildLock: (enabled: boolean) => void;
+  maintenance?: ConsumableStatus[];
+  onResetConsumable?: (consumable: ConsumableStatus) => void;
 }
 
 function currentSetting(
@@ -127,6 +131,8 @@ export function DockSheet({
   onAction,
   onSetting,
   onChildLock,
+  maintenance = [],
+  onResetConsumable,
 }: DockSheetProps) {
   const disabled = Boolean(pending);
   const childLockEntity = config.entities?.dock_child_lock;
@@ -193,6 +199,27 @@ export function DockSheet({
             <SettingToggle label={t(language, 'autoDry')} checked={autoDry} disabled={disabled} onChange={(value) => onSetting('auto_dry', value)} />
             <SettingSelect label={t(language, 'dryDuration')} setting="dry_duration" value={dryDuration} language={language} disabled={disabled} onChange={(value) => onSetting('dry_duration', value)} />
           </section>
+
+          {maintenance.length > 0 && (
+            <section className="dock-settings-group maintenance-group">
+              <h3><Wrench />{t(language, 'maintenance')}</h3>
+              {maintenance.map((item) => (
+                <div className={`maintenance-row level-${item.level}`} key={item.kind}>
+                  <span>{t(language, `consumable_${item.kind}` as TranslationKey)}</span>
+                  <span className="maintenance-value">
+                    <strong>{remainingText(language, item)}</strong>
+                    <small>{levelText(language, item)}</small>
+                  </span>
+                  {item.can_reset && onResetConsumable && (
+                    <button type="button" className="secondary" disabled={disabled} onClick={() => onResetConsumable(item)}>
+                      {t(language, 'resetConsumable')}
+                    </button>
+                  )}
+                </div>
+              ))}
+              {maintenance.some((item) => !item.can_reset) && <p className="maintenance-hint">{t(language, 'enableResetHint')}</p>}
+            </section>
+          )}
 
           <section className="dock-settings-group">
             <h3><Lock />{t(language, 'safetyMaintenance')}</h3>

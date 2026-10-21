@@ -1,4 +1,6 @@
 import { detectCapabilities, isVacuumBusy } from './capabilities';
+import { areaMissing } from './health';
+import { preflightChecks } from './preflight';
 import type { CleaningType, FloorConfig, HomeAssistant, JobDraft, RoborockVacuumMapCardConfig, RoomConfig, VacuumZone } from './types';
 
 const SAFE_SMARTPLAN_EXIT_MODES = new Set(['standard', 'deep', 'deep_plus', 'fast']);
@@ -166,6 +168,13 @@ export async function executeJob({
   const allowedRoutes = routeMode ? capabilities.mopRoutes?.[routeMode] : undefined;
   if (draft.mop_mode && allowedRoutes && !allowedRoutes.includes(draft.mop_mode)) {
     throw new JobExecutionError('preflight', `Mop route “${draft.mop_mode}” is not allowed for ${routeMode}`);
+  }
+  const blocking = preflightChecks(initialHass, config, draft).blocking;
+  if (blocking.length > 0) {
+    throw new JobExecutionError('preflight', `Not ready to clean: ${blocking.map((check) => check.code).join(', ')}`);
+  }
+  if (rooms.some((room) => areaMissing(initialHass, room))) {
+    throw new JobExecutionError('preflight', 'A selected room uses an area that no longer exists');
   }
   if (draft.strategy === 'smartplan' && !capabilities.hasSmartPlan) {
     throw new JobExecutionError('preflight', 'This model does not offer AI SmartPlan');

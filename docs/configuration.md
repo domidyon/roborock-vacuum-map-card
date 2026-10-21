@@ -147,7 +147,11 @@ default_preset: vacuum_only
 | `entities.assisted_carry_stage` | For assisted carry | Persistent `input_select` with `idle`, `preparing`, `carry_upstairs`, `cleaning_upstairs`, `carry_downstairs`, `finishing`, `complete`, and `error` |
 | `entities.assisted_carry_job` | For assisted carry | Persistent `input_text` used for the compact saved room/settings payload |
 | `entities.assisted_carry_*_script` | For assisted carry | Prepare, start, and finish scripts that own the long-running dock and cleaning steps |
-| `entities.water_shortage`, `mop_attached`, `water_box_attached`, `do_not_disturb` | No | Safety and quiet-mode inputs used by the assisted scripts |
+| `entities.water_shortage`, `mop_attached`, `water_box_attached`, `do_not_disturb` | No | Safety and quiet-mode inputs used by the assisted scripts and the [pre-start checks](#pre-start-checks) |
+| `entities.dock_clean_water_empty`, `dock_dirty_water_full` | No | Dock *Clean water box* / *Dirty water box* binary sensors for the pre-start checks |
+| `entities.dock_error` | No | Dock *Dock error* sensor; anything other than `ok` is shown before starting |
+| `entities.dock_clean_fluid_empty`, `dock_detergent_empty` | No | Detergent sensors on docks that have them (shown in the editor; checks are planned) |
+| `consumables` | No | Parts shown in the [maintenance view](#maintenance), as a list of `{ kind, sensor, reset_button }`. `kind` is `main_brush`, `side_brush`, `filter`, `sensors`, `strainer`, `mop`, `roller` or `cleaning_brush`; `sensor` is a remaining-time or remaining-life sensor; `reset_button` is the matching Roborock reset button |
 | `entities.*` status fields | No | Compact values shown only when configured and available |
 | `floors` | Yes | One or more floor mappings |
 | `floor.map_entity` | Yes | Calibrated Roborock Custom Map image |
@@ -250,6 +254,36 @@ your Roborock entities.
 
 The assisted-carry blueprints need the stage (`input_select`) and job (`input_text`)
 helpers; the setup assistant can create those too.
+
+## Pre-start checks
+
+Before a job starts, the job sheet checks the configured sensors:
+
+| Check | Applies to | Result |
+|---|---|---|
+| Clean water tank empty, water shortage, mop not attached, water tank not attached | Jobs that use water (everything except Vacuum only) | **Blocks** Start |
+| Dirty water tank full | Jobs that use water | Warning, *Start anyway* |
+| Dock error, battery below 20 %, a part overdue for maintenance | All jobs | Warning, *Start anyway* |
+
+Sensors that are missing, `unknown` or `unavailable` never block a job. The card checks
+again right before sending commands, so a blocked job never reaches the robot.
+
+## Maintenance
+
+The dock panel lists the parts in `consumables` with the time or life left: *OK*,
+*Due soon* (under 10 % of the part's Roborock lifetime: main brush 300 h, side brush
+200 h, filter 150 h, sensors 30 h) or *Due now* (run out). The Dock station button shows
+a badge with the number of overdue parts.
+
+Home Assistant disables the Roborock reset buttons by default. Enable them on the
+Roborock device page to reset counters from the card; every reset asks for confirmation.
+
+## Setup health
+
+When the card notices drift, it shows a *Setup needs attention* notice. Examples are an
+area that was deleted or renamed, an entity that no longer exists, a map the selector no
+longer offers, or a map image without calibration. Rooms whose area is gone are shown
+but can't be selected. Dismissing the notice hides it until the issues change.
 
 ## Troubleshooting
 

@@ -1,4 +1,4 @@
-import type { RoborockEntityConfig } from '../types';
+import type { ConsumableKind, RoborockEntityConfig } from '../types';
 
 export interface EntityCandidate {
   domain: string;
@@ -40,7 +40,33 @@ export const ENTITY_CANDIDATES: Partial<Record<keyof RoborockEntityConfig, Entit
   status: [{ domain: 'sensor', translation_key: 'status' }],
   error: [{ domain: 'sensor', translation_key: 'vacuum_error' }],
   last_clean_end: [{ domain: 'sensor', translation_key: 'last_clean_end' }],
+  dock_clean_water_empty: [{ domain: 'binary_sensor', translation_key: 'clean_box_empty' }],
+  dock_dirty_water_full: [{ domain: 'binary_sensor', translation_key: 'dirty_box_full' }],
+  dock_error: [{ domain: 'sensor', translation_key: 'dock_error' }],
+  dock_clean_fluid_empty: [{ domain: 'binary_sensor', translation_key: 'clean_fluid_empty' }],
+  dock_detergent_empty: [{ domain: 'binary_sensor', translation_key: 'detergent_empty' }],
 };
+
+/**
+ * Consumable sensors and their reset buttons (translation keys from HA core
+ * sensor.py/button.py; pairing adapted from juju35/ha-roborock-card, MIT). Reset buttons
+ * are disabled by default in Home Assistant, so they are often absent.
+ */
+export const CONSUMABLE_CANDIDATES: Array<{ kind: ConsumableKind; sensor: string; reset?: string }> = [
+  { kind: 'main_brush', sensor: 'main_brush_time_left', reset: 'reset_main_brush_consumable' },
+  { kind: 'side_brush', sensor: 'side_brush_time_left', reset: 'reset_side_brush_consumable' },
+  { kind: 'filter', sensor: 'filter_time_left', reset: 'reset_air_filter_consumable' },
+  { kind: 'sensors', sensor: 'sensor_time_left', reset: 'reset_sensor_consumable' },
+  { kind: 'strainer', sensor: 'strainer_time_left', reset: 'reset_dock_strainer_consumable' },
+  { kind: 'cleaning_brush', sensor: 'cleaning_brush_time_left', reset: 'reset_dock_cleaning_brush_consumable' },
+  { kind: 'mop', sensor: 'mop_life_time_left' },
+  { kind: 'roller', sensor: 'brush_remaining' },
+  // Percentage variants on other protocols.
+  { kind: 'main_brush', sensor: 'main_brush_life' },
+  { kind: 'side_brush', sensor: 'side_brush_life' },
+  { kind: 'filter', sensor: 'filter_life' },
+  { kind: 'sensors', sensor: 'sensor_life' },
+];
 
 /**
  * Native dock controls that may replace the hand-made dock helpers in Phase 3. They are

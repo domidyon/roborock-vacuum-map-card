@@ -46,3 +46,15 @@ describe('editor blueprint links', () => {
     expect(links[0]).toBe('https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/blueprints/script/roborock_vacuum_map_card/vacuum_then_mop.yaml');
   });
 });
+
+describe('editor entity fields', () => {
+  it('keeps a dock mop-drying switch selectable after HA deprecated the binary sensor', () => {
+    const hass = createHass();
+    hass.states['switch.dock_mop_drying'] = { entity_id: 'switch.dock_mop_drying', state: 'off', attributes: {} };
+    const config = { ...configFixture, entities: { ...configFixture.entities, dock_mop_drying: 'switch.dock_mop_drying' } };
+    render(<CardEditor hass={hass} config={config} onChange={() => undefined} />);
+    const select = screen.getByLabelText('Dock mop drying') as HTMLSelectElement;
+    expect(select.value).toBe('switch.dock_mop_drying');
+    expect([...select.options].map((option) => option.value)).toContain('binary_sensor.mop_drying');
+  });
+});

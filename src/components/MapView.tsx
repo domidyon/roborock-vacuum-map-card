@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointer
 import { Eraser, Lock, LockOpen, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformComponent, TransformWrapper, useControls } from 'react-zoom-pan-pinch';
 import { clampMapZone, createRoomPath, configuredRoomMap, normalizeMapZone, parseCalibrationPoints, parseRooms, roomCenter } from '../map';
+import { areaMissing } from '../health';
 import { t } from '../i18n';
 import type { FloorConfig, HomeAssistant, Language, MapZone, SelectionMode } from '../types';
 import { HaIcon } from './HaIcon';
@@ -247,7 +248,9 @@ export function MapView({
             >
               {rooms.map((room) => {
                 const config = configured.get(room.segment_id);
-                const mapped = Boolean(config?.area_id);
+                const missingArea = config ? areaMissing(hass, config) : false;
+                const mapped = Boolean(config?.area_id) && !missingArea;
+                const reason = missingArea ? t(language, 'roomAreaMissing') : t(language, 'roomUnmapped');
                 const isSelected = selected.has(room.segment_id);
                 const isLaunched = launched.has(room.segment_id);
                 const center = roomCenter(room, calibration);
@@ -260,7 +263,7 @@ export function MapView({
                       d={createRoomPath(room, calibration)}
                       role="button"
                       tabIndex={roomDisabled ? -1 : 0}
-                      aria-label={`${label}${!mapped ? ` — ${t(language, 'roomUnmapped')}` : ''}`}
+                      aria-label={`${label}${!mapped ? ` — ${reason}` : ''}`}
                       aria-pressed={isSelected}
                       aria-disabled={roomDisabled}
                       onClick={() => !roomDisabled && onToggle(room.segment_id)}
@@ -271,7 +274,7 @@ export function MapView({
                         }
                       }}
                     >
-                      <title>{!mapped ? `${label}: ${t(language, 'roomUnmapped')}` : label}</title>
+                      <title>{!mapped ? `${label}: ${reason}` : label}</title>
                     </path>
                     <g className="room-label" transform={`translate(${center.x} ${center.y})`} pointerEvents="none">
                       <circle r="23" />

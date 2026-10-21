@@ -1,9 +1,9 @@
 import { compatibility, modelFacts, type Compatibility } from '../catalog';
 import type { DeviceFlags } from '../catalog/device-flags';
 import type { ModelProfile } from '../profiles';
-import type { FloorConfig, HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
+import type { ConsumableConfig, FloorConfig, HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
 import { entitiesOfDevices, findCandidate, listRoutines, resolveRoborockDevices, type RoborockDevices } from './devices';
-import { ENTITY_CANDIDATES, NATIVE_DOCK_CANDIDATES } from './keys';
+import { CONSUMABLE_CANDIDATES, ENTITY_CANDIDATES, NATIVE_DOCK_CANDIDATES } from './keys';
 import {
   discoverCustomMaps,
   listSegments,
@@ -85,6 +85,19 @@ function discoverEntities(hass: HomeAssistant, devices: RoborockDevices): Partia
     if (match) entities[key] = match;
   }
   return entities;
+}
+
+function discoverConsumables(hass: HomeAssistant, devices: RoborockDevices): ConsumableConfig[] {
+  const entries = entitiesOfDevices(hass, [devices.robot?.id, devices.dock?.id]);
+  const found: ConsumableConfig[] = [];
+  for (const candidate of CONSUMABLE_CANDIDATES) {
+    if (found.some((item) => item.kind === candidate.kind)) continue;
+    const sensor = findCandidate(hass, entries, { domain: 'sensor', translation_key: candidate.sensor });
+    if (!sensor) continue;
+    const reset = candidate.reset ? findCandidate(hass, entries, { domain: 'button', translation_key: candidate.reset }) : undefined;
+    found.push({ kind: candidate.kind, sensor, ...(reset ? { reset_button: reset } : {}) });
+  }
+  return found;
 }
 
 function discoverNativeDock(hass: HomeAssistant, devices: RoborockDevices): Record<string, string> {
@@ -202,6 +215,7 @@ export function buildConfig(
   if (devices.robot && compat.reasons.includes('unknown_model')) issues.push({ code: 'unknown_model', model });
   if (compat.verdict === 'unsupported') issues.push({ code: 'unsupported', reasons: compat.reasons });
 
+  const consumables = discoverConsumables(hass, devices);
   const localeLanguage = hass.locale?.language?.split('-')[0] as Language | undefined;
   const config: RoborockVacuumMapCardConfig = {
     type: 'custom:roborock-vacuum-map-card',
@@ -210,6 +224,7 @@ export function buildConfig(
     entities: entities as RoborockEntityConfig,
     floors,
     default_preset: 'vacuum_only',
+    ...(consumables.length > 0 ? { consumables } : {}),
     ...(facts.mop_only ? { enable_mop_only: true } : {}),
     ...(facts.mop_routes && written('mop_routes') ? { mop_routes: structuredClone(facts.mop_routes) } : {}),
     ...(facts.repeat && facts.sources.repeat === 'device' ? { cleaning_count_command: facts.repeat } : {}),

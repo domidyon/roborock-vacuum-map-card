@@ -202,6 +202,37 @@ describe('job executor', () => {
     expect(hass.callService).not.toHaveBeenCalled();
   });
 
+  it('refuses a mop job before touching the vacuum when the clean-water tank is empty', async () => {
+    const hass = createHass();
+    hass.states['binary_sensor.clean_water'] = { entity_id: 'binary_sensor.clean_water', state: 'on', attributes: {} };
+    hass.callService = vi.fn();
+    const config = { ...configFixture, entities: { ...configFixture.entities, dock_clean_water_empty: 'binary_sensor.clean_water' } };
+    await expect(executeJob({
+      getHass: () => hass,
+      config,
+      floor: config.floors[0],
+      rooms: [config.floors[0].rooms[0]],
+      draft: { preset_id: 'vacuum_and_mop', strategy: 'custom', cleaning_type: 'vacuum_and_mop', fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 },
+      pollMs: 0,
+    })).rejects.toThrow('Not ready to clean: clean_water_empty');
+    expect(hass.callService).not.toHaveBeenCalled();
+  });
+
+  it('refuses rooms whose area no longer exists', async () => {
+    const hass = createHass();
+    hass.callService = vi.fn();
+    const room = { ...configFixture.floors[0].rooms[0], area_id: 'badkamer' };
+    await expect(executeJob({
+      getHass: () => hass,
+      config: configFixture,
+      floor: configFixture.floors[0],
+      rooms: [room],
+      draft: { preset_id: 'vacuum_only', strategy: 'custom', cleaning_type: 'vacuum', fan_speed: 'balanced', cleaning_count: 1 },
+      pollMs: 0,
+    })).rejects.toMatchObject({ operation: 'preflight' });
+    expect(hass.callService).not.toHaveBeenCalled();
+  });
+
   it('rejects unsupported zone modes before changing vacuum settings', async () => {
     const hass = createHass();
     hass.callService = vi.fn();

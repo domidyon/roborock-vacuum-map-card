@@ -46,8 +46,9 @@ function move<T>(items: T[], from: number, to: number): T[] {
   return next;
 }
 
-function entityOptions(hass: HomeAssistant, domain: string): string[] {
-  return Object.keys(hass.states).filter((id) => id.startsWith(`${domain}.`)).sort();
+function entityOptions(hass: HomeAssistant, domain: string | readonly string[]): string[] {
+  const domains = typeof domain === 'string' ? [domain] : domain;
+  return Object.keys(hass.states).filter((id) => domains.includes(id.split('.')[0])).sort();
 }
 
 function SelectEntity({
@@ -58,15 +59,18 @@ function SelectEntity({
   onChange,
 }: {
   hass: HomeAssistant;
-  domain: string;
+  domain: string | readonly string[];
   value?: string;
   optional?: boolean;
   onChange: (value?: string) => void;
 }) {
+  const options = entityOptions(hass, domain);
   return (
     <select value={value ?? ''} onChange={(event) => onChange(event.target.value || undefined)}>
-      <option value="">{optional ? 'Not configured' : `Select ${domain}`}</option>
-      {entityOptions(hass, domain).map((entityId) => <option key={entityId}>{entityId}</option>)}
+      <option value="">{optional ? 'Not configured' : `Select ${typeof domain === 'string' ? domain : domain.join(' / ')}`}</option>
+      {options.map((entityId) => <option key={entityId}>{entityId}</option>)}
+      {/* Keep a configured value visible even when it no longer matches the domain filter. */}
+      {value && !options.includes(value) && <option value={value}>{value}</option>}
     </select>
   );
 }
@@ -141,7 +145,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
           ['vacuum_then_mop_script', 'script', 'Legacy Vac followed by Mop script'],
           ['mop_mode', 'select', 'Mop mode'],
           ['mop_intensity', 'select', 'Mop intensity'],
-          ['dock_mop_drying', 'binary_sensor', 'Dock mop drying'],
+          ['dock_mop_drying', ['switch', 'binary_sensor'], 'Dock mop drying'],
           ['dock_mop_drying_remaining_time', 'sensor', 'Dock mop drying remaining time'],
           ['dock_child_lock', 'switch', 'Dock child lock'],
           ['dock_mop_wash_frequency', 'input_select', 'Dock mop wash frequency'],
@@ -168,6 +172,11 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
           ['status', 'sensor', 'Status'],
           ['error', 'sensor', 'Error'],
           ['last_clean_end', 'sensor', 'Last clean end'],
+          ['dock_clean_water_empty', 'binary_sensor', 'Dock clean water empty'],
+          ['dock_dirty_water_full', 'binary_sensor', 'Dock dirty water full'],
+          ['dock_error', 'sensor', 'Dock error'],
+          ['dock_clean_fluid_empty', 'binary_sensor', 'Dock cleaning fluid empty'],
+          ['dock_detergent_empty', 'binary_sensor', 'Dock detergent empty'],
         ] as const).map(([key, domain, label]) => (
           <label key={key}>{label}<SelectEntity hass={hass} domain={domain} optional value={config.entities?.[key]} onChange={(value) => onChange({ ...config, entities: { ...config.entities, [key]: value } })} /></label>
         ))}

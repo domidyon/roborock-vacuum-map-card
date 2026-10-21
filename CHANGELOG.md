@@ -20,6 +20,11 @@
 - Add helper provisioning (`src/provisioning/helpers.ts`): deterministic `rvmc_` dock and assisted-carry helpers, created idempotently by an administrator, or as a `configuration.yaml` snippet. Not wired into the UI yet.
 - Add script blueprints for Vac followed by Mop and the three assisted-carry scripts, linked from the card editor.
 - Share the dock option lists and defaults between the dock panel, the dock commands and the helpers (`src/dock-settings.ts`).
+- Add pre-start checks: an empty clean-water tank, a water shortage or a detached mop or water tank blocks jobs that use water. A full dirty-water tank, a dock error, low battery or overdue maintenance shows a warning with *Start anyway*. The executor enforces the blocking checks too.
+- Add a maintenance view to the dock panel, with remaining time per part, a badge for overdue parts and resets that ask for confirmation. Discovery finds the consumable sensors and reset buttons.
+- Add a *Setup needs attention* notice for config drift (missing areas or entities, renamed maps, lost calibration). Rooms whose area was deleted are disabled with a reason.
+- Discover the dock water-tank and dock-error sensors.
+- Fix the editor hiding a configured dock mop-drying switch (Home Assistant replaced the binary sensor with a switch).
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21

@@ -19,6 +19,18 @@ window.__serviceCalls = [];
 if (scenario === 'missing-calibration') delete hass.states['image.downstairs'].attributes.calibration_points;
 if (scenario === 'missing-map') hass.states['image.downstairs'].state = 'unavailable';
 if (scenario === 'unmapped-room') config.floors[0].rooms[0].area_id = undefined;
+if (scenario === 'empty-tank') {
+  hass.states['binary_sensor.clean_water'] = { entity_id: 'binary_sensor.clean_water', state: 'on', attributes: {} };
+  config.entities = { ...config.entities, dock_clean_water_empty: 'binary_sensor.clean_water' };
+}
+if (scenario === 'maintenance') {
+  hass.states['sensor.sensor_time_left'] = { entity_id: 'sensor.sensor_time_left', state: '-2.5', attributes: { unit_of_measurement: 'h' } };
+  hass.states['sensor.main_brush_time_left'] = { entity_id: 'sensor.main_brush_time_left', state: '246.9', attributes: { unit_of_measurement: 'h' } };
+  config.consumables = [
+    { kind: 'main_brush', sensor: 'sensor.main_brush_time_left' },
+    { kind: 'sensors', sensor: 'sensor.sensor_time_left' },
+  ];
+}
 if (scenario === 'drying') {
   hass.states['binary_sensor.mop_drying'].state = 'on';
   hass.states['sensor.mop_drying_remaining'].state = '3.9';

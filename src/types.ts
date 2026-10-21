@@ -127,6 +127,21 @@ export interface RoborockEntityConfig {
   status?: string;
   error?: string;
   last_clean_end?: string;
+  dock_clean_water_empty?: string;
+  dock_dirty_water_full?: string;
+  dock_error?: string;
+  dock_clean_fluid_empty?: string;
+  dock_detergent_empty?: string;
+}
+
+export type ConsumableKind = 'main_brush' | 'side_brush' | 'filter' | 'sensors' | 'strainer' | 'mop' | 'roller' | 'cleaning_brush';
+
+export interface ConsumableConfig {
+  kind: ConsumableKind;
+  /** Remaining-time (h/min/s/d) or remaining-life (%) sensor. */
+  sensor: string;
+  /** Home Assistant's reset button; disabled by default in HA. */
+  reset_button?: string;
 }
 
 export interface RoomConfig {
@@ -189,6 +204,7 @@ export interface RoborockVacuumMapCardConfig {
   vacuum_mode_fallback?: 'set_clean_motor_mode';
   enable_mop_only?: boolean;
   mop_routes?: Partial<Record<MopRouteMode, string[]>>;
+  consumables?: ConsumableConfig[];
   /** Overrides the model profile: whether the app offers AI SmartPlan. */
   enable_smartplan?: boolean;
   /** Overrides the model profile: how room jobs apply the cleaning count. */

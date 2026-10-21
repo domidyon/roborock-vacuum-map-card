@@ -1,6 +1,8 @@
 import { X } from 'lucide-react';
 import type { CSSProperties } from 'react';
+import type { PreflightResult } from '../preflight';
 import type { AvailablePreset } from '../presets';
+import { checkText } from './notices';
 import { draftFromPreset } from '../presets';
 import { optionText, t, type TranslationKey } from '../i18n';
 import type { CleaningCount, JobDraft, Language, MopRouteMode, RoborockCapabilities } from '../types';
@@ -16,6 +18,8 @@ interface JobSheetProps {
   assistedCarry?: boolean;
   zoneCleaning?: boolean;
   mopRoutes?: Partial<Record<MopRouteMode, string[]>>;
+  /** Pre-start checks for the current draft; blocking ones disable Start. */
+  checks?: PreflightResult;
   onDraftChange: (draft: JobDraft) => void;
   onClose: () => void;
   onStart: (draft: JobDraft) => void;
@@ -90,6 +94,7 @@ export function JobSheet({
   assistedCarry = false,
   zoneCleaning = false,
   mopRoutes,
+  checks,
   onDraftChange,
   onClose,
   onStart,
@@ -243,12 +248,21 @@ export function JobSheet({
           )}
         </div>
 
+        {checks && (checks.blocking.length > 0 || checks.warnings.length > 0) && (
+          <div className={`preflight ${checks.blocking.length > 0 ? 'blocking' : 'warning'}`} role="alert">
+            <strong>{t(language, checks.blocking.length > 0 ? 'preflightBlocked' : 'preflightWarnings')}</strong>
+            <ul>
+              {[...checks.blocking, ...checks.warnings].map((check) => <li key={check.code}>{checkText(language, check)}</li>)}
+            </ul>
+          </div>
+        )}
+
         <footer>
           <button type="button" className="secondary" disabled={submitting} onClick={onClose}>{t(language, 'cancel')}</button>
           <button
             type="button"
             className="primary"
-            disabled={submitting}
+            disabled={submitting || (checks?.blocking.length ?? 0) > 0}
             onClick={() => onStart(selectedRoute
               && draft.strategy === 'custom'
               && ['mop', 'vacuum_and_mop'].includes(draft.cleaning_type)
@@ -257,7 +271,9 @@ export function JobSheet({
           >
             {submitting
               ? assistedCarry ? t(language, 'preparingUpstairs') : t(language, 'starting')
-              : assistedCarry ? t(language, 'prepareUpstairs') : t(language, 'start')}
+              : assistedCarry
+                ? t(language, 'prepareUpstairs')
+                : (checks?.warnings.length ?? 0) > 0 ? t(language, 'startAnyway') : t(language, 'start')}
           </button>
         </footer>
       </section>

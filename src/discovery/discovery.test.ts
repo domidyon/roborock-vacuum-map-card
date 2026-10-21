@@ -54,8 +54,24 @@ describe('device discovery (live Qrevo Curv 2 Flow fixture)', () => {
       status: 'sensor.qrevo_curv_2_flow_status',
       error: 'sensor.qrevo_curv_2_flow_vacuum_error',
       last_clean_end: 'sensor.qrevo_curv_2_flow_last_clean_end',
+      // Not in the hand-written config yet; used by the pre-start checks.
+      dock_clean_water_empty: 'binary_sensor.woonkamer_qrevo_curv_2_flow_dock_clean_water_box',
+      dock_dirty_water_full: 'binary_sensor.woonkamer_qrevo_curv_2_flow_dock_dirty_water_box',
+      dock_error: 'sensor.woonkamer_qrevo_curv_2_flow_dock_dock_error',
     });
     expect(report.model).toBe('roborock.vacuum.a245');
+  });
+
+  it('discovers consumables from the robot and the dock', async () => {
+    const { config } = await discover();
+    // Reset buttons are disabled by default in Home Assistant, so none are found here.
+    expect(config.consumables).toEqual([
+      { kind: 'main_brush', sensor: 'sensor.qrevo_curv_2_flow_main_brush_time_left' },
+      { kind: 'side_brush', sensor: 'sensor.qrevo_curv_2_flow_side_brush_time_left' },
+      { kind: 'filter', sensor: 'sensor.qrevo_curv_2_flow_filter_time_left' },
+      { kind: 'sensors', sensor: 'sensor.qrevo_curv_2_flow_sensor_time_left' },
+      { kind: 'strainer', sensor: 'sensor.woonkamer_qrevo_curv_2_flow_dock_strainer_time_left' },
+    ]);
   });
 
   it('reports native dock controls without writing them into the config', async () => {

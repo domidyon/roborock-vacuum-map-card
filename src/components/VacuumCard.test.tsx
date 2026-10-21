@@ -386,4 +386,86 @@ describe('vacuum card flows', () => {
       { domain: 'input_select', service: 'select_option', target: { entity_id: 'input_select.assisted_carry_stage' } },
     ]));
   });
+
+  it('blocks a mop job with an empty clean-water tank but still allows Vacuum only', async () => {
+    const hass = createHass();
+    hass.states['binary_sensor.clean_water'] = { entity_id: 'binary_sensor.clean_water', state: 'on', attributes: {} };
+    const config = { ...configFixture, entities: { ...configFixture.entities, dock_clean_water_empty: 'binary_sensor.clean_water' } };
+    const calls: string[] = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push(`${domain}.${service}`);
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    render(<VacuumCard hass={hass} config={config} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Vac & Mop' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent("Can't start yet");
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('The clean water tank is empty.');
+    expect(within(dialog).getByRole('button', { name: 'Start' })).toBeDisabled();
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Vacuum only' }));
+    expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Start' }));
+    await waitFor(() => expect(calls).toContain('vacuum.clean_area'));
+  });
+
+  it('lets warnings through with Start anyway', async () => {
+    const hass = createHass();
+    hass.states['sensor.battery'].state = '12';
+    hass.callService = vi.fn(async (domain, _service, data, target) => {
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    render(<VacuumCard hass={hass} config={configFixture} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('The battery is low: 12%');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Start anyway' }));
+    await waitFor(() => expect(hass.callService).toHaveBeenCalledWith('vacuum', 'clean_area', expect.anything(), expect.anything()));
+  });
+
+  it('shows config drift as a dismissible notice and disables rooms whose area is gone', async () => {
+    const config = structuredClone(configFixture);
+    config.floors[0].rooms[0].area_id = 'badkamer';
+    render(<VacuumCard hass={createHass()} config={config} />);
+    loadMap();
+    const notice = screen.getByText('Setup needs attention (1)').closest('details')!;
+    expect(notice).toHaveTextContent('Room Kitchen uses area badkamer, which no longer exists.');
+    expect(screen.getByRole('button', { name: 'Kitchen — area no longer exists' })).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(within(notice).getByRole('button', { name: 'Dismiss' }));
+    expect(screen.queryByText('Setup needs attention (1)')).not.toBeInTheDocument();
+  });
+
+  it('badges overdue maintenance and resets a part only after confirmation', async () => {
+    const hass = createHass();
+    hass.states['sensor.sensor_time_left'] = { entity_id: 'sensor.sensor_time_left', state: '-2.5', attributes: { unit_of_measurement: 'h' } };
+    hass.states['sensor.filter_time_left'] = { entity_id: 'sensor.filter_time_left', state: '97', attributes: { unit_of_measurement: 'h' } };
+    hass.states['button.reset_sensor'] = { entity_id: 'button.reset_sensor', state: 'unknown', attributes: {} };
+    const config = {
+      ...configFixture,
+      consumables: [
+        { kind: 'sensors' as const, sensor: 'sensor.sensor_time_left', reset_button: 'button.reset_sensor' },
+        { kind: 'filter' as const, sensor: 'sensor.filter_time_left' },
+      ],
+    };
+    hass.callService = vi.fn(async () => undefined);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+    render(<VacuumCard hass={hass} config={config} />);
+    expect(screen.getByLabelText('Maintenance due')).toHaveTextContent('1');
+    await userEvent.click(screen.getByRole('button', { name: /Dock station/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Dock station' });
+    const sensors = within(dialog).getByText('Sensors').closest('.maintenance-row')!;
+    expect(sensors).toHaveTextContent('0 h');
+    expect(sensors).toHaveTextContent('Due now');
+    expect(within(dialog).getByText('Filter').closest('.maintenance-row')).toHaveTextContent('97 h');
+    expect(dialog).toHaveTextContent('enable the reset buttons');
+    await userEvent.click(within(sensors as HTMLElement).getByRole('button', { name: 'Reset' }));
+    expect(hass.callService).not.toHaveBeenCalled();
+    await userEvent.click(within(sensors as HTMLElement).getByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(hass.callService).toHaveBeenCalledWith('button', 'press', {}, { entity_id: 'button.reset_sensor' }));
+    confirm.mockRestore();
+  });
 });
