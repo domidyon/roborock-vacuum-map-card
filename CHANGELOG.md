@@ -8,6 +8,10 @@
 - Add a backward-compatibility test suite for v0.8.0 configs.
 - Run CI and HACS validation on the `beta` branch.
 - Add registry-based device discovery (`src/discovery/`): finds the robot, its separate dock device and the Roborock Custom Map device. Entities are matched by translation key instead of entity ID, every map becomes a floor, and rooms are mapped to areas using Home Assistant's own segment ↔ area mapping. Not wired into the UI yet.
+- Add model profiles (`src/profiles.ts`, `docs/models.md`) for the Qrevo Curv 2 Flow, Saros 10R and S7/S7+. They decide SmartPlan, Mop only, mop routes and how the cleaning count is sent. Explicit config wins over the profile, and the profile wins over live-option detection.
+- Support the S7/S7+ (issue #2, from PR #3): no `set_clean_repeat_times`, two-pass room jobs via `app_segment_clean`, mild/standard/intense water flow, and SmartPlan hidden.
+- Add the `enable_smartplan` and `cleaning_count_command` config overrides.
+- Show the matched model profile in the editor and add a model-report issue form.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21

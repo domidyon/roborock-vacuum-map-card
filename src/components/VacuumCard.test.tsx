@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { configFixture, createHass } from '../test/fixtures';
+import { configFixture, createHass, createS7Hass } from '../test/fixtures';
 import { VacuumCard } from './VacuumCard';
 
 function loadMap() {
@@ -129,6 +129,21 @@ describe('vacuum card flows', () => {
     expect(dialog).toHaveTextContent('Rooms, suction, water flow, passes, and route are defined in the Roborock app.');
     await userEvent.click(screen.getByRole('tab', { name: 'Vacuum only' }));
     expect(screen.queryByRole('slider', { name: 'Water flow' })).not.toBeInTheDocument();
+  });
+
+  it('adapts the job sheet to S7 capabilities without exposing SmartPlan', async () => {
+    render(<VacuumCard hass={createS7Hass()} config={configFixture} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).queryByRole('tab', { name: 'AI SmartPlan' })).not.toBeInTheDocument();
+    const vacAndMop = within(dialog).getByRole('tab', { name: 'Vac & Mop' });
+    expect(vacAndMop).toBeEnabled();
+    await userEvent.click(vacAndMop);
+    const waterFlow = within(dialog).getByRole('slider', { name: 'Water flow' });
+    expect(waterFlow).toHaveValue('1');
+    expect(waterFlow.closest('label')).toHaveTextContent('Standard');
   });
 
   it('clears selection on floor change and includes every current upstairs room', async () => {

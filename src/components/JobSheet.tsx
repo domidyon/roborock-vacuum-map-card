@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import type { CSSProperties } from 'react';
 import type { AvailablePreset } from '../presets';
 import { draftFromPreset } from '../presets';
 import { optionText, t, type TranslationKey } from '../i18n';
@@ -25,7 +26,8 @@ const ZONE_MODE_IDS = ['vacuum_only', 'vacuum_and_mop', 'mop_only'] as const;
 const VACUUM_SUCTION = ['quiet', 'balanced', 'turbo', 'max', 'max_plus'];
 const MOP_SUCTION = ['quiet', 'balanced', 'turbo', 'max'];
 const APP_ROUTES = ['fast', 'standard', 'deep'];
-const WATER_FLOW = ['slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
+// Water-slider models use slight…extreme; older models (S7) use mild/standard/intense.
+const WATER_FLOW = ['mild', 'standard', 'intense', 'slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
 const WATER_LEVEL: Record<string, number> = { slight: 1, low: 5, medium: 15, moderate: 25, high: 28, extreme: 30 };
 
 const MODE_LABEL_KEYS: Record<typeof MODE_IDS[number], TranslationKey> = {
@@ -93,9 +95,11 @@ export function JobSheet({
   onStart,
 }: JobSheetProps) {
   const modeIds = zoneCleaning ? ZONE_MODE_IDS : MODE_IDS;
-  const appModes = modeIds.map((id) => presets.find(({ preset }) => preset.id === id)).filter(
-    (mode): mode is AvailablePreset => Boolean(mode),
-  );
+  // SmartPlan is hidden, not greyed out, on models whose app does not offer it.
+  const appModes = modeIds
+    .map((id) => presets.find(({ preset }) => preset.id === id))
+    .filter((mode): mode is AvailablePreset => Boolean(mode))
+    .filter(({ preset, available }) => preset.id !== 'smartplan' || available);
   const savedPresets = presets.filter(({ preset }) =>
     !MODE_IDS.includes(preset.id as typeof MODE_IDS[number])
       && (!zoneCleaning || (
@@ -110,6 +114,7 @@ export function JobSheet({
   const selectedRoute = routes.includes(draft.mop_mode ?? '') ? draft.mop_mode : routes[0];
   const waterOptions = WATER_FLOW.filter((option) => capabilities.mopIntensities.includes(option));
   const waterIndex = Math.max(0, waterOptions.indexOf(draft.mop_intensity ?? 'medium'));
+  const waterLevel = WATER_LEVEL[waterOptions[waterIndex]];
   const description = draft.strategy === 'smartplan'
     ? t(language, 'smartPlanDescription')
     : draft.cleaning_type === 'vacuum'
@@ -134,7 +139,12 @@ export function JobSheet({
         </header>
 
         <div className="sheet-body">
-          <div className="cleaning-mode-tabs" role="tablist" aria-label={t(language, 'cleaningType')}>
+          <div
+            className="cleaning-mode-tabs"
+            role="tablist"
+            aria-label={t(language, 'cleaningType')}
+            style={{ '--mode-count': Math.min(appModes.length, 4) } as CSSProperties}
+          >
             {appModes.map(({ preset, available, reason }) => (
               <button
                 type="button"
@@ -171,7 +181,7 @@ export function JobSheet({
                     <span>{t(language, 'waterFlow')}</span>
                     <div className="range-heading">
                       <strong>{optionText(language, waterOptions[waterIndex])}</strong>
-                      <output>{WATER_LEVEL[waterOptions[waterIndex]]}</output>
+                      {waterLevel !== undefined && <output>{waterLevel}</output>}
                     </div>
                     <input
                       type="range"

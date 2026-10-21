@@ -95,6 +95,8 @@ export const cardConfigSchema = z
         mop: z.array(z.string().min(1)).min(1).optional(),
       })
       .optional(),
+    enable_smartplan: z.boolean().optional(),
+    cleaning_count_command: z.enum(['set_clean_repeat_times', 'app_segment_clean']).optional(),
   })
   .passthrough()
   .superRefine((config, ctx) => {

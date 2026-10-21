@@ -143,6 +143,31 @@ describe('device discovery (live Qrevo Curv 2 Flow fixture)', () => {
   });
 });
 
+describe('model profiles in discovery', () => {
+  it('reports the tested Qrevo profile without adding opt-in flags', async () => {
+    const { config, report } = await discover();
+    expect(report.profile?.status).toBe('tested');
+    expect(config.enable_mop_only).toBeUndefined();
+    expect(config.mop_routes).toBeUndefined();
+  });
+
+  it('writes profile facts into the config for models that need them', () => {
+    const hass = createDiscoveryHass();
+    hass.devices![ROBOT] = { ...hass.devices![ROBOT], model: 'roborock.vacuum.a144', model_id: 'roborock.vacuum.a144' };
+    const { config, report } = buildConfig(hass, VACUUM);
+    expect(report.profile?.label).toBe('Saros 10R');
+    expect(config.enable_mop_only).toBe(true);
+    expect(config.mop_routes).toEqual({ vacuum_and_mop: ['fast', 'standard'], mop: ['fast', 'standard', 'deep', 'deep_plus'] });
+    expect(validateConfig(config)).toEqual([]);
+  });
+
+  it('flags unknown models for a model report', () => {
+    const hass = createDiscoveryHass();
+    hass.devices![ROBOT] = { ...hass.devices![ROBOT], model: 'roborock.vacuum.zz1', model_id: 'roborock.vacuum.zz1' };
+    expect(buildConfig(hass, VACUUM).report.issues).toContainEqual({ code: 'unknown_model', model: 'roborock.vacuum.zz1' });
+  });
+});
+
 describe('resolveMapFlags', () => {
   const segment = (map_flag: number, segment_id: number, group?: string) => ({ map_flag, segment_id, name: 'Room', group });
 

@@ -1,3 +1,4 @@
+import { findProfile, type ModelProfile } from '../profiles';
 import type { FloorConfig, HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
 import { entitiesOfDevices, findCandidate, listRoutines, resolveRoborockDevices, type RoborockDevices } from './devices';
 import { ENTITY_CANDIDATES, NATIVE_DOCK_CANDIDATES } from './keys';
@@ -23,7 +24,8 @@ export type DiscoveryIssue =
   | { code: 'map_without_image'; map_name: string }
   | { code: 'segment_mapping_unavailable' }
   | { code: 'room_unmapped'; floor_id: string; segment_id: number; name: string }
-  | { code: 'rooms_from_image'; floor_id: string };
+  | { code: 'rooms_from_image'; floor_id: string }
+  | { code: 'unknown_model'; model?: string };
 
 export interface DiscoveredFloor {
   floor_id: string;
@@ -35,6 +37,8 @@ export interface DiscoveredFloor {
 export interface DiscoveryReport {
   vacuum: string;
   model?: string;
+  /** Matched model profile; undefined means settings come from live options only. */
+  profile?: ModelProfile;
   devices: RoborockDevices;
   entities: Partial<RoborockEntityConfig>;
   floors: DiscoveredFloor[];
@@ -169,6 +173,12 @@ export function buildConfig(hass: HomeAssistant, vacuum: string, segmentOptions?
     };
   });
 
+  // Model facts are written into the config so the YAML is self-describing; the
+  // card would apply the same profile at runtime anyway.
+  const model = devices.robot?.model_id ?? devices.robot?.model ?? undefined;
+  const profile = findProfile(model);
+  if (devices.robot && !profile) issues.push({ code: 'unknown_model', model });
+
   const localeLanguage = hass.locale?.language?.split('-')[0] as Language | undefined;
   const config: RoborockVacuumMapCardConfig = {
     type: 'custom:roborock-vacuum-map-card',
@@ -177,13 +187,16 @@ export function buildConfig(hass: HomeAssistant, vacuum: string, segmentOptions?
     entities: entities as RoborockEntityConfig,
     floors,
     default_preset: 'vacuum_only',
+    ...(profile?.mop_only ? { enable_mop_only: true } : {}),
+    ...(profile?.mop_routes ? { mop_routes: structuredClone(profile.mop_routes) } : {}),
   };
 
   return {
     config,
     report: {
       vacuum,
-      model: devices.robot?.model_id ?? devices.robot?.model ?? undefined,
+      model,
+      profile,
       devices,
       entities,
       floors: discoveredFloors,

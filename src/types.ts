@@ -2,6 +2,7 @@ export type Language = 'en' | 'nl' | 'pl' | 'tr';
 export type CleaningStrategy = 'custom' | 'smartplan';
 export type CleaningType = 'vacuum' | 'mop' | 'vacuum_and_mop' | 'vacuum_then_mop';
 export type MopRouteMode = 'vacuum_and_mop' | 'mop';
+export type RepeatStrategy = 'set_clean_repeat_times' | 'app_segment_clean';
 export type CleaningCount = 1 | 2;
 export type SelectionMode = 'rooms' | 'zone';
 export type DockSettingKey =
@@ -186,6 +187,10 @@ export interface RoborockVacuumMapCardConfig {
   vacuum_mode_fallback?: 'set_clean_motor_mode';
   enable_mop_only?: boolean;
   mop_routes?: Partial<Record<MopRouteMode, string[]>>;
+  /** Overrides the model profile: whether the app offers AI SmartPlan. */
+  enable_smartplan?: boolean;
+  /** Overrides the model profile: how room jobs apply the cleaning count. */
+  cleaning_count_command?: RepeatStrategy;
   [key: string]: unknown;
 }
 
@@ -213,6 +218,13 @@ export interface RoborockCapabilities {
   hasCleaningMode: boolean;
   hasMopMode: boolean;
   hasMopIntensity: boolean;
+  hasSmartPlan: boolean;
+  roomRepeatStrategy: RepeatStrategy;
+  /** Effective per-mode route allow-list: config, then model profile. */
+  mopRoutes?: Partial<Record<MopRouteMode, string[]>>;
+  /** Matched model profile, if any. */
+  profile?: { label: string; status: 'tested' | 'community' | 'experimental' };
+  model?: string;
 }
 
 export type JobExecutionPhase = 'idle' | 'submitting' | 'starting' | 'active' | 'failed';

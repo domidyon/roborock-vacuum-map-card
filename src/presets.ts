@@ -59,12 +59,24 @@ export const BUILT_IN_PRESETS: PresetConfig[] = [
   },
 ];
 
+// Built-in water flow defaults to `medium`; older models use mild/standard/intense.
+const MOP_INTENSITY_DEFAULTS = ['medium', 'standard', 'mild', 'low', 'intense', 'high', 'slight', 'moderate', 'extreme'];
+
+function adaptBuiltInPreset(preset: PresetConfig, capabilities: RoborockCapabilities): PresetConfig {
+  if (preset.cleaning_type === 'vacuum' || !preset.mop_intensity || capabilities.mopIntensities.includes(preset.mop_intensity)) {
+    return preset;
+  }
+  const mopIntensity = MOP_INTENSITY_DEFAULTS.find((option) => capabilities.mopIntensities.includes(option));
+  return mopIntensity ? { ...preset, mop_intensity: mopIntensity } : preset;
+}
+
 function missingOption(
   config: RoborockVacuumMapCardConfig,
   capabilities: RoborockCapabilities,
   preset: PresetConfig,
   floor?: FloorConfig,
 ): string | undefined {
+  if (preset.strategy === 'smartplan' && !capabilities.hasSmartPlan) return 'SmartPlan';
   const canSetVacuumMode = capabilities.cleaningModes.includes('vacuum')
     || config.vacuum_mode_fallback === 'set_clean_motor_mode';
   if (preset.cleaning_type === 'vacuum' && !canSetVacuumMode) {
@@ -103,7 +115,7 @@ export function getAvailablePresets(
   const builtIns = config.enable_mop_only
     ? BUILT_IN_PRESETS
     : BUILT_IN_PRESETS.filter((preset) => preset.cleaning_type !== 'mop');
-  return [...builtIns, ...(config.presets ?? [])].map((preset) => {
+  return [...builtIns.map((preset) => adaptBuiltInPreset(preset, capabilities)), ...(config.presets ?? [])].map((preset) => {
     const missing = missingOption(config, capabilities, preset, floor);
     return {
       preset,

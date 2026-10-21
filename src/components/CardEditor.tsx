@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { detectCapabilities } from '../capabilities';
 import { validateConfig } from '../config';
 import { parseRooms } from '../map';
 import type {
@@ -15,6 +16,20 @@ interface CardEditorProps {
   hass: HomeAssistant;
   config: RoborockVacuumMapCardConfig;
   onChange: (config: RoborockVacuumMapCardConfig) => void;
+}
+
+const MODEL_REPORT_URL = 'https://github.com/domidyon/roborock-vacuum-map-card/issues/new?template=model_report.yml';
+const PROFILE_STATUS = { tested: 'tested', community: 'community-tested', experimental: 'experimental, please report results' } as const;
+
+function ModelProfileNote({ hass, config }: { hass: HomeAssistant; config: RoborockVacuumMapCardConfig }) {
+  const { profile, model } = detectCapabilities(hass, config);
+  if (profile) return <p className="editor-hint">Model profile: {profile.label} ({PROFILE_STATUS[profile.status]}).</p>;
+  if (!model) return null;
+  return (
+    <p className="editor-hint">
+      No profile for {model} yet; options are detected from Home Assistant. <a href={MODEL_REPORT_URL} target="_blank" rel="noreferrer">Report your model</a>
+    </p>
+  );
 }
 
 function move<T>(items: T[], from: number, to: number): T[] {
@@ -108,6 +123,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
         <label>Name<input value={config.name ?? ''} placeholder="Use vacuum name" onChange={(event) => onChange({ ...config, name: event.target.value || undefined })} /></label>
         <label>Language<select value={config.language ?? 'en'} onChange={(event) => onChange({ ...config, language: event.target.value as Language })}><option value="en">English</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="tr">Türkçe</option></select></label>
         <label>Vacuum<SelectEntity hass={hass} domain="vacuum" value={config.entity} onChange={(entity) => entity && onChange({ ...config, entity })} /></label>
+        <ModelProfileNote hass={hass} config={config} />
       </section>
 
       <section>

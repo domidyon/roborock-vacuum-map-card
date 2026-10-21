@@ -62,8 +62,10 @@ integration supports. Features adapt to the entities your model exposes.
 |---|---|---|
 | Qrevo Curv 2 Flow | ✅ Tested daily | Full dock, multi-floor, assisted carry |
 | Saros 10R | 🟢 Community | Mop only supported (`enable_mop_only: true`) |
-| S7 / S7+ | 🟡 In progress | Fixes tracked in [#2](https://github.com/domidyon/roborock-vacuum-map-card/issues/2) |
-| Others | ❔ Probably works | [Tell us how it went!](https://github.com/domidyon/roborock-vacuum-map-card/issues/new) |
+| S7 / S7+ | 🟡 Experimental | Profile included on beta, awaiting hardware confirmation ([#2](https://github.com/domidyon/roborock-vacuum-map-card/issues/2)) |
+| Others | ❔ Probably works | [Send a model report](https://github.com/domidyon/roborock-vacuum-map-card/issues/new?template=model_report.yml) |
+
+See [supported models](docs/models.md) for what each model profile changes.
 
 ## 📋 Requirements
 

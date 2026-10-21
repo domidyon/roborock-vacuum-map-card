@@ -289,7 +289,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .cleaning-mode-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--mode-count, 4), minmax(0, 1fr));
   border-bottom: 1px solid var(--rvm-border);
 
   button {
@@ -397,6 +397,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .editor .checkbox { flex-direction: row; align-items: center; }
 .editor .checkbox input { width: 18px; min-height: auto; }
 .editor-errors { margin-bottom: 14px; padding: 12px; border-radius: 12px; color: var(--rvm-danger); background: color-mix(in srgb, var(--rvm-danger) 10%, transparent); font-size: 12px; }
+.editor-hint { margin: -4px 0 12px; color: var(--rvm-muted); font-size: 12px; }
 .editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .editor-heading > div { display: flex; gap: 4px; }
 .editor-heading button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 36px; padding: 6px 9px; border: 1px solid var(--rvm-border); border-radius: 9px; background: var(--rvm-surface-2); }

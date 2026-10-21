@@ -641,7 +641,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           submitting={execution.phase === 'submitting' || assistedPending}
           assistedCarry={assistedConfiguring}
           zoneCleaning={selectionMode === 'zone'}
-          mopRoutes={config.mop_routes}
+          mopRoutes={capabilities.mopRoutes}
           onDraftChange={changeDraft}
           onClose={() => execution.phase !== 'submitting' && !assistedPending && setSheetOpen(false)}
           onStart={submit}

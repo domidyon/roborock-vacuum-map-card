@@ -163,3 +163,38 @@ export function createHass(overrides: Partial<HomeAssistant> = {}): HomeAssistan
   };
   return hass;
 }
+
+/** Live options of a Roborock S7+ as reported in issue #2 (no SmartPlan, mild/standard/intense water). */
+export function createS7Hass(): HomeAssistant {
+  const hass = createHass();
+  hass.states['vacuum.roborock'] = {
+    ...hass.states['vacuum.roborock'],
+    attributes: {
+      ...hass.states['vacuum.roborock'].attributes,
+      friendly_name: 'Roborock S7+',
+      fan_speed_list: ['quiet', 'balanced', 'turbo', 'max'],
+    },
+  };
+  hass.states['select.cleaning_mode'] = {
+    ...hass.states['select.cleaning_mode'],
+    attributes: { options: ['vacuum', 'vac_and_mop', 'mop', 'custom'] },
+  };
+  hass.states['select.mop_mode'] = {
+    ...hass.states['select.mop_mode'],
+    state: 'standard',
+    attributes: { options: ['standard', 'deep', 'deep_plus', 'custom'] },
+  };
+  hass.states['select.mop_intensity'] = {
+    ...hass.states['select.mop_intensity'],
+    state: 'standard',
+    attributes: { options: ['off', 'mild', 'standard', 'intense', 'custom'] },
+  };
+  return hass;
+}
+
+/** Registers `vacuum.roborock` as a device of the given Roborock model, as the frontend does. */
+export function withModel(hass: HomeAssistant, model: string): HomeAssistant {
+  hass.devices = { robot: { id: 'robot', name: 'Roborock', model, model_id: model, identifiers: [['roborock', 'duid1']] } };
+  hass.entities = { 'vacuum.roborock': { entity_id: 'vacuum.roborock', device_id: 'robot', platform: 'roborock', translation_key: 'roborock' } };
+  return hass;
+}

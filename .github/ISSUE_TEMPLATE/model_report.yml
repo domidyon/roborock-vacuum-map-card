@@ -1,0 +1,56 @@
+name: Model report
+description: Tell us how the card works with your Roborock model, so it can get a model profile.
+title: "Model report: "
+labels: ["model-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Model reports are how the card learns what each Roborock app offers.
+        Find your model id under **Settings → Devices & services → Roborock → your vacuum**
+        (e.g. `roborock.vacuum.a245`). See [supported models](https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/docs/models.md).
+  - type: input
+    id: model
+    attributes:
+      label: Model name and model id
+      placeholder: Qrevo Curv 2 Flow, roborock.vacuum.a245
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Home Assistant and card version
+      description: The card version is printed in the browser console (ROBOROCK-VACUUM-MAP-CARD).
+      placeholder: HA 2026.10.2, card 0.9.0-dev
+    validations:
+      required: true
+  - type: checkboxes
+    id: app_modes
+    attributes:
+      label: Which cleaning modes does the Roborock app offer?
+      options:
+        - label: AI SmartPlan
+        - label: Vac followed by Mop
+        - label: Vac & Mop
+        - label: Vacuum
+        - label: Mop only
+  - type: textarea
+    id: routes
+    attributes:
+      label: Mop routes per mode in the app
+      description: For example "Vac & Mop - Fast, Standard. Mop - Fast, Standard, Deep, Deep+".
+  - type: textarea
+    id: options
+    attributes:
+      label: Entity options from Home Assistant
+      description: |
+        From **Developer tools → States**, paste the `options` of your Cleaning mode, Mop mode and
+        Mop intensity selects, and the `fan_speed_list` of the vacuum.
+      render: yaml
+  - type: textarea
+    id: results
+    attributes:
+      label: What worked and what didn't
+      description: Room jobs, Entire floor, 2 passes, zones, dock actions. Include error messages if any.
+    validations:
+      required: true

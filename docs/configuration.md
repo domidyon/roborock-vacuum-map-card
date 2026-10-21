@@ -159,6 +159,8 @@ default_preset: vacuum_only
 | `vacuum_mode_fallback` | No | **Deprecated.** `set_clean_motor_mode` enabled true Vacuum mode on HA 2026.7 and older. It still works for existing configs but is hidden from the editor; configure `entities.cleaning_mode` instead |
 | `enable_mop_only` | No | `true` shows the built-in Mop only mode. Defaults to `false` because some models (e.g. Qrevo Curv 2 Flow) list `mop` in the HA Cleaning mode select although the Roborock app has no Mop-only mode. Enable it only if your app offers Mop only (e.g. Saros 10R) |
 | `mop_routes` | No | Per-mode allow-list of mop routes shown in the sheet, e.g. `vacuum_and_mop: [fast, standard]` and `mop: [fast, standard, deep, deep_plus]`. Use it when Home Assistant lists routes your model does not offer in that mode. Defaults to `fast`, `standard`, `deep` filtered by the live `mop_mode` options |
+| `enable_smartplan` | No | Overrides the [model profile](models.md): `false` hides AI SmartPlan, `true` shows it. Without a profile, SmartPlan is shown when the live fan-speed and mop-mode options both offer `smart_mode` |
+| `cleaning_count_command` | No | Overrides the [model profile](models.md) for room jobs: `set_clean_repeat_times` (newer models) or `app_segment_clean` (models without a cleaning-count setting, such as the S7, which take the repeat in the segment command). Without a profile, it is detected from the live options |
 
 ## Service behavior
 
@@ -167,7 +169,7 @@ Start validates every requested option against live entity options. It then:
 1. Selects and confirms the target floor when necessary.
 2. Applies the high-level `cleaning_mode` for Vacuum, Mop, or Vac & Mop when configured. Mop only requires the `mop` option and never sends a fan speed, so suction stays off. Existing configs with the deprecated `vacuum_mode_fallback` still use one atomic `set_clean_motor_mode` command for Vacuum mode.
 3. Applies only the app-supported manual route, water-flow, and suction values selected in the sheet.
-4. For room and floor jobs, sets the robot's native cleaning count with `set_clean_repeat_times` using the device-required `{ repeat: 1|2 }` object. Zone jobs pass the count directly to the zoned-cleaning action.
+4. For room and floor jobs, sets the robot's native cleaning count with `set_clean_repeat_times` using the device-required `{ repeat: 1|2 }` object. Models without that setting (such as the S7) skip it; their two-pass room jobs start with one `app_segment_clean` command carrying the repeat. Zone jobs pass the count directly to the zoned-cleaning action.
 5. Starts one native whole-map job with `vacuum.start` when every configured
    room is selected. Partial or exclusion-based jobs use one
    `vacuum.clean_area` call with the selected HA area IDs.
