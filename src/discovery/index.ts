@@ -1,4 +1,6 @@
-import { findProfile, type ModelProfile } from '../profiles';
+import { compatibility, modelFacts, type Compatibility } from '../catalog';
+import type { DeviceFlags } from '../catalog/device-flags';
+import type { ModelProfile } from '../profiles';
 import type { FloorConfig, HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
 import { entitiesOfDevices, findCandidate, listRoutines, resolveRoborockDevices, type RoborockDevices } from './devices';
 import { ENTITY_CANDIDATES, NATIVE_DOCK_CANDIDATES } from './keys';
@@ -25,7 +27,8 @@ export type DiscoveryIssue =
   | { code: 'segment_mapping_unavailable' }
   | { code: 'room_unmapped'; floor_id: string; segment_id: number; name: string }
   | { code: 'rooms_from_image'; floor_id: string }
-  | { code: 'unknown_model'; model?: string };
+  | { code: 'unknown_model'; model?: string }
+  | { code: 'unsupported'; reasons: string[] };
 
 export interface DiscoveredFloor {
   floor_id: string;
@@ -37,8 +40,12 @@ export interface DiscoveredFloor {
 export interface DiscoveryReport {
   vacuum: string;
   model?: string;
-  /** Matched model profile; undefined means settings come from live options only. */
+  /** Matched model profile (app quirks), if any. */
   profile?: ModelProfile;
+  /** Whether the card can drive this robot, known before setup. */
+  compatibility: Compatibility;
+  /** Which source decided each model fact written into the config. */
+  fact_sources: Partial<Record<string, 'profile' | 'device' | 'catalog'>>;
   devices: RoborockDevices;
   entities: Partial<RoborockEntityConfig>;
   floors: DiscoveredFloor[];
@@ -113,7 +120,12 @@ function uniqueId(base: string, used: Set<string>): string {
  * states. Pure apart from reading `hass`; pass `segmentOptions` from
  * `loadVacuumSegmentOptions` to use Home Assistant's own room ↔ area mapping.
  */
-export function buildConfig(hass: HomeAssistant, vacuum: string, segmentOptions?: VacuumSegmentOptions): DiscoveryResult {
+export function buildConfig(
+  hass: HomeAssistant,
+  vacuum: string,
+  segmentOptions?: VacuumSegmentOptions,
+  deviceFlags?: DeviceFlags,
+): DiscoveryResult {
   const devices = resolveRoborockDevices(hass, vacuum);
   const issues: DiscoveryIssue[] = [];
   if (!devices.robot) issues.push({ code: 'robot_device_missing' });
@@ -173,11 +185,22 @@ export function buildConfig(hass: HomeAssistant, vacuum: string, segmentOptions?
     };
   });
 
-  // Model facts are written into the config so the YAML is self-describing; the
-  // card would apply the same profile at runtime anyway.
+  // Profile facts are written so the YAML is self-describing. Facts read from the robot's
+  // own flags are written because the card cannot read diagnostics at runtime. Catalog
+  // facts are left out: the card derives them itself and picks up catalog updates.
   const model = devices.robot?.model_id ?? devices.robot?.model ?? undefined;
-  const profile = findProfile(model);
-  if (devices.robot && !profile) issues.push({ code: 'unknown_model', model });
+  const facts = modelFacts(model, deviceFlags?.flags);
+  const profile = facts.profile;
+  const written = (key: keyof typeof facts.sources) => facts.sources[key] === 'profile' || facts.sources[key] === 'device';
+  const compat = compatibility({
+    model,
+    protocol: deviceFlags?.protocol,
+    haVersion: hass.config?.version,
+    hasCustomMap: devices.robot ? maps.length > 0 : undefined,
+    hasDeviceFlags: Boolean(deviceFlags),
+  });
+  if (devices.robot && compat.reasons.includes('unknown_model')) issues.push({ code: 'unknown_model', model });
+  if (compat.verdict === 'unsupported') issues.push({ code: 'unsupported', reasons: compat.reasons });
 
   const localeLanguage = hass.locale?.language?.split('-')[0] as Language | undefined;
   const config: RoborockVacuumMapCardConfig = {
@@ -187,8 +210,10 @@ export function buildConfig(hass: HomeAssistant, vacuum: string, segmentOptions?
     entities: entities as RoborockEntityConfig,
     floors,
     default_preset: 'vacuum_only',
-    ...(profile?.mop_only ? { enable_mop_only: true } : {}),
-    ...(profile?.mop_routes ? { mop_routes: structuredClone(profile.mop_routes) } : {}),
+    ...(facts.mop_only ? { enable_mop_only: true } : {}),
+    ...(facts.mop_routes && written('mop_routes') ? { mop_routes: structuredClone(facts.mop_routes) } : {}),
+    ...(facts.repeat && facts.sources.repeat === 'device' ? { cleaning_count_command: facts.repeat } : {}),
+    ...(facts.smartplan !== undefined && facts.sources.smartplan === 'device' ? { enable_smartplan: facts.smartplan } : {}),
   };
 
   return {
@@ -197,6 +222,8 @@ export function buildConfig(hass: HomeAssistant, vacuum: string, segmentOptions?
       vacuum,
       model,
       profile,
+      compatibility: compat,
+      fact_sources: facts.sources,
       devices,
       entities,
       floors: discoveredFloors,

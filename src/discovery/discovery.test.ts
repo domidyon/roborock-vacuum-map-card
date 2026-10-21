@@ -3,6 +3,8 @@ import { validateConfig } from '../config';
 import { createDiscoveryHass } from '../test/discovery-hass';
 import { buildConfig, listRoborockVacuums, loadVacuumSegmentOptions, resolveRoborockDevices } from '.';
 import { resolveMapFlags } from './maps';
+import { flagsFromDeviceFeatures } from '../catalog';
+import qrevoFeatures from '../test/fixtures/qrevo-curv-2-flow.device-features.json';
 
 const VACUUM = 'vacuum.qrevo_curv_2_flow';
 const ROBOT = 'c044667c97b62cdcf9dc0dedb199a197';
@@ -165,6 +167,50 @@ describe('model profiles in discovery', () => {
     const hass = createDiscoveryHass();
     hass.devices![ROBOT] = { ...hass.devices![ROBOT], model: 'roborock.vacuum.zz1', model_id: 'roborock.vacuum.zz1' };
     expect(buildConfig(hass, VACUUM).report.issues).toContainEqual({ code: 'unknown_model', model: 'roborock.vacuum.zz1' });
+  });
+});
+
+describe('capability inference in discovery', () => {
+  const unknownModel = () => {
+    const hass = createDiscoveryHass();
+    hass.devices![ROBOT] = { ...hass.devices![ROBOT], model: 'roborock.vacuum.zz1', model_id: 'roborock.vacuum.zz1' };
+    return hass;
+  };
+
+  it('reports the Qrevo as supported', async () => {
+    const { report } = await discover();
+    expect(report.compatibility).toMatchObject({ verdict: 'supported', reasons: [], name: 'Qrevo Curv 2 Flow' });
+  });
+
+  it('writes facts read from the robot\'s own flags for models the card cannot know', () => {
+    const flags = { model: 'roborock.vacuum.zz1', protocol: '1.0', flags: flagsFromDeviceFeatures(qrevoFeatures.device_features) };
+    const { config, report } = buildConfig(unknownModel(), VACUUM, undefined, flags);
+    expect(config).toMatchObject({
+      cleaning_count_command: 'set_clean_repeat_times',
+      enable_smartplan: true,
+      mop_routes: { vacuum_and_mop: ['standard', 'deep_plus', 'fast'], mop: ['standard', 'deep_plus', 'fast'] },
+    });
+    expect(config.enable_mop_only).toBeUndefined();
+    expect(report.fact_sources).toEqual({ repeat: 'device', smartplan: 'device', mop_routes: 'device' });
+    expect(report.compatibility.verdict).toBe('supported');
+    expect(report.issues.some((issue) => issue.code === 'unknown_model')).toBe(false);
+    expect(validateConfig(config)).toEqual([]);
+  });
+
+  it('leaves catalog facts to the card at runtime', () => {
+    const hass = createDiscoveryHass();
+    hass.devices![ROBOT] = { ...hass.devices![ROBOT], model: 'roborock.vacuum.a15', model_id: 'roborock.vacuum.a15' };
+    const { config, report } = buildConfig(hass, VACUUM);
+    expect(report.fact_sources).toEqual({ repeat: 'catalog', smartplan: 'catalog', mop_routes: 'catalog' });
+    expect(config.cleaning_count_command).toBeUndefined();
+    expect(config.mop_routes).toBeUndefined();
+  });
+
+  it('flags robots with an unsupported protocol', () => {
+    const flags = { model: 'roborock.vacuum.zz1', protocol: 'B01', flags: new Set<string>() };
+    const { report } = buildConfig(unknownModel(), VACUUM, undefined, flags);
+    expect(report.compatibility.verdict).toBe('unsupported');
+    expect(report.issues).toContainEqual({ code: 'unsupported', reasons: ['protocol_unsupported'] });
   });
 });
 

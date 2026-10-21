@@ -13,7 +13,7 @@ describe('model profiles', () => {
 
   it('resolves profiles by registry model id', () => {
     expect(findProfile('roborock.vacuum.a245')?.label).toBe('Qrevo Curv 2 Flow');
-    expect(findProfile('roborock.vacuum.a15')?.repeat).toBe('app_segment_clean');
+    expect(findProfile('roborock.vacuum.a15')?.status).toBe('experimental');
     expect(findProfile('roborock.vacuum.unknown')).toBeUndefined();
     expect(findProfile(undefined)).toBeUndefined();
   });

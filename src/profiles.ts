@@ -3,9 +3,10 @@ import type { HomeAssistant, MopRouteMode, RepeatStrategy } from './types';
 export type ProfileStatus = 'tested' | 'community' | 'experimental';
 
 /**
- * What a Roborock model's app offers that Home Assistant's entity options cannot tell us.
- * Every field is optional: a missing field falls back to live-option detection. Explicit
- * card config always wins over a profile.
+ * App facts that neither Home Assistant's entity options nor the robot's feature flags
+ * express (see src/catalog). Keep only such exceptions here: a missing field falls back
+ * to the device flags, the python-roborock catalog, then live options. Explicit card
+ * config always wins over a profile.
  */
 export interface ModelProfile {
   /** Roborock model ids as reported in the device registry (`model_id`/`model`). */
@@ -34,10 +35,11 @@ export const MODEL_PROFILES: ModelProfile[] = [
     models: ['roborock.vacuum.a245'],
     label: 'Qrevo Curv 2 Flow',
     status: 'tested',
-    sources: ["Maintainer's daily driver (Home Assistant 2026.10)"],
-    // HA lists `mop` as a Cleaning mode, but the app has no Mop-only mode.
+    sources: ["Maintainer's daily driver (Home Assistant 2026.10)", 'Live device_features from HA diagnostics'],
+    // Not derivable: the robot reports is_pure_clean_mop_supported, yet its app has no Mop only.
     mop_only: false,
-    // The app's third route is Deep+; HA no longer lists plain `deep` for this model.
+    // This model is not in the python-roborock catalog yet, so the card cannot derive
+    // these at runtime; they match the robot's own flags (see the device-features fixture).
     mop_routes: { vacuum_and_mop: ['fast', 'standard', 'deep_plus'] },
     repeat: 'set_clean_repeat_times',
     smartplan: true,
@@ -48,12 +50,11 @@ export const MODEL_PROFILES: ModelProfile[] = [
     label: 'Saros 10R',
     status: 'community',
     sources: [PYTHON_ROBOROCK, 'Real-device test by @infy1995 (PR #4)'],
+    // Not derivable from flags: Mop only availability and the per-mode route split
+    // (Vac & Mop offers only Fast/Standard; Mop offers all four). The cleaning count and
+    // SmartPlan come from the catalog flags.
     mop_only: true,
-    // Vac & Mop only offers Fast/Standard in the app; Mop offers all four routes.
     mop_routes: { vacuum_and_mop: ['fast', 'standard'], mop: ['fast', 'standard', 'deep', 'deep_plus'] },
-    repeat: 'set_clean_repeat_times',
-    smartplan: true,
-    dock: { auto_empty: true, mop_wash: true, hot_water: true, mop_dry: true },
   },
   {
     models: ['roborock.vacuum.a15'],
@@ -61,11 +62,8 @@ export const MODEL_PROFILES: ModelProfile[] = [
     status: 'experimental',
     sources: [PYTHON_ROBOROCK, 'Issue #2 (S7+, Home Assistant core integration)'],
     notes: 'No cleaning-count setting, so two-pass room jobs use the per-segment repeat. Awaiting hardware confirmation (issue #2).',
-    // is_clean_count_setting_supported and is_smart_clean_mode_set_supported are absent.
-    repeat: 'app_segment_clean',
-    smartplan: false,
-    // The S7+ auto-empty dock is optional hardware; the S7 has no washing or drying dock.
-    dock: { mop_wash: false, hot_water: false, mop_dry: false },
+    // Kept for its status and notes; the cleaning count, SmartPlan and routes come from
+    // the catalog flags (no is_clean_count_setting_supported or is_smart_clean_mode_set_supported).
   },
 ];
 

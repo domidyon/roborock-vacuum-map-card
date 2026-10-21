@@ -72,6 +72,7 @@ export interface HassDevice {
   via_device_id?: string | null;
   area_id?: string | null;
   identifiers?: Array<[string, string]>;
+  config_entries?: string[];
 }
 
 export interface HomeAssistant {
@@ -82,6 +83,7 @@ export interface HomeAssistant {
   config?: { version: string };
   user?: { is_admin: boolean };
   callWS?: <T>(message: Record<string, unknown>) => Promise<T>;
+  callApi?: <T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, parameters?: Record<string, unknown>) => Promise<T>;
   locale?: { language?: string };
   callService: (
     domain: string,

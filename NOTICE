@@ -43,6 +43,17 @@ The Roborock dock-device association in src/discovery/devices.ts (matching the
 
 used under the MIT License, whose terms are reproduced above.
 
+The model catalog in src/catalog/models.generated.json (model ids, names, product
+families, protocol versions and feature flags) is generated from, and the mop-route
+rules in src/catalog/flags.ts are ported from:
+
+  python-roborock
+  https://github.com/Python-roborock/python-roborock
+
+used under the Apache License, Version 2.0
+(https://www.apache.org/licenses/LICENSE-2.0). The generated file names the exact
+release it was produced from.
+
 Roborock is a trademark of Beijing Roborock Technology Co., Ltd. This project
 is unofficial, is not affiliated with or endorsed by Roborock, and does not
 contain Roborock proprietary software.

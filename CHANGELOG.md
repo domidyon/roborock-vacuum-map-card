@@ -13,6 +13,9 @@
 - Add the `enable_smartplan` and `cleaning_count_command` config overrides.
 - Offer the Deep+ route on the Qrevo Curv 2 Flow, whose app has Deep+ rather than Deep.
 - Show the matched model profile in the editor and add a model-report issue form.
+- Add a model catalog generated from python-roborock v7.13.0 (98 model ids, 15 with real-device feature data) and port its mop-route rules. Known models get the right cleaning count, SmartPlan and routes without a hand-written profile.
+- During setup, read the robot's own feature flags from Home Assistant's Roborock diagnostics (admin only, flags only) for models the card doesn't know yet.
+- Add a compatibility verdict (supported / limited / unsupported) to discovery, and show recognised and unsupported models in the editor. B01/A01 protocol robots and wet-dry vacuums are reported as unsupported.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21

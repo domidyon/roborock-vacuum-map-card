@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { detectCapabilities } from '../capabilities';
+import { compatibility, findCatalogModel } from '../catalog';
 import { validateConfig } from '../config';
 import { parseRooms } from '../map';
 import type {
@@ -25,9 +26,14 @@ function ModelProfileNote({ hass, config }: { hass: HomeAssistant; config: Robor
   const { profile, model } = detectCapabilities(hass, config);
   if (profile) return <p className="editor-hint">Model profile: {profile.label} ({PROFILE_STATUS[profile.status]}).</p>;
   if (!model) return null;
+  const { verdict, name, protocol } = compatibility({ model });
+  if (verdict === 'unsupported') {
+    return <p className="editor-hint">{name ?? model} is not supported by this card{protocol ? ` (${protocol} protocol)` : ''}.</p>;
+  }
+  if (findCatalogModel(model)?.features) return <p className="editor-hint">Recognised model: {name ?? model} (feature data from python-roborock).</p>;
   return (
     <p className="editor-hint">
-      No profile for {model} yet; options are detected from Home Assistant. <a href={MODEL_REPORT_URL} target="_blank" rel="noreferrer">Report your model</a>
+      No profile for {name ?? model} yet; options are detected from Home Assistant. <a href={MODEL_REPORT_URL} target="_blank" rel="noreferrer">Report your model</a>
     </p>
   );
 }

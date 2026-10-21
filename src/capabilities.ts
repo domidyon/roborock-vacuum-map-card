@@ -1,4 +1,5 @@
-import { findProfile, vacuumModel } from './profiles';
+import { modelFacts } from './catalog';
+import { vacuumModel } from './profiles';
 import type { HomeAssistant, RepeatStrategy, RoborockCapabilities, RoborockVacuumMapCardConfig } from './types';
 
 const FEATURE = {
@@ -26,9 +27,11 @@ export function detectCapabilities(hass: HomeAssistant, config: RoborockVacuumMa
   const mopModes = options(hass, config.entities?.mop_mode);
   const mopIntensities = options(hass, config.entities?.mop_intensity);
   const model = vacuumModel(hass, config.entity);
-  const profile = findProfile(model);
-  // Precedence for app-only facts: explicit config, then the model profile, then
-  // live options (S7 detection originally from PR #3).
+  const facts = modelFacts(model);
+  const profile = facts.profile;
+  // Precedence for app-only facts: explicit config, then the model profile, then the
+  // python-roborock catalog flags for the model, then live options (S7 detection
+  // originally from PR #3).
   const liveSmartPlan = fanSpeeds.includes('smart_mode') && mopModes.includes('smart_mode');
   const liveRepeat: RepeatStrategy = liveSmartPlan || mopIntensities.some((option) => ['slight', 'moderate', 'extreme'].includes(option))
     ? 'set_clean_repeat_times'
@@ -47,9 +50,9 @@ export function detectCapabilities(hass: HomeAssistant, config: RoborockVacuumMa
     hasCleaningMode: cleaningModes.length > 0,
     hasMopMode: mopModes.length > 0,
     hasMopIntensity: mopIntensities.length > 0,
-    hasSmartPlan: config.enable_smartplan ?? profile?.smartplan ?? liveSmartPlan,
-    roomRepeatStrategy: config.cleaning_count_command ?? profile?.repeat ?? liveRepeat,
-    mopRoutes: config.mop_routes ?? profile?.mop_routes,
+    hasSmartPlan: config.enable_smartplan ?? facts.smartplan ?? liveSmartPlan,
+    roomRepeatStrategy: config.cleaning_count_command ?? facts.repeat ?? liveRepeat,
+    mopRoutes: config.mop_routes ?? facts.mop_routes,
     profile: profile ? { label: profile.label, status: profile.status } : undefined,
     model,
   };
