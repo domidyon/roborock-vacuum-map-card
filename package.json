@@ -4,7 +4,7 @@
   "description": "A Roborock-native, room-aware Home Assistant dashboard card",
   "type": "module",
   "license": "MIT",
-  "author": "Dyon Heintjes",
+  "author": "domidyon",
   "repository": {
     "type": "git",
     "url": "https://github.com/domidyon/roborock-vacuum-map-card.git"
