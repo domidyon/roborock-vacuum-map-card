@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0 — 2026-10-21
+
+- Add an explicitly opt-in Mop-only mode for supported Roborock models without exposing it on the Qrevo Curv 2 Flow by default.
+- Add per-mode mop-route allow-lists with UI normalization and executor preflight enforcement.
+- Add Polish translations and localized mode, option, and time labels.
+
 ## 0.7.1 — 2026-10-12
 
 - Add Turkish language support across the card UI, dock controls, configuration editor, and time formatting (thanks @koltuknil).
