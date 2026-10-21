@@ -47,9 +47,40 @@ export interface HassArea {
   icon?: string | null;
 }
 
+/** Entry of the frontend's `hass.entities` (entity registry display data). */
+export interface HassEntityRegistryDisplayEntry {
+  entity_id: string;
+  name?: string;
+  device_id?: string;
+  area_id?: string;
+  platform?: string;
+  translation_key?: string;
+  entity_category?: 'config' | 'diagnostic';
+  hidden?: boolean;
+}
+
+/** Entry of the frontend's `hass.devices` (device registry). */
+export interface HassDevice {
+  id: string;
+  name?: string | null;
+  name_by_user?: string | null;
+  model?: string | null;
+  model_id?: string | null;
+  manufacturer?: string | null;
+  sw_version?: string | null;
+  via_device_id?: string | null;
+  area_id?: string | null;
+  identifiers?: Array<[string, string]>;
+}
+
 export interface HomeAssistant {
   states: Record<string, HassEntity>;
   areas?: Record<string, HassArea>;
+  entities?: Record<string, HassEntityRegistryDisplayEntry>;
+  devices?: Record<string, HassDevice>;
+  config?: { version: string };
+  user?: { is_admin: boolean };
+  callWS?: <T>(message: Record<string, unknown>) => Promise<T>;
   locale?: { language?: string };
   callService: (
     domain: string,

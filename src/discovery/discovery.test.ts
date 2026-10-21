@@ -1,0 +1,158 @@
+import { describe, expect, it } from 'vitest';
+import { validateConfig } from '../config';
+import { createDiscoveryHass } from '../test/discovery-hass';
+import { buildConfig, listRoborockVacuums, loadVacuumSegmentOptions, resolveRoborockDevices } from '.';
+import { resolveMapFlags } from './maps';
+
+const VACUUM = 'vacuum.qrevo_curv_2_flow';
+const ROBOT = 'c044667c97b62cdcf9dc0dedb199a197';
+const DOCK = '0631c181320651d4df2a7fea1d5fa83e';
+const CUSTOM_MAP = 'fd37421f317c7f1fd0a97a5ac179832e';
+
+async function discover(hass = createDiscoveryHass()) {
+  return buildConfig(hass, VACUUM, await loadVacuumSegmentOptions(hass, VACUUM));
+}
+
+describe('device discovery (live Qrevo Curv 2 Flow fixture)', () => {
+  it('lists Roborock vacuums from the entity registry', () => {
+    expect(listRoborockVacuums(createDiscoveryHass())).toEqual([VACUUM]);
+  });
+
+  it('falls back to vacuum states without registry data', () => {
+    expect(listRoborockVacuums(createDiscoveryHass(undefined, { entities: undefined }))).toEqual([VACUUM]);
+  });
+
+  it('finds the robot, its separate dock device, and the Custom Map device', () => {
+    const devices = resolveRoborockDevices(createDiscoveryHass(), VACUUM);
+    expect(devices.robot?.id).toBe(ROBOT);
+    expect(devices.dock?.id).toBe(DOCK);
+    expect(devices.companions.map((device) => device.id)).toEqual([CUSTOM_MAP]);
+  });
+
+  it('discovers every native entity the live card config uses, including dock entities', async () => {
+    const { report } = await discover();
+    // Values from the hand-written dashboard config on the same Home Assistant.
+    expect(report.entities).toEqual({
+      map_select: 'select.qrevo_curv_2_flow_selected_map',
+      cleaning_mode: 'select.woonkamer_qrevo_curv_2_flow_cleaning_mode',
+      mop_mode: 'select.qrevo_curv_2_flow_mop_mode',
+      mop_intensity: 'select.qrevo_curv_2_flow_mop_intensity',
+      dock_mop_drying: 'switch.woonkamer_qrevo_curv_2_flow_dock_mop_drying',
+      dock_mop_drying_remaining_time: 'sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time',
+      dock_child_lock: 'switch.qrevo_curv_2_flow_dock_child_lock',
+      water_shortage: 'binary_sensor.qrevo_curv_2_flow_water_shortage',
+      mop_attached: 'binary_sensor.qrevo_curv_2_flow_mop_attached',
+      water_box_attached: 'binary_sensor.qrevo_curv_2_flow_water_box_attached',
+      do_not_disturb: 'switch.qrevo_curv_2_flow_do_not_disturb',
+      battery: 'sensor.qrevo_curv_2_flow_battery',
+      current_room: 'sensor.qrevo_curv_2_flow_current_room',
+      cleaning_area: 'sensor.qrevo_curv_2_flow_cleaning_area',
+      cleaning_time: 'sensor.qrevo_curv_2_flow_cleaning_time',
+      cleaning_progress: 'sensor.qrevo_curv_2_flow_cleaning_progress',
+      status: 'sensor.qrevo_curv_2_flow_status',
+      error: 'sensor.qrevo_curv_2_flow_vacuum_error',
+      last_clean_end: 'sensor.qrevo_curv_2_flow_last_clean_end',
+    });
+    expect(report.model).toBe('roborock.vacuum.a245');
+  });
+
+  it('reports native dock controls without writing them into the config', async () => {
+    const { report, config } = await discover();
+    expect(report.native_dock).toEqual({
+      dust_collection_mode: 'select.woonkamer_qrevo_curv_2_flow_dock_empty_mode',
+      dust_emptying: 'switch.woonkamer_qrevo_curv_2_flow_dock_dust_emptying',
+      mop_washing: 'switch.woonkamer_qrevo_curv_2_flow_dock_mop_washing',
+      mop_drying: 'switch.woonkamer_qrevo_curv_2_flow_dock_mop_drying',
+    });
+    expect(config.entities?.dock_empty_mode).toBeUndefined();
+  });
+
+  it('builds one floor per map in selector order, paired with its custom image', async () => {
+    const { config } = await discover();
+    expect(config.floors.map((floor) => [floor.id, floor.map_select_option, floor.map_entity])).toEqual([
+      ['beneden', 'Beneden', 'image.woonkamer_qrevo_curv_2_flow_beneden_custom'],
+      ['map_1', 'Map 1', 'image.woonkamer_qrevo_curv_2_flow_map_1_custom'],
+      ['badkamer', 'Badkamer', 'image.woonkamer_qrevo_curv_2_flow_badkamer_custom'],
+      ['onder_bed', 'Onder Bed', 'image.woonkamer_qrevo_curv_2_flow_onder_bed_custom'],
+    ]);
+  });
+
+  it('uses the segment list for rooms and Home Assistant\'s own area mapping', async () => {
+    const { config } = await discover();
+    const rooms = Object.fromEntries(config.floors.map((floor) => [floor.id, floor.rooms.map((room) => [room.segment_id, room.name, room.area_id ?? null, room.include_in_floor_clean])]));
+    expect(rooms).toEqual({
+      beneden: [[1, 'Keuken', 'kitchen', true], [2, 'Hal', 'hallway', true], [4, 'Woonkamer', 'living_room', true]],
+      map_1: [[1, 'Slaapkamer', 'bedroom', true], [2, 'Waskamer', 'waskamer', true], [3, 'Overloop', 'overloop', true], [4, 'Room', null, false], [5, 'Kantoor', 'office', true]],
+      badkamer: [[1, 'Badkamer', 'bathroom', true]],
+      onder_bed: [[1, 'Bathroom', null, false], [2, 'Onder Bed', 'bedroom', true]],
+    });
+    expect(config.floors[0].rooms[0].icon).toBe('mdi:countertop-outline');
+  });
+
+  it('assigns a Vac followed by Mop routine only when its name names the map', async () => {
+    const { config, report } = await discover();
+    expect(config.floors[0].vacuum_then_mop_routine).toBe('button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop');
+    expect(config.floors.slice(1).every((floor) => !floor.vacuum_then_mop_routine)).toBe(true);
+    expect(report.routines.map((routine) => routine.name).sort()).toEqual(['Beneden VacMop', 'Boven VacMop', 'Deep Clean', 'Intensive Sweeping']);
+  });
+
+  it('produces a valid config in the user\'s language and reports unmapped rooms', async () => {
+    const { config, report } = await discover();
+    expect(validateConfig(config)).toEqual([]);
+    expect(config.language).toBe('nl');
+    expect(report.area_source).toBe('mapping');
+    expect(report.issues).toEqual([
+      { code: 'room_unmapped', floor_id: 'map_1', segment_id: 4, name: 'Room' },
+      { code: 'room_unmapped', floor_id: 'onder_bed', segment_id: 1, name: 'Bathroom' },
+    ]);
+  });
+
+  it('falls back to image rooms and area-name matching without the registry mapping', async () => {
+    const hass = createDiscoveryHass(undefined, { callWS: undefined });
+    const { config, report } = buildConfig(hass, VACUUM, await loadVacuumSegmentOptions(hass, VACUUM));
+    expect(report.area_source).toBe('name');
+    expect(report.issues).toContainEqual({ code: 'segment_mapping_unavailable' });
+    expect(report.issues).toContainEqual({ code: 'rooms_from_image', floor_id: 'map_1' });
+    expect(config.floors[0].rooms.map((room) => room.area_id)).toEqual(['kitchen', 'hallway', 'living_room']);
+  });
+
+  it('reports a missing Roborock Custom Map instead of inventing floors', () => {
+    const hass = createDiscoveryHass();
+    for (const [id, entry] of Object.entries(hass.entities ?? {})) if (entry.platform === 'roborock_custom_map') delete hass.entities?.[id];
+    const { config, report } = buildConfig(hass, VACUUM);
+    expect(config.floors).toEqual([]);
+    expect(report.issues).toContainEqual({ code: 'custom_map_missing' });
+    expect(report.issues).toContainEqual({ code: 'map_without_image', map_name: 'Beneden' });
+  });
+
+  it('resolves a second vacuum independently', () => {
+    const hass = createDiscoveryHass();
+    hass.devices!.other = { id: 'other', name: 'S7', model: 'roborock.vacuum.a15', identifiers: [['roborock', 'duid9']] };
+    hass.entities!['vacuum.s7'] = { entity_id: 'vacuum.s7', device_id: 'other', platform: 'roborock', translation_key: 'roborock' };
+    hass.states['vacuum.s7'] = { entity_id: 'vacuum.s7', state: 'docked', attributes: {} };
+    expect(listRoborockVacuums(hass)).toEqual([VACUUM, 'vacuum.s7']);
+    const { report } = buildConfig(hass, 'vacuum.s7');
+    expect(report.devices.dock).toBeUndefined();
+    expect(report.entities).toEqual({});
+    expect(report.issues).toContainEqual({ code: 'custom_map_missing' });
+  });
+
+  it('keeps an unknown vacuum harmless', () => {
+    const { report } = buildConfig(createDiscoveryHass(), 'vacuum.missing');
+    expect(report.issues).toContainEqual({ code: 'robot_device_missing' });
+  });
+});
+
+describe('resolveMapFlags', () => {
+  const segment = (map_flag: number, segment_id: number, group?: string) => ({ map_flag, segment_id, name: 'Room', group });
+
+  it('prefers group names and fills gaps from the selector order', () => {
+    const flags = resolveMapFlags([segment(0, 1, 'Down'), segment(1, 1), segment(2, 1, 'Attic')], ['Down', 'Up', 'Attic']);
+    expect([...flags]).toEqual([[0, 'Down'], [2, 'Attic'], [1, 'Up']]);
+  });
+
+  it('does not guess from the selector order when groups contradict it', () => {
+    const flags = resolveMapFlags([segment(0, 1, 'Attic'), segment(1, 1)], ['Down', 'Up', 'Attic']);
+    expect([...flags]).toEqual([[0, 'Attic']]);
+  });
+});

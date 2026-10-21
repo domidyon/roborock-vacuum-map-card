@@ -7,6 +7,8 @@
 - Report the card version from `package.json` instead of a hand-maintained constant.
 - Add a backward-compatibility test suite for v0.8.0 configs.
 - Run CI and HACS validation on the `beta` branch.
+- Add registry-based device discovery (`src/discovery/`): finds the robot, its separate dock device and the Roborock Custom Map device. Entities are matched by translation key instead of entity ID, every map becomes a floor, and rooms are mapped to areas using Home Assistant's own segment ↔ area mapping. Not wired into the UI yet.
+- Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21
 

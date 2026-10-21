@@ -34,6 +34,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+The Roborock dock-device association in src/discovery/devices.ts (matching the
+"<duid>_dock" identifier, then "<robot> Dock" name and model) is adapted from:
+
+  ha-roborock-card
+  Copyright (c) juju35
+  https://github.com/juju35/ha-roborock-card
+
+used under the MIT License, whose terms are reproduced above.
+
 Roborock is a trademark of Beijing Roborock Technology Co., Ltd. This project
 is unofficial, is not affiliated with or endorsed by Roborock, and does not
 contain Roborock proprietary software.

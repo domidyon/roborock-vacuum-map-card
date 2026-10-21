@@ -1,0 +1,1493 @@
+{
+  "config": {
+    "version": "2026.10.2"
+  },
+  "devices": {
+    "c044667c97b62cdcf9dc0dedb199a197": {
+      "id": "c044667c97b62cdcf9dc0dedb199a197",
+      "name": "Qrevo Curv 2 Flow",
+      "name_by_user": null,
+      "model": "roborock.vacuum.a245",
+      "model_id": "roborock.vacuum.a245",
+      "manufacturer": "Roborock",
+      "sw_version": "02.35.52",
+      "via_device_id": null,
+      "area_id": "living_room",
+      "identifiers": [
+        [
+          "roborock",
+          "duid1"
+        ]
+      ]
+    },
+    "fd37421f317c7f1fd0a97a5ac179832e": {
+      "id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "name": "Qrevo Curv 2 Flow",
+      "name_by_user": null,
+      "model": "roborock.vacuum.a245",
+      "model_id": "roborock.vacuum.a245",
+      "manufacturer": "Roborock",
+      "sw_version": "02.35.52",
+      "via_device_id": null,
+      "area_id": "living_room",
+      "identifiers": [
+        [
+          "roborock",
+          "duid1"
+        ]
+      ]
+    },
+    "0631c181320651d4df2a7fea1d5fa83e": {
+      "id": "0631c181320651d4df2a7fea1d5fa83e",
+      "name": "Qrevo Curv 2 Flow Dock",
+      "name_by_user": null,
+      "model": "roborock.vacuum.a245 Dock",
+      "model_id": "29",
+      "manufacturer": "Roborock",
+      "sw_version": "02.35.52",
+      "via_device_id": null,
+      "area_id": "living_room",
+      "identifiers": [
+        [
+          "roborock",
+          "duid1_dock"
+        ]
+      ]
+    }
+  },
+  "entities": {
+    "binary_sensor.qrevo_curv_2_flow_mop_attached": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_mop_attached",
+      "name": "Mop attached",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "mop_attached",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "binary_sensor.qrevo_curv_2_flow_water_box_attached": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_water_box_attached",
+      "name": "Water box attached",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "water_box_attached",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "binary_sensor.qrevo_curv_2_flow_water_shortage": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_water_shortage",
+      "name": "Water shortage",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "water_shortage",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "binary_sensor.qrevo_curv_2_flow_cleaning": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_cleaning",
+      "name": "Cleaning",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "in_cleaning",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "binary_sensor.qrevo_curv_2_flow_charging": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_charging",
+      "name": "Charging",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "number.qrevo_curv_2_flow_volume": {
+      "entity_id": "number.qrevo_curv_2_flow_volume",
+      "name": "Volume",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "volume",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "select.qrevo_curv_2_flow_mop_intensity": {
+      "entity_id": "select.qrevo_curv_2_flow_mop_intensity",
+      "name": "Mop intensity",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "mop_intensity",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "select.qrevo_curv_2_flow_mop_mode": {
+      "entity_id": "select.qrevo_curv_2_flow_mop_mode",
+      "name": "Mop mode",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "mop_mode",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "select.qrevo_curv_2_flow_selected_map": {
+      "entity_id": "select.qrevo_curv_2_flow_selected_map",
+      "name": "Selected map",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "selected_map",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_main_brush_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_main_brush_time_left",
+      "name": "Main brush time left",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "main_brush_time_left",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_side_brush_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_side_brush_time_left",
+      "name": "Side brush time left",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "side_brush_time_left",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_filter_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_filter_time_left",
+      "name": "Filter time left",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "filter_time_left",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_sensor_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_sensor_time_left",
+      "name": "Sensor time left",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "sensor_time_left",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_cleaning_time": {
+      "entity_id": "sensor.qrevo_curv_2_flow_cleaning_time",
+      "name": "Cleaning time",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "cleaning_time",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_total_cleaning_time": {
+      "entity_id": "sensor.qrevo_curv_2_flow_total_cleaning_time",
+      "name": "Total cleaning time",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "total_cleaning_time",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_total_cleaning_count": {
+      "entity_id": "sensor.qrevo_curv_2_flow_total_cleaning_count",
+      "name": "Total cleaning count",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "total_cleaning_count",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_status": {
+      "entity_id": "sensor.qrevo_curv_2_flow_status",
+      "name": "Status",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "status",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_cleaning_area": {
+      "entity_id": "sensor.qrevo_curv_2_flow_cleaning_area",
+      "name": "Cleaning area",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "cleaning_area",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_total_cleaning_area": {
+      "entity_id": "sensor.qrevo_curv_2_flow_total_cleaning_area",
+      "name": "Total cleaning area",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "total_cleaning_area",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_vacuum_error": {
+      "entity_id": "sensor.qrevo_curv_2_flow_vacuum_error",
+      "name": "Vacuum error",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "vacuum_error",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_battery": {
+      "entity_id": "sensor.qrevo_curv_2_flow_battery",
+      "name": "Battery",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_last_clean_begin": {
+      "entity_id": "sensor.qrevo_curv_2_flow_last_clean_begin",
+      "name": "Last clean begin",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "last_clean_start",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_last_clean_end": {
+      "entity_id": "sensor.qrevo_curv_2_flow_last_clean_end",
+      "name": "Last clean end",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "last_clean_end",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_cleaning_progress": {
+      "entity_id": "sensor.qrevo_curv_2_flow_cleaning_progress",
+      "name": "Cleaning progress",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "clean_percent",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time": {
+      "entity_id": "sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time",
+      "name": "Mop drying remaining time",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "mop_drying_remaining_time",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.qrevo_curv_2_flow_current_room": {
+      "entity_id": "sensor.qrevo_curv_2_flow_current_room",
+      "name": "Current room",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "current_room",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "switch.qrevo_curv_2_flow_dock_child_lock": {
+      "entity_id": "switch.qrevo_curv_2_flow_dock_child_lock",
+      "name": "Child lock",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "child_lock",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "switch.qrevo_curv_2_flow_do_not_disturb": {
+      "entity_id": "switch.qrevo_curv_2_flow_do_not_disturb",
+      "name": "Do not disturb",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "dnd_switch",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "time.qrevo_curv_2_flow_do_not_disturb_begin": {
+      "entity_id": "time.qrevo_curv_2_flow_do_not_disturb_begin",
+      "name": "Do not disturb begin",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "dnd_start_time",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "time.qrevo_curv_2_flow_do_not_disturb_end": {
+      "entity_id": "time.qrevo_curv_2_flow_do_not_disturb_end",
+      "name": "Do not disturb end",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "dnd_end_time",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "vacuum.qrevo_curv_2_flow": {
+      "entity_id": "vacuum.qrevo_curv_2_flow",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "roborock",
+      "hidden": false
+    },
+    "button.qrevo_curv_2_flow_intensive_sweeping": {
+      "entity_id": "button.qrevo_curv_2_flow_intensive_sweeping",
+      "name": "Intensive Sweeping",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_beneden": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_beneden",
+      "name": "Beneden",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_beneden_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_beneden_custom",
+      "name": "Beneden_custom",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_map_1_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_map_1_custom",
+      "name": "Map 1_custom",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "select.woonkamer_qrevo_curv_2_flow_beneden_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_beneden_rotation",
+      "name": "Beneden rotation",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "translation_key": "rotation",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "select.woonkamer_qrevo_curv_2_flow_map_1_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_map_1_rotation",
+      "name": "Map 1 rotation",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "translation_key": "rotation",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "select.woonkamer_qrevo_curv_2_flow_cleaning_mode": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_cleaning_mode",
+      "name": "Cleaning mode",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "translation_key": "cleaning_mode",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "button.woonkamer_qrevo_curv_2_flow_deep": {
+      "entity_id": "button.woonkamer_qrevo_curv_2_flow_deep",
+      "name": "Deep Clean",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "hidden": false
+    },
+    "button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop": {
+      "entity_id": "button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop",
+      "name": "Beneden VacMop",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_map_1": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_map_1",
+      "name": "Map 1",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "button.woonkamer_qrevo_curv_2_flow_boven_vacmop": {
+      "entity_id": "button.woonkamer_qrevo_curv_2_flow_boven_vacmop",
+      "name": "Boven VacMop",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_badkamer": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_badkamer",
+      "name": "Badkamer",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_onder_bed": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_onder_bed",
+      "name": "Onder Bed",
+      "device_id": "c044667c97b62cdcf9dc0dedb199a197",
+      "platform": "roborock",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_badkamer_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_badkamer_custom",
+      "name": "Badkamer_custom",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "image.woonkamer_qrevo_curv_2_flow_onder_bed_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_onder_bed_custom",
+      "name": "Onder Bed_custom",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "select.woonkamer_qrevo_curv_2_flow_badkamer_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_badkamer_rotation",
+      "name": "Badkamer rotation",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "translation_key": "rotation",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "select.woonkamer_qrevo_curv_2_flow_onder_bed_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_onder_bed_rotation",
+      "name": "Onder Bed rotation",
+      "device_id": "fd37421f317c7f1fd0a97a5ac179832e",
+      "platform": "roborock_custom_map",
+      "translation_key": "rotation",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_dirty_water_box": {
+      "entity_id": "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_dirty_water_box",
+      "name": "Dirty water box",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "dirty_box_full",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_clean_water_box": {
+      "entity_id": "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_clean_water_box",
+      "name": "Clean water box",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "clean_box_empty",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "select.woonkamer_qrevo_curv_2_flow_dock_empty_mode": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_dock_empty_mode",
+      "name": "Empty mode",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "dust_collection_mode",
+      "entity_category": "config",
+      "hidden": false
+    },
+    "sensor.woonkamer_qrevo_curv_2_flow_dock_strainer_time_left": {
+      "entity_id": "sensor.woonkamer_qrevo_curv_2_flow_dock_strainer_time_left",
+      "name": "Strainer time left",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "strainer_time_left",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "sensor.woonkamer_qrevo_curv_2_flow_dock_dock_error": {
+      "entity_id": "sensor.woonkamer_qrevo_curv_2_flow_dock_dock_error",
+      "name": "Dock error",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "dock_error",
+      "entity_category": "diagnostic",
+      "hidden": false
+    },
+    "switch.woonkamer_qrevo_curv_2_flow_dock_dust_emptying": {
+      "entity_id": "switch.woonkamer_qrevo_curv_2_flow_dock_dust_emptying",
+      "name": "Dust emptying",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "dust_emptying",
+      "hidden": false
+    },
+    "switch.woonkamer_qrevo_curv_2_flow_dock_mop_washing": {
+      "entity_id": "switch.woonkamer_qrevo_curv_2_flow_dock_mop_washing",
+      "name": "Mop washing",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "mop_washing",
+      "hidden": false
+    },
+    "switch.woonkamer_qrevo_curv_2_flow_dock_mop_drying": {
+      "entity_id": "switch.woonkamer_qrevo_curv_2_flow_dock_mop_drying",
+      "name": "Mop drying",
+      "device_id": "0631c181320651d4df2a7fea1d5fa83e",
+      "platform": "roborock",
+      "translation_key": "mop_drying",
+      "hidden": false
+    }
+  },
+  "states": {
+    "binary_sensor.qrevo_curv_2_flow_mop_attached": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_mop_attached",
+      "state": "on",
+      "attributes": {
+        "device_class": "connectivity",
+        "friendly_name": "Qrevo Curv 2 Flow Mop attached"
+      }
+    },
+    "binary_sensor.qrevo_curv_2_flow_water_box_attached": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_water_box_attached",
+      "state": "on",
+      "attributes": {
+        "device_class": "connectivity",
+        "friendly_name": "Qrevo Curv 2 Flow Water box attached"
+      }
+    },
+    "binary_sensor.qrevo_curv_2_flow_water_shortage": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_water_shortage",
+      "state": "off",
+      "attributes": {
+        "device_class": "problem",
+        "friendly_name": "Qrevo Curv 2 Flow Water shortage"
+      }
+    },
+    "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_dirty_water_box": {
+      "entity_id": "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_dirty_water_box",
+      "state": "off",
+      "attributes": {
+        "device_class": "problem",
+        "friendly_name": "Qrevo Curv 2 Flow Dock Dirty water box"
+      }
+    },
+    "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_clean_water_box": {
+      "entity_id": "binary_sensor.woonkamer_qrevo_curv_2_flow_dock_clean_water_box",
+      "state": "off",
+      "attributes": {
+        "device_class": "problem",
+        "friendly_name": "Qrevo Curv 2 Flow Dock Clean water box"
+      }
+    },
+    "binary_sensor.qrevo_curv_2_flow_cleaning": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_cleaning",
+      "state": "off",
+      "attributes": {
+        "device_class": "running",
+        "friendly_name": "Qrevo Curv 2 Flow Cleaning"
+      }
+    },
+    "binary_sensor.qrevo_curv_2_flow_charging": {
+      "entity_id": "binary_sensor.qrevo_curv_2_flow_charging",
+      "state": "on",
+      "attributes": {
+        "device_class": "battery_charging",
+        "friendly_name": "Qrevo Curv 2 Flow Charging"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_beneden": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_beneden",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Beneden"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_map_1": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_map_1",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Map 1"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_badkamer": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_badkamer",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Badkamer"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_onder_bed": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_onder_bed",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Onder Bed"
+      }
+    },
+    "number.qrevo_curv_2_flow_volume": {
+      "entity_id": "number.qrevo_curv_2_flow_volume",
+      "state": "1.0",
+      "attributes": {
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "mode": "auto",
+        "unit_of_measurement": "%",
+        "friendly_name": "Qrevo Curv 2 Flow Volume"
+      }
+    },
+    "select.qrevo_curv_2_flow_mop_intensity": {
+      "entity_id": "select.qrevo_curv_2_flow_mop_intensity",
+      "state": "medium",
+      "attributes": {
+        "options": [
+          "off",
+          "slight",
+          "low",
+          "medium",
+          "moderate",
+          "high",
+          "extreme"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Mop intensity"
+      }
+    },
+    "select.qrevo_curv_2_flow_mop_mode": {
+      "entity_id": "select.qrevo_curv_2_flow_mop_mode",
+      "state": "standard",
+      "attributes": {
+        "options": [
+          "standard",
+          "deep_plus",
+          "fast",
+          "smart_mode",
+          "custom"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Mop mode"
+      }
+    },
+    "select.woonkamer_qrevo_curv_2_flow_dock_empty_mode": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_dock_empty_mode",
+      "state": "smart",
+      "attributes": {
+        "options": [
+          "unknown",
+          "smart",
+          "light",
+          "balanced",
+          "max"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Dock Empty mode"
+      }
+    },
+    "select.woonkamer_qrevo_curv_2_flow_cleaning_mode": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_cleaning_mode",
+      "state": "unknown",
+      "attributes": {
+        "options": [
+          "vacuum",
+          "vac_and_mop",
+          "mop"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Cleaning mode"
+      }
+    },
+    "select.qrevo_curv_2_flow_selected_map": {
+      "entity_id": "select.qrevo_curv_2_flow_selected_map",
+      "state": "Beneden",
+      "attributes": {
+        "options": [
+          "Beneden",
+          "Map 1",
+          "Badkamer",
+          "Onder Bed"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Selected map"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_main_brush_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_main_brush_time_left",
+      "state": "246.9725",
+      "attributes": {
+        "unit_of_measurement": "h",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Main brush time left"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_side_brush_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_side_brush_time_left",
+      "state": "129.6825",
+      "attributes": {
+        "unit_of_measurement": "h",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Side brush time left"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_filter_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_filter_time_left",
+      "state": "96.9725",
+      "attributes": {
+        "unit_of_measurement": "h",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Filter time left"
+      }
+    },
+    "sensor.woonkamer_qrevo_curv_2_flow_dock_strainer_time_left": {
+      "entity_id": "sensor.woonkamer_qrevo_curv_2_flow_dock_strainer_time_left",
+      "state": "92",
+      "attributes": {
+        "unit_of_measurement": "h",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Dock Strainer time left"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_sensor_time_left": {
+      "entity_id": "sensor.qrevo_curv_2_flow_sensor_time_left",
+      "state": "-2.49055555555556",
+      "attributes": {
+        "unit_of_measurement": "h",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Sensor time left"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_cleaning_time": {
+      "entity_id": "sensor.qrevo_curv_2_flow_cleaning_time",
+      "state": "25.15",
+      "attributes": {
+        "unit_of_measurement": "min",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Cleaning time"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_total_cleaning_time": {
+      "entity_id": "sensor.qrevo_curv_2_flow_total_cleaning_time",
+      "state": "70.1905555555556",
+      "attributes": {
+        "unit_of_measurement": "h",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Total cleaning time"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_total_cleaning_count": {
+      "entity_id": "sensor.qrevo_curv_2_flow_total_cleaning_count",
+      "state": "195",
+      "attributes": {
+        "state_class": "total_increasing",
+        "friendly_name": "Qrevo Curv 2 Flow Total cleaning count"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_status": {
+      "entity_id": "sensor.qrevo_curv_2_flow_status",
+      "state": "charging",
+      "attributes": {
+        "options": [
+          "unknown",
+          "starting",
+          "charger_disconnected",
+          "idle",
+          "remote_control_active",
+          "cleaning",
+          "returning_home",
+          "manual_mode",
+          "charging",
+          "charging_problem",
+          "paused",
+          "spot_cleaning",
+          "error",
+          "shutting_down",
+          "updating",
+          "docking",
+          "going_to_target",
+          "zoned_cleaning",
+          "segment_cleaning",
+          "emptying_the_bin",
+          "washing_the_mop",
+          "going_to_wash_the_mop",
+          "in_call",
+          "mapping",
+          "egg_attack",
+          "patrol",
+          "attaching_the_mop",
+          "detaching_the_mop",
+          "charging_complete",
+          "device_offline",
+          "locked",
+          "air_drying_stopping",
+          "robot_status_mopping",
+          "clean_mop_cleaning",
+          "clean_mop_mopping",
+          "segment_mopping",
+          "segment_clean_mop_cleaning",
+          "segment_clean_mop_mopping",
+          "zoned_mopping",
+          "zoned_clean_mop_cleaning",
+          "zoned_clean_mop_mopping",
+          "back_to_dock_washing_duster"
+        ],
+        "device_class": "enum",
+        "friendly_name": "Qrevo Curv 2 Flow Status"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_cleaning_area": {
+      "entity_id": "sensor.qrevo_curv_2_flow_cleaning_area",
+      "state": "21.5",
+      "attributes": {
+        "unit_of_measurement": "m\u00b2",
+        "friendly_name": "Qrevo Curv 2 Flow Cleaning area"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_total_cleaning_area": {
+      "entity_id": "sensor.qrevo_curv_2_flow_total_cleaning_area",
+      "state": "3332.1",
+      "attributes": {
+        "unit_of_measurement": "m\u00b2",
+        "friendly_name": "Qrevo Curv 2 Flow Total cleaning area"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_vacuum_error": {
+      "entity_id": "sensor.qrevo_curv_2_flow_vacuum_error",
+      "state": "none",
+      "attributes": {
+        "options": [
+          "none",
+          "lidar_blocked",
+          "bumper_stuck",
+          "wheels_suspended",
+          "cliff_sensor_error",
+          "main_brush_jammed",
+          "side_brush_jammed",
+          "wheels_jammed",
+          "robot_trapped",
+          "no_dustbin",
+          "strainer_error",
+          "compass_error",
+          "low_battery",
+          "charging_error",
+          "battery_error",
+          "wall_sensor_dirty",
+          "robot_tilted",
+          "side_brush_error",
+          "fan_error",
+          "dock",
+          "optical_flow_sensor_dirt",
+          "vertical_bumper_pressed",
+          "dock_locator_error",
+          "return_to_dock_fail",
+          "nogo_zone_detected",
+          "visual_sensor",
+          "light_touch",
+          "vibrarise_jammed",
+          "robot_on_carpet",
+          "filter_blocked",
+          "invisible_wall_detected",
+          "cannot_cross_carpet",
+          "internal_error",
+          "collect_dust_error_3",
+          "collect_dust_error_4",
+          "mopping_roller_1",
+          "mopping_roller_error_2",
+          "clear_water_box_hoare",
+          "dirty_water_box_hoare",
+          "sink_strainer_hoare",
+          "clear_water_box_exception",
+          "clear_brush_exception",
+          "clear_brush_exception_2",
+          "filter_screen_exception",
+          "up_water_exception",
+          "drain_water_exception",
+          "temperature_protection",
+          "clean_carousel_exception",
+          "clean_carousel_water_full",
+          "water_carriage_drop",
+          "check_clean_carouse",
+          "audio_error"
+        ],
+        "device_class": "enum",
+        "friendly_name": "Qrevo Curv 2 Flow Vacuum error"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_battery": {
+      "entity_id": "sensor.qrevo_curv_2_flow_battery",
+      "state": "100",
+      "attributes": {
+        "unit_of_measurement": "%",
+        "device_class": "battery",
+        "friendly_name": "Qrevo Curv 2 Flow Battery"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_last_clean_begin": {
+      "entity_id": "sensor.qrevo_curv_2_flow_last_clean_begin",
+      "state": "2026-10-21T19:07:51+00:00",
+      "attributes": {
+        "device_class": "timestamp",
+        "friendly_name": "Qrevo Curv 2 Flow Last clean begin"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_last_clean_end": {
+      "entity_id": "sensor.qrevo_curv_2_flow_last_clean_end",
+      "state": "2026-10-21T19:46:06+00:00",
+      "attributes": {
+        "device_class": "timestamp",
+        "friendly_name": "Qrevo Curv 2 Flow Last clean end"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_cleaning_progress": {
+      "entity_id": "sensor.qrevo_curv_2_flow_cleaning_progress",
+      "state": "0",
+      "attributes": {
+        "unit_of_measurement": "%",
+        "friendly_name": "Qrevo Curv 2 Flow Cleaning progress"
+      }
+    },
+    "sensor.woonkamer_qrevo_curv_2_flow_dock_dock_error": {
+      "entity_id": "sensor.woonkamer_qrevo_curv_2_flow_dock_dock_error",
+      "state": "ok",
+      "attributes": {
+        "options": [
+          "ok",
+          "no_dustbin_or_filter",
+          "auto_empty_dock_fan_error",
+          "duct_blockage",
+          "auto_empty_dock_voltage_error",
+          "water_empty",
+          "waste_water_tank_full",
+          "maintenance_brush_jammed",
+          "dirty_tank_latch_open",
+          "no_dustbin",
+          "cleaning_tank_full_or_blocked"
+        ],
+        "device_class": "enum",
+        "friendly_name": "Qrevo Curv 2 Flow Dock Dock error"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time": {
+      "entity_id": "sensor.qrevo_curv_2_flow_dock_mop_drying_remaining_time",
+      "state": "0.45",
+      "attributes": {
+        "unit_of_measurement": "h",
+        "device_class": "duration",
+        "friendly_name": "Qrevo Curv 2 Flow Dock Mop drying remaining time"
+      }
+    },
+    "sensor.qrevo_curv_2_flow_current_room": {
+      "entity_id": "sensor.qrevo_curv_2_flow_current_room",
+      "state": "Woonkamer",
+      "attributes": {
+        "options": [
+          "Keuken",
+          "Hal",
+          "Woonkamer"
+        ],
+        "device_class": "enum",
+        "friendly_name": "Qrevo Curv 2 Flow Current room"
+      }
+    },
+    "switch.qrevo_curv_2_flow_dock_child_lock": {
+      "entity_id": "switch.qrevo_curv_2_flow_dock_child_lock",
+      "state": "off",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Dock Child lock"
+      }
+    },
+    "switch.qrevo_curv_2_flow_do_not_disturb": {
+      "entity_id": "switch.qrevo_curv_2_flow_do_not_disturb",
+      "state": "on",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Do not disturb"
+      }
+    },
+    "switch.woonkamer_qrevo_curv_2_flow_dock_dust_emptying": {
+      "entity_id": "switch.woonkamer_qrevo_curv_2_flow_dock_dust_emptying",
+      "state": "off",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Dock Dust emptying"
+      }
+    },
+    "switch.woonkamer_qrevo_curv_2_flow_dock_mop_washing": {
+      "entity_id": "switch.woonkamer_qrevo_curv_2_flow_dock_mop_washing",
+      "state": "off",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Dock Mop washing"
+      }
+    },
+    "switch.woonkamer_qrevo_curv_2_flow_dock_mop_drying": {
+      "entity_id": "switch.woonkamer_qrevo_curv_2_flow_dock_mop_drying",
+      "state": "on",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Dock Mop drying"
+      }
+    },
+    "time.qrevo_curv_2_flow_do_not_disturb_begin": {
+      "entity_id": "time.qrevo_curv_2_flow_do_not_disturb_begin",
+      "state": "22:00:00",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Do not disturb begin"
+      }
+    },
+    "time.qrevo_curv_2_flow_do_not_disturb_end": {
+      "entity_id": "time.qrevo_curv_2_flow_do_not_disturb_end",
+      "state": "08:00:00",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Do not disturb end"
+      }
+    },
+    "vacuum.qrevo_curv_2_flow": {
+      "entity_id": "vacuum.qrevo_curv_2_flow",
+      "state": "docked",
+      "attributes": {
+        "fan_speed_list": [
+          "quiet",
+          "balanced",
+          "turbo",
+          "max",
+          "max_plus",
+          "off",
+          "smart_mode",
+          "custom"
+        ],
+        "fan_speed": "balanced",
+        "friendly_name": "Qrevo Curv 2 Flow",
+        "supported_features": 30524
+      }
+    },
+    "button.woonkamer_qrevo_curv_2_flow_boven_vacmop": {
+      "entity_id": "button.woonkamer_qrevo_curv_2_flow_boven_vacmop",
+      "state": "unknown",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Boven VacMop"
+      }
+    },
+    "button.woonkamer_qrevo_curv_2_flow_deep": {
+      "entity_id": "button.woonkamer_qrevo_curv_2_flow_deep",
+      "state": "unknown",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Deep Clean"
+      }
+    },
+    "button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop": {
+      "entity_id": "button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop",
+      "state": "2026-09-17T19:24:13.393017+00:00",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Beneden VacMop"
+      }
+    },
+    "button.qrevo_curv_2_flow_intensive_sweeping": {
+      "entity_id": "button.qrevo_curv_2_flow_intensive_sweeping",
+      "state": "unknown",
+      "attributes": {
+        "friendly_name": "Qrevo Curv 2 Flow Intensive Sweeping"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_beneden_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_beneden_custom",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "calibration_points": [
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 25500
+            },
+            "map": {
+              "x": 712,
+              "y": 112
+            }
+          },
+          {
+            "vacuum": {
+              "x": 35500,
+              "y": 25500
+            },
+            "map": {
+              "x": 1512,
+              "y": 112
+            }
+          },
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 35500
+            },
+            "map": {
+              "x": 712,
+              "y": -688
+            }
+          }
+        ],
+        "rooms": {
+          "1": {
+            "x0": 25900,
+            "y0": 21050,
+            "x1": 30050,
+            "y1": 22850,
+            "number": 1,
+            "name": "Keuken",
+            "pos_x": null,
+            "pos_y": null
+          },
+          "2": {
+            "x0": 22250,
+            "y0": 21100,
+            "x1": 25850,
+            "y1": 23000,
+            "number": 2,
+            "name": "Hal",
+            "pos_x": null,
+            "pos_y": null
+          },
+          "4": {
+            "x0": 22350,
+            "y0": 23050,
+            "x1": 28450,
+            "y1": 26500,
+            "number": 4,
+            "name": "Woonkamer",
+            "pos_x": null,
+            "pos_y": null
+          }
+        },
+        "zones": null,
+        "friendly_name": "Qrevo Curv 2 Flow Beneden_custom"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_map_1_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_map_1_custom",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "calibration_points": [
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 25500
+            },
+            "map": {
+              "x": 392,
+              "y": 500
+            }
+          },
+          {
+            "vacuum": {
+              "x": 35500,
+              "y": 25500
+            },
+            "map": {
+              "x": 1192,
+              "y": 500
+            }
+          },
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 35500
+            },
+            "map": {
+              "x": 392,
+              "y": -300
+            }
+          }
+        ],
+        "rooms": {
+          "4": {
+            "x0": 22100,
+            "y0": 25300,
+            "x1": 26350,
+            "y1": 26850,
+            "number": 4,
+            "name": "Woonkamer",
+            "pos_x": null,
+            "pos_y": null
+          }
+        },
+        "zones": null,
+        "friendly_name": "Qrevo Curv 2 Flow Map 1_custom"
+      }
+    },
+    "select.woonkamer_qrevo_curv_2_flow_beneden_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_beneden_rotation",
+      "state": "0",
+      "attributes": {
+        "options": [
+          "0",
+          "90",
+          "180",
+          "270"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Beneden rotation"
+      }
+    },
+    "select.woonkamer_qrevo_curv_2_flow_map_1_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_map_1_rotation",
+      "state": "0",
+      "attributes": {
+        "options": [
+          "0",
+          "90",
+          "180",
+          "270"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Map 1 rotation"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_badkamer_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_badkamer_custom",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "calibration_points": [
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 25500
+            },
+            "map": {
+              "x": 92,
+              "y": 56
+            }
+          },
+          {
+            "vacuum": {
+              "x": 35500,
+              "y": 25500
+            },
+            "map": {
+              "x": 892,
+              "y": 56
+            }
+          },
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 35500
+            },
+            "map": {
+              "x": 92,
+              "y": -744
+            }
+          }
+        ],
+        "rooms": {
+          "1": {
+            "x0": 24600,
+            "y0": 24400,
+            "x1": 26400,
+            "y1": 26000,
+            "number": 1,
+            "name": "Keuken",
+            "pos_x": null,
+            "pos_y": null
+          }
+        },
+        "zones": null,
+        "friendly_name": "Qrevo Curv 2 Flow Badkamer_custom"
+      }
+    },
+    "image.woonkamer_qrevo_curv_2_flow_onder_bed_custom": {
+      "entity_id": "image.woonkamer_qrevo_curv_2_flow_onder_bed_custom",
+      "state": "2026-10-21T21:38:50.862372+00:00",
+      "attributes": {
+        "calibration_points": [
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 25500
+            },
+            "map": {
+              "x": 132,
+              "y": 180
+            }
+          },
+          {
+            "vacuum": {
+              "x": 35500,
+              "y": 25500
+            },
+            "map": {
+              "x": 932,
+              "y": 180
+            }
+          },
+          {
+            "vacuum": {
+              "x": 25500,
+              "y": 35500
+            },
+            "map": {
+              "x": 132,
+              "y": -620
+            }
+          }
+        ],
+        "rooms": {
+          "2": {
+            "x0": 24050,
+            "y0": 24150,
+            "x1": 27450,
+            "y1": 27500,
+            "number": 2,
+            "name": "Hal",
+            "pos_x": null,
+            "pos_y": null
+          }
+        },
+        "zones": null,
+        "friendly_name": "Qrevo Curv 2 Flow Onder Bed_custom"
+      }
+    },
+    "select.woonkamer_qrevo_curv_2_flow_badkamer_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_badkamer_rotation",
+      "state": "0",
+      "attributes": {
+        "options": [
+          "0",
+          "90",
+          "180",
+          "270"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Badkamer rotation"
+      }
+    },
+    "select.woonkamer_qrevo_curv_2_flow_onder_bed_rotation": {
+      "entity_id": "select.woonkamer_qrevo_curv_2_flow_onder_bed_rotation",
+      "state": "0",
+      "attributes": {
+        "options": [
+          "0",
+          "90",
+          "180",
+          "270"
+        ],
+        "friendly_name": "Qrevo Curv 2 Flow Onder Bed rotation"
+      }
+    }
+  },
+  "areas": {
+    "bathroom": {
+      "area_id": "bathroom",
+      "name": "Badkamer",
+      "icon": "mdi:shower"
+    },
+    "hallway": {
+      "area_id": "hallway",
+      "name": "Hal",
+      "icon": "mdi:coat-rack"
+    },
+    "office": {
+      "area_id": "office",
+      "name": "Kantoor",
+      "icon": "mdi:desktop-tower-monitor"
+    },
+    "kitchen": {
+      "area_id": "kitchen",
+      "name": "Keuken",
+      "icon": "mdi:countertop-outline"
+    },
+    "overloop": {
+      "area_id": "overloop",
+      "name": "Overloop",
+      "icon": "mdi:stairs"
+    },
+    "bedroom": {
+      "area_id": "bedroom",
+      "name": "Slaapkamer",
+      "icon": "mdi:bed-double-outline"
+    },
+    "waskamer": {
+      "area_id": "waskamer",
+      "name": "Waskamer",
+      "icon": "mdi:washing-machine"
+    },
+    "living_room": {
+      "area_id": "living_room",
+      "name": "Woonkamer",
+      "icon": "mdi:sofa-outline"
+    }
+  },
+  "vacuumOptions": {
+    "vacuum.qrevo_curv_2_flow": {
+      "vacuum": {
+        "area_mapping": {
+          "kitchen": [
+            "0_1"
+          ],
+          "hallway": [
+            "0_2"
+          ],
+          "living_room": [
+            "0_4"
+          ],
+          "bedroom": [
+            "1_1",
+            "3_2"
+          ],
+          "waskamer": [
+            "1_2"
+          ],
+          "overloop": [
+            "1_3"
+          ],
+          "office": [
+            "1_5"
+          ],
+          "bathroom": [
+            "2_1"
+          ]
+        },
+        "last_seen_segments": [
+          {
+            "id": "0_1",
+            "name": "Keuken",
+            "group": "Beneden"
+          },
+          {
+            "id": "0_2",
+            "name": "Hal",
+            "group": "Beneden"
+          },
+          {
+            "id": "0_4",
+            "name": "Woonkamer",
+            "group": "Beneden"
+          },
+          {
+            "id": "1_1",
+            "name": "Slaapkamer",
+            "group": ""
+          },
+          {
+            "id": "1_2",
+            "name": "Waskamer",
+            "group": ""
+          },
+          {
+            "id": "1_3",
+            "name": "Overloop",
+            "group": ""
+          },
+          {
+            "id": "1_5",
+            "name": "Kantoor",
+            "group": ""
+          },
+          {
+            "id": "1_4",
+            "name": "Room",
+            "group": ""
+          },
+          {
+            "id": "2_1",
+            "name": "Badkamer",
+            "group": "Badkamer"
+          },
+          {
+            "id": "3_1",
+            "name": "Bathroom",
+            "group": "Onder Bed"
+          },
+          {
+            "id": "3_2",
+            "name": "Onder Bed",
+            "group": "Onder Bed"
+          }
+        ]
+      }
+    }
+  }
+}
