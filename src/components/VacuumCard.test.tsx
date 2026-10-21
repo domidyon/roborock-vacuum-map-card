@@ -23,7 +23,7 @@ function drawZone(start = { x: 700, y: 200 }, end = { x: 900, y: 400 }) {
 }
 
 describe('vacuum card flows', () => {
-  it('draws a zone and offers only Vacuum and Vac & Mop before using the native action', async () => {
+  it('draws a zone and offers only Vacuum and Vac & Mop by default before using the native action', async () => {
     const hass = createHass();
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
     hass.callService = vi.fn(async (domain, service, data, target) => {
@@ -39,6 +39,7 @@ describe('vacuum card flows', () => {
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('tab', { name: 'Vacuum only' })).toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vac & Mop' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('tab', { name: 'Mop only' })).not.toBeInTheDocument();
     expect(within(dialog).queryByRole('tab', { name: 'AI SmartPlan' })).not.toBeInTheDocument();
     expect(within(dialog).queryByRole('tab', { name: 'Vac followed by Mop' })).not.toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Start' }));
@@ -56,6 +57,24 @@ describe('vacuum card flows', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Hallway' }));
     await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('Kitchen · Hallway');
+  });
+
+  it('offers Mop only without suction and limits routes per mode from config', async () => {
+    const config = { ...configFixture, enable_mop_only: true, mop_routes: { vacuum_and_mop: ['fast', 'standard'], mop: ['fast', 'standard', 'deep', 'deep_plus'] } };
+    render(<VacuumCard hass={createHass()} config={config} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Vac & Mop' }));
+    expect(within(dialog).getByRole('button', { name: 'Standard' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Deep' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Deep+' })).not.toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Mop only' }));
+    expect(dialog).toHaveTextContent('Mop only. Suction stays off.');
+    expect(within(dialog).queryByText('Suction')).not.toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Deep' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Deep+' })).toBeInTheDocument();
   });
 
   it('shows the four app modes and only app-facing manual options', async () => {
@@ -121,6 +140,7 @@ describe('vacuum card flows', () => {
     expect(within(dialog).getByRole('tab', { name: 'AI SmartPlan' })).toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vac followed by Mop' })).toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vac & Mop' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('tab', { name: 'Mop only' })).not.toBeInTheDocument();
     expect(within(dialog).getByRole('tab', { name: 'Vacuum only' })).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('tab', { name: 'Vac & Mop' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Prepare upstairs' }));
@@ -205,6 +225,35 @@ describe('vacuum card flows', () => {
     render(<VacuumCard hass={hass} config={configFixture} />);
     const stateLine = screen.getByText('docked').closest('.state-line');
     expect(stateLine).toHaveTextContent('docked · Drying mop · 3 h 54 min remaining');
+  });
+
+  it('renders the card in Polish', () => {
+    const hass = createHass();
+    hass.states['binary_sensor.mop_drying'].state = 'on';
+    hass.states['sensor.mop_drying_remaining'].state = '3.9';
+    render(<VacuumCard hass={hass} config={{ ...configFixture, language: 'pl' }} />);
+    const stateLine = screen.getByText('docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('docked · Suszenie mopa · 3 godz. 54 min pozostało');
+    expect(screen.getByRole('button', { name: 'Całe piętro' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ustaw sprzątanie' })).toBeInTheDocument();
+  });
+
+  it('translates mode names, descriptions and option values in Polish', async () => {
+    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'pl', enable_mop_only: true }} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ustaw sprzątanie' }));
+    const dialog = screen.getByRole('dialog');
+    for (const name of ['AI SmartPlan', 'Odkurz, potem mopuj', 'Odkurz i mop', 'Odkurz', 'Mopuj']) {
+      expect(within(dialog).getByRole('tab', { name })).toBeInTheDocument();
+    }
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Odkurz i mop' }));
+    expect(dialog).toHaveTextContent('Dzienne odkurzanie i mopowanie.');
+    expect(within(dialog).getByRole('button', { name: 'Zrównoważony' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Ogólne' })).toBeInTheDocument();
+    expect(dialog).toHaveTextContent('Średni');
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'AI SmartPlan' }));
+    expect(dialog).toHaveTextContent('Uczy się i dostosowuje do Twojej przestrzeni');
   });
 
   it('shows a dock-side mop wash as active detail instead of only docked', () => {

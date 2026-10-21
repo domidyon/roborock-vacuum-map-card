@@ -6,8 +6,14 @@ describe('card config', () => {
   it('applies defaults and preserves unknown keys', () => {
     const parsed = normalizeConfig({ ...configFixture, language: undefined, future_option: { enabled: true } });
     expect(parsed.language).toBe('en');
+    expect(parsed.enable_mop_only).toBe(false);
     expect(parsed.entities).toBeDefined();
     expect(parsed.future_option).toEqual({ enabled: true });
+  });
+
+  it('accepts per-mode mop routes and rejects empty route lists', () => {
+    expect(validateConfig({ ...configFixture, mop_routes: { vacuum_and_mop: ['fast', 'standard'], mop: ['deep'] } })).toEqual([]);
+    expect(validateConfig({ ...configFixture, mop_routes: { mop: [] } }).join('\n')).toContain('mop_routes.mop');
   });
 
   it('requires a map selector for multiple floors', () => {

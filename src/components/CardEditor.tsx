@@ -5,6 +5,7 @@ import { parseRooms } from '../map';
 import type {
   FloorConfig,
   HomeAssistant,
+  Language,
   PresetConfig,
   RoborockVacuumMapCardConfig,
   RoomConfig,
@@ -105,7 +106,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
       <section>
         <h3>Card</h3>
         <label>Name<input value={config.name ?? ''} placeholder="Use vacuum name" onChange={(event) => onChange({ ...config, name: event.target.value || undefined })} /></label>
-        <label>Language<select value={config.language ?? 'en'} onChange={(event) => onChange({ ...config, language: event.target.value as 'en' | 'nl' | 'tr' })}><option value="en">English</option><option value="nl">Nederlands</option><option value="tr">Türkçe</option></select></label>
+        <label>Language<select value={config.language ?? 'en'} onChange={(event) => onChange({ ...config, language: event.target.value as Language })}><option value="en">English</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="tr">Türkçe</option></select></label>
         <label>Vacuum<SelectEntity hass={hass} domain="vacuum" value={config.entity} onChange={(entity) => entity && onChange({ ...config, entity })} /></label>
       </section>
 
@@ -148,6 +149,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
           <label key={key}>{label}<SelectEntity hass={hass} domain={domain} optional value={config.entities?.[key]} onChange={(value) => onChange({ ...config, entities: { ...config.entities, [key]: value } })} /></label>
         ))}
         <label className="checkbox"><input type="checkbox" checked={config.vacuum_mode_fallback === 'set_clean_motor_mode'} onChange={(event) => onChange({ ...config, vacuum_mode_fallback: event.target.checked ? 'set_clean_motor_mode' : undefined })} /> Use atomic Vacuum-mode fallback (Home Assistant 2026.7 and older)</label>
+        <label className="checkbox"><input type="checkbox" checked={config.enable_mop_only === true} onChange={(event) => onChange({ ...config, enable_mop_only: event.target.checked || undefined })} /> Enable Mop only (only for models whose Roborock app offers it, e.g. Saros 10R)</label>
       </section>
 
       <section>
@@ -225,7 +227,7 @@ export function CardEditor({ hass, config, onChange }: CardEditorProps) {
                 const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, [key]: event.target.value || undefined }; onChange({ ...config, presets });
               }} /></label>)}
               <label>Strategy<select value={preset.strategy} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, strategy: event.target.value as PresetConfig['strategy'] }; onChange({ ...config, presets }); }}><option value="custom">Custom</option><option value="smartplan">SmartPlan</option></select></label>
-              <label>Cleaning type<select value={preset.cleaning_type ?? 'vacuum_and_mop'} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_type: event.target.value as PresetConfig['cleaning_type'] }; onChange({ ...config, presets }); }}><option value="vacuum">Vacuum only</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="vacuum_then_mop">Vacuum followed by mop</option></select></label>
+              <label>Cleaning type<select value={preset.cleaning_type ?? 'vacuum_and_mop'} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_type: event.target.value as PresetConfig['cleaning_type'] }; onChange({ ...config, presets }); }}><option value="vacuum">Vacuum only</option><option value="mop">Mop only</option><option value="vacuum_and_mop">Vacuum and mop</option><option value="vacuum_then_mop">Vacuum followed by mop</option></select></label>
               <label>Cleaning count<select value={preset.cleaning_count ?? 1} onChange={(event) => { const presets = [...(config.presets ?? [])]; presets[presetIndex] = { ...preset, cleaning_count: Number(event.target.value) as 1 | 2 }; onChange({ ...config, presets }); }}><option value="1">1</option><option value="2">2</option></select></label>
             </div>
           </article>

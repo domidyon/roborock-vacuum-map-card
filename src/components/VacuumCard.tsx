@@ -15,7 +15,7 @@ import {
 } from '../assisted-carry';
 import { detectCapabilities, isVacuumActive } from '../capabilities';
 import { DockExecutionError, executeDockAction, executeDockSetting } from '../dock-executor';
-import { executeJob, JobExecutionError } from '../executor';
+import { executeJob, JobExecutionError, ZONE_CLEANING_TYPES } from '../executor';
 import { t } from '../i18n';
 import { mapZoneToVacuumZone, parseCalibrationPoints } from '../map';
 import { draftFromPreset, getAvailablePresets } from '../presets';
@@ -26,6 +26,7 @@ import type {
   HomeAssistant,
   JobDraft,
   JobExecutionState,
+  Language,
   MapZone,
   RoborockVacuumMapCardConfig,
   SelectionMode,
@@ -50,7 +51,7 @@ function stateText(hass: HomeAssistant, entityId?: string): string | undefined {
   return `${display}${entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : ''}`;
 }
 
-function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, language: 'en' | 'nl' | 'tr' | undefined): string | undefined {
+function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, language: Language | undefined): string | undefined {
   if (!entityId) return undefined;
   const entity = hass.states[entityId];
   if (!entity || ['unknown', 'unavailable'].includes(entity.state)) return undefined;
@@ -65,27 +66,27 @@ function formatRemainingTime(hass: HomeAssistant, entityId: string | undefined, 
   const hours = Math.floor(roundedMinutes / 60);
   const remainingMinutes = roundedMinutes % 60;
   const parts = [
-    hours > 0 ? `${hours} ${language === 'nl' ? 'u' : language === 'tr' ? 'sa' : 'h'}` : undefined,
-    remainingMinutes > 0 || hours === 0 ? `${remainingMinutes} ${language === 'tr' ? 'dk' : 'min'}` : undefined,
+    hours > 0 ? `${hours} ${t(language, 'hourShort')}` : undefined,
+    remainingMinutes > 0 || hours === 0 ? `${remainingMinutes} ${t(language, 'minuteShort')}` : undefined,
   ].filter(Boolean);
   return `${parts.join(' ')} ${t(language, 'remaining')}`;
 }
 
-function detailedActivity(language: 'en' | 'nl' | 'tr' | undefined, state?: string): string | undefined {
+function detailedActivity(language: Language | undefined, state?: string): string | undefined {
   if (state === 'washing_the_mop') return t(language, 'washingMop');
   return undefined;
 }
 
-function formatRelativeTime(isoString: string, language: 'en' | 'nl' | 'tr' | undefined): string | undefined {
+function formatRelativeTime(isoString: string, language: Language | undefined): string | undefined {
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return undefined;
   const diffMs = Date.now() - date.getTime();
   if (diffMs < 0) return undefined;
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return t(language, 'justNow');
-  if (diffMins < 60) return `${diffMins} ${language === 'tr' ? 'dk' : 'min'} ${t(language, 'ago')}`;
+  if (diffMins < 60) return `${diffMins} ${t(language, 'minuteShort')} ${t(language, 'ago')}`;
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}${language === 'nl' ? ' u' : language === 'tr' ? ' sa' : 'h'} ${t(language, 'ago')}`;
+  if (diffHours < 24) return `${diffHours} ${t(language, 'hourShort')} ${t(language, 'ago')}`;
   const diffDays = Math.floor(diffHours / 24);
   if (diffDays === 1) return t(language, 'yesterday');
   return `${diffDays} ${t(language, 'daysAgo')}`;
@@ -248,13 +249,13 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
       setDraft(draftFromPreset(assistedPreset));
     }
     if (selectionMode === 'zone' && (
-      draft.strategy !== 'custom' || !['vacuum', 'vacuum_and_mop'].includes(draft.cleaning_type)
+      draft.strategy !== 'custom' || !ZONE_CLEANING_TYPES.has(draft.cleaning_type)
     )) {
       const zonePreset = presets.find(({ preset, available }) => preset.id === 'vacuum_only' && available)?.preset
         ?? presets.find(({ preset, available }) => preset.id === 'vacuum_and_mop' && available)?.preset
         ?? presets.find(({ preset, available }) => available
           && preset.strategy === 'custom'
-          && ['vacuum', 'vacuum_and_mop'].includes(preset.cleaning_type ?? 'vacuum'))?.preset;
+          && ZONE_CLEANING_TYPES.has(preset.cleaning_type ?? 'vacuum'))?.preset;
       if (!zonePreset) {
         setToast(t(language, 'unsupported'));
         return;
@@ -640,6 +641,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
           submitting={execution.phase === 'submitting' || assistedPending}
           assistedCarry={assistedConfiguring}
           zoneCleaning={selectionMode === 'zone'}
+          mopRoutes={config.mop_routes}
           onDraftChange={changeDraft}
           onClose={() => execution.phase !== 'submitting' && !assistedPending && setSheetOpen(false)}
           onStart={submit}

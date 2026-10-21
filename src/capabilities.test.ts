@@ -19,6 +19,26 @@ describe('capability detection and presets', () => {
     expect(presets.find(({ preset }) => preset.id === 'vacuum_and_mop')?.available).toBe(false);
   });
 
+  it('hides Mop only by default even when HA lists a mop cleaning mode', () => {
+    const presets = getAvailablePresets(configFixture, detectCapabilities(createHass(), configFixture));
+    expect(presets.some(({ preset }) => preset.id === 'mop_only')).toBe(false);
+    const custom = getAvailablePresets(
+      { ...configFixture, presets: [{ id: 'my_mop', name: 'My mop', strategy: 'custom', cleaning_type: 'mop' }] },
+      detectCapabilities(createHass(), configFixture),
+    );
+    expect(custom.find(({ preset }) => preset.id === 'my_mop')?.available).toBe(false);
+  });
+
+  it('offers opted-in Mop only only when the cleaning-mode selector supports mop', () => {
+    const hass = createHass();
+    const config = { ...configFixture, enable_mop_only: true };
+    expect(getAvailablePresets(config, detectCapabilities(hass, config))
+      .find(({ preset }) => preset.id === 'mop_only')?.available).toBe(true);
+    hass.states['select.cleaning_mode'].attributes.options = ['vacuum', 'vac_and_mop'];
+    expect(getAvailablePresets(config, detectCapabilities(hass, config))
+      .find(({ preset }) => preset.id === 'mop_only')?.available).toBe(false);
+  });
+
   it('does not require mop capabilities for Vacuum-only', () => {
     const hass = createHass();
     hass.states['select.mop_mode'].attributes.options = [];

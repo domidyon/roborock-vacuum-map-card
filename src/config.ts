@@ -32,7 +32,7 @@ const presetSchema = z
     name: z.string().min(1),
     icon: z.string().optional(),
     strategy: z.enum(['custom', 'smartplan']),
-    cleaning_type: z.enum(['vacuum', 'vacuum_and_mop', 'vacuum_then_mop']).optional(),
+    cleaning_type: z.enum(['vacuum', 'mop', 'vacuum_and_mop', 'vacuum_then_mop']).optional(),
     fan_speed: z.string().optional(),
     mop_mode: z.string().optional(),
     mop_intensity: z.string().optional(),
@@ -45,7 +45,7 @@ export const cardConfigSchema = z
     type: z.literal('custom:roborock-vacuum-map-card').optional(),
     entity: entityId.refine((value) => value.startsWith('vacuum.'), 'Entity must be a vacuum'),
     name: z.string().optional(),
-    language: z.enum(['en', 'nl', 'tr']).optional().default('en'),
+    language: z.enum(['en', 'nl', 'pl', 'tr']).optional().default('en'),
     entities: z
       .object({
         map_select: optionalEntityId,
@@ -88,6 +88,13 @@ export const cardConfigSchema = z
     presets: z.array(presetSchema).optional().default([]),
     default_preset: z.string().optional().default('vacuum_only'),
     vacuum_mode_fallback: z.literal('set_clean_motor_mode').optional(),
+    enable_mop_only: z.boolean().optional().default(false),
+    mop_routes: z
+      .object({
+        vacuum_and_mop: z.array(z.string().min(1)).min(1).optional(),
+        mop: z.array(z.string().min(1)).min(1).optional(),
+      })
+      .optional(),
   })
   .passthrough()
   .superRefine((config, ctx) => {
@@ -127,7 +134,7 @@ export const cardConfigSchema = z
         segments.add(room.segment_id);
       }
     }
-    const presetIds = new Set(['vacuum_only', 'vacuum_and_mop', 'vacuum_then_mop', 'smartplan']);
+    const presetIds = new Set(['vacuum_only', 'mop_only', 'vacuum_and_mop', 'vacuum_then_mop', 'smartplan']);
     for (const [index, preset] of config.presets.entries()) {
       if (presetIds.has(preset.id)) {
         ctx.addIssue({ code: 'custom', path: ['presets', index, 'id'], message: 'Preset IDs must be unique' });
