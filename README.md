@@ -16,6 +16,13 @@
 
 </div>
 
+> [!NOTE]
+> **A hobby project, shared as-is.** I build this card for my own home, mostly
+> with the help of AI coding assistants, for fun. Some people found the repo and
+> started using it, so I've tried to make it useful for others too. Expect
+> rough edges, no support guarantees, and features shaped by my own Roborock
+> setup. Issues and pull requests are welcome, and I'll look at them when I can.
+
 ---
 
 ## Why this card?
@@ -143,14 +150,15 @@ The road to **1.0** is all about setup that just works:
 - 🧬 **Model profiles:** per-model defaults (mop modes, routes, dock features) applied for you
 - 🧰 **One-click dock helpers:** helpers created for you, or native dock entities used where available
 - 🩹 **Diagnostics export** for quick, useful bug reports
-- 🏪 Inclusion in the default HACS store
+- ⬆️ Minimum Home Assistant version raised to **2026.8**
 
 Work happens on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)
 branch. See the [CHANGELOG](CHANGELOG.md) for what has already shipped.
 
 ## 🤝 Contributing
 
-Bug reports, model reports and pull requests are very welcome.
+Bug reports, model reports and pull requests are very welcome. This is a
+spare-time project, so please be patient with responses.
 
 ```bash
 git clone https://github.com/domidyon/roborock-vacuum-map-card.git
