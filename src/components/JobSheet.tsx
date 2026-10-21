@@ -17,7 +17,7 @@ interface JobSheetProps {
   mopRoutes?: Partial<Record<MopRouteMode, string[]>>;
   onDraftChange: (draft: JobDraft) => void;
   onClose: () => void;
-  onStart: () => void;
+  onStart: (draft: JobDraft) => void;
 }
 
 const MODE_IDS = ['smartplan', 'vacuum_then_mop', 'vacuum_and_mop', 'vacuum_only', 'mop_only'] as const;
@@ -107,6 +107,7 @@ export function JobSheet({
   const fanSpeeds = fanAllowList.filter((option) => capabilities.fanSpeeds.includes(option));
   const routeAllowList = (draft.cleaning_type === 'mop' ? mopRoutes?.mop : mopRoutes?.vacuum_and_mop) ?? APP_ROUTES;
   const routes = routeAllowList.filter((option) => capabilities.mopModes.includes(option));
+  const selectedRoute = routes.includes(draft.mop_mode ?? '') ? draft.mop_mode : routes[0];
   const waterOptions = WATER_FLOW.filter((option) => capabilities.mopIntensities.includes(option));
   const waterIndex = Math.max(0, waterOptions.indexOf(draft.mop_intensity ?? 'medium'));
   const description = draft.strategy === 'smartplan'
@@ -203,7 +204,7 @@ export function JobSheet({
                 <ChoiceButtons
                   language={language}
                   title={t(language, 'mopRoute')}
-                  value={draft.mop_mode}
+                  value={selectedRoute}
                   options={routes}
                   onChange={(mop_mode) => onDraftChange({ ...draft, preset_id: 'custom_draft', mop_mode })}
                 />
@@ -234,7 +235,16 @@ export function JobSheet({
 
         <footer>
           <button type="button" className="secondary" disabled={submitting} onClick={onClose}>{t(language, 'cancel')}</button>
-          <button type="button" className="primary" disabled={submitting} onClick={onStart}>
+          <button
+            type="button"
+            className="primary"
+            disabled={submitting}
+            onClick={() => onStart(selectedRoute
+              && draft.strategy === 'custom'
+              && ['mop', 'vacuum_and_mop'].includes(draft.cleaning_type)
+              ? { ...draft, mop_mode: selectedRoute }
+              : draft)}
+          >
             {submitting
               ? assistedCarry ? t(language, 'preparingUpstairs') : t(language, 'starting')
               : assistedCarry ? t(language, 'prepareUpstairs') : t(language, 'start')}

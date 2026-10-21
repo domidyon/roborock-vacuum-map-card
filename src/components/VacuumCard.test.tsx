@@ -77,6 +77,34 @@ describe('vacuum card flows', () => {
     expect(within(dialog).getByRole('button', { name: 'Deep+' })).toBeInTheDocument();
   });
 
+  it('submits the first allowed route when a mode preset defaults to an excluded route', async () => {
+    const hass = createHass();
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data });
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    render(<VacuumCard hass={hass} config={{ ...configFixture, mop_routes: { vacuum_and_mop: ['fast'] } }} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('tab', { name: 'Vac & Mop' }));
+    expect(within(dialog).getByRole('button', { name: 'Fast' })).toHaveClass('active');
+    expect(within(dialog).queryByRole('button', { name: 'Standard' })).not.toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Start' }));
+    await waitFor(() => expect(calls).toContainEqual({
+      domain: 'select',
+      service: 'select_option',
+      data: { option: 'fast' },
+    }));
+    expect(calls).not.toContainEqual({
+      domain: 'select',
+      service: 'select_option',
+      data: { option: 'standard' },
+    });
+  });
+
   it('shows the four app modes and only app-facing manual options', async () => {
     render(<VacuumCard hass={createHass()} config={configFixture} />);
     loadMap();

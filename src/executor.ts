@@ -159,6 +159,13 @@ export async function executeJob({
   if (draft.cleaning_type === 'mop' && !config.enable_mop_only) {
     throw new JobExecutionError('preflight', 'Mop only is disabled; set enable_mop_only: true for models that support it');
   }
+  const routeMode = draft.cleaning_type === 'mop'
+    ? 'mop'
+    : draft.cleaning_type === 'vacuum_and_mop' ? 'vacuum_and_mop' : undefined;
+  const allowedRoutes = routeMode ? config.mop_routes?.[routeMode] : undefined;
+  if (draft.mop_mode && allowedRoutes && !allowedRoutes.includes(draft.mop_mode)) {
+    throw new JobExecutionError('preflight', `Mop route “${draft.mop_mode}” is not allowed for ${routeMode}`);
+  }
   if (zone && (draft.strategy !== 'custom' || !ZONE_CLEANING_TYPES.has(draft.cleaning_type))) {
     throw new JobExecutionError('preflight', 'Zone cleaning supports only Vacuum, Mop and Vac & Mop');
   }

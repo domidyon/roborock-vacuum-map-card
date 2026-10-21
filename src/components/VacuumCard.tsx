@@ -295,12 +295,12 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     return error instanceof Error ? error.message : String(error);
   };
 
-  const prepareUpstairs = async () => {
+  const prepareUpstairs = async (submittedDraft: JobDraft = draft) => {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setAssistedPending(true);
     try {
-      const job = createAssistedJob(floor, [...selected], draft);
+      const job = createAssistedJob(floor, [...selected], submittedDraft);
       await prepareAssistedCarry(hassRef.current, config, job);
       setSheetOpen(false);
       setToast(t(language, 'preparingUpstairs'));
@@ -378,9 +378,9 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
     }
   };
 
-  const submit = async () => {
+  const submit = async (submittedDraft: JobDraft = draft) => {
     if (assistedConfiguring) {
-      await prepareUpstairs();
+      await prepareUpstairs(submittedDraft);
       return;
     }
     if (submittingRef.current) return;
@@ -401,7 +401,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         config,
         floor,
         rooms: selectionMode === 'rooms' ? selectedRooms : [],
-        draft,
+        draft: submittedDraft,
         zone: vacuumZone,
       });
       setExecution({ phase: 'starting', ...executionSelection });

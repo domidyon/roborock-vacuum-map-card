@@ -122,6 +122,19 @@ describe('job executor', () => {
     expect(hass.callService).not.toHaveBeenCalled();
   });
 
+  it('rejects a mop route outside the configured mode allow-list before changing settings', async () => {
+    const hass = createHass();
+    hass.callService = vi.fn();
+    await expect(executeJob({
+      getHass: () => hass,
+      config: { ...configFixture, mop_routes: { vacuum_and_mop: ['fast'] } },
+      floor: configFixture.floors[0],
+      rooms: [configFixture.floors[0].rooms[0]],
+      draft: { preset_id: 'vacuum_and_mop', strategy: 'custom', cleaning_type: 'vacuum_and_mop', fan_speed: 'balanced', mop_mode: 'standard', mop_intensity: 'medium', cleaning_count: 1 },
+    })).rejects.toMatchObject({ operation: 'preflight' });
+    expect(hass.callService).not.toHaveBeenCalled();
+  });
+
   it('orders floor, safe SmartPlan exit, mop, fan and clean-area calls', async () => {
     const hass = createHass();
     hass.states['select.mop_mode'].state = 'smart_mode';
