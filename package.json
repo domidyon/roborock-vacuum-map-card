@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "lucide-react": "^0.563.0",
-    "preact": "^10.29.8",
+    "preact": "^11.0.1",
     "react-zoom-pan-pinch": "^4.0.3",
     "zod": "^4.3.6"
   },
