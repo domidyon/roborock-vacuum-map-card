@@ -71,6 +71,9 @@ export function SetupWizard({ hass, current, t, onFinish, onCancel }: {
     heading.current?.focus();
   }, [step]);
   const errors = draft ? validateConfig(draft) : [];
+  // Missing assisted-carry entities are fixable in the dock step; say so instead of showing raw paths.
+  const assistedErrors = errors.filter((error) => error.startsWith('entities.assisted_carry'));
+  const otherErrors = errors.filter((error) => !assistedErrors.includes(error));
   const blocked = step === 'check' ? !canSetUp(checks) : !draft || !result || loading;
   const props = draft && result ? { hass, draft, result, deviceFlags, t, onDraft: setDraft } : undefined;
 
@@ -103,7 +106,22 @@ export function SetupWizard({ hass, current, t, onFinish, onCancel }: {
       {step === 'presets' && props && <PresetsStep {...props} />}
       {step === 'review' && draft && (
         <>
-          {errors.length > 0 && <div className="editor-errors" role="alert">{errors.map((error) => <div key={error}>{error}</div>)}</div>}
+          {assistedErrors.length > 0 && draft && (
+            <div className="editor-errors" role="alert">
+              <p>{t('assistedNeedsScripts')}</p>
+              <div className="wizard-fixes">
+                <button type="button" className="secondary" onClick={() => setStep('dock')}>{t('pickScripts')}</button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => setDraft({ ...draft, floors: draft.floors.map((floor) => ({ ...floor, assisted_carry: undefined })) })}
+                >
+                  {t('disableAssisted')}
+                </button>
+              </div>
+            </div>
+          )}
+          {otherErrors.length > 0 && <div className="editor-errors" role="alert">{otherErrors.map((error) => <div key={error}>{error}</div>)}</div>}
           <p>{t('reviewIntro')}</p>
           <pre className="yaml-preview">{toYaml(draft)}</pre>
         </>

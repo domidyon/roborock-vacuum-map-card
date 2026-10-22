@@ -110,6 +110,47 @@ describe('setup assistant', () => {
   });
 });
 
+describe('assisted carry in the setup assistant', () => {
+  async function toReview(hass = createDiscoveryHass()) {
+    for (const id of ['script.carry_prepare', 'script.carry_start', 'script.carry_finish', 'input_select.rvmc_qrevo_curv_2_flow_assisted_carry_stage', 'input_text.rvmc_qrevo_curv_2_flow_assisted_carry_job']) {
+      hass.states[id] = { entity_id: id, state: 'off', attributes: id.startsWith('input_select') ? { options: ['idle', 'preparing', 'carry_upstairs', 'cleaning_upstairs', 'carry_downstairs', 'finishing', 'complete', 'error'] } : {} };
+    }
+    const onChange = vi.fn();
+    render(<CardEditor hass={hass} config={getStubConfig()} onChange={onChange} />);
+    await next();
+    await screen.findByText('Qrevo Curv 2 Flow');
+    await next();
+    await userEvent.click(screen.getAllByLabelText('This floor has no dock (assisted carry)')[1]);
+    expect(screen.getByText(/Needs three scripts/)).toBeInTheDocument();
+    for (let step = 0; step < 4; step += 1) await next();
+    return onChange;
+  }
+
+  it('explains missing scripts and lets the user pick them', async () => {
+    const onChange = await toReview();
+    expect(screen.getByRole('alert')).toHaveTextContent('Assisted carry needs its three scripts');
+    expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Pick the scripts' }));
+    expect(screen.getByRole('heading', { name: 'Dock and helpers' })).toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText('Prepare script'), 'script.carry_prepare');
+    await userEvent.selectOptions(screen.getByLabelText('Start script'), 'script.carry_start');
+    await userEvent.selectOptions(screen.getByLabelText('Finish script'), 'script.carry_finish');
+    await next();
+    await next();
+    await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
+    const saved = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
+    expect(saved.entities).toMatchObject({ assisted_carry_prepare_script: 'script.carry_prepare', assisted_carry_stage: 'input_select.rvmc_qrevo_curv_2_flow_assisted_carry_stage' });
+    expect(saved.floors[1].assisted_carry).toBe(true);
+  });
+
+  it('can turn assisted carry off to save now', async () => {
+    const onChange = await toReview();
+    await userEvent.click(screen.getByRole('button', { name: 'Turn off assisted carry for now' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
+    expect((onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig).floors.every((floor) => !floor.assisted_carry)).toBe(true);
+  });
+});
+
 describe('re-detect panel', () => {
   it('lists changes for the live config and applies the selected ones', async () => {
     const onChange = vi.fn();

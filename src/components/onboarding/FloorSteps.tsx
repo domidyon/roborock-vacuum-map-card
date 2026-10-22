@@ -45,6 +45,7 @@ export function FloorsStep(props: WizardStepProps) {
                   <input type="checkbox" checked={floor.assisted_carry === true} onChange={(event) => updateFloor(props, floor.id, { assisted_carry: event.target.checked || undefined })} />
                   {t('assistedCarry')}
                 </label>
+                {floor.assisted_carry && <p className="editor-hint">{t('assistedHint')}</p>}
               </div>
             )}
           </article>

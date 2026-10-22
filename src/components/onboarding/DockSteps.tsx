@@ -7,6 +7,7 @@ import { getAvailablePresets } from '../../presets';
 import { helperSpecs } from '../../provisioning/helpers';
 import type { PresetConfig } from '../../types';
 import { HelperProvisioner } from '../editor/HelperProvisioner';
+import { EntityPicker } from '../fields';
 import type { WizardStepProps } from './SetupWizard';
 
 /** Native dock controls, plus the helpers that remember dock settings, created on request. */
@@ -24,12 +25,26 @@ export function DockStep({ hass, draft, result, deviceFlags, t, onDraft }: Wizar
       <HelperProvisioner hass={hass} config={draft} language={editorLanguage(hass, draft.language)} t={t} onChange={onDraft} specs={specs} />
       {Object.keys(result.report.native_dock).length > 0 && <p className="editor-hint">{t('nativeDockFound')}</p>}
       {assisted && (
-        <p className="editor-hint">
-          {t('assistedScriptsHint')}{' '}
-          {(['assisted_carry_prepare', 'assisted_carry_start', 'assisted_carry_finish'] as const).map((key, index) => (
-            <span key={key}>{index > 0 && ' · '}<a href={blueprintImportUrl(BLUEPRINTS[key].file)} target="_blank" rel="noreferrer">{BLUEPRINTS[key].label}</a></span>
+        <section className="wizard-assisted">
+          <h4>{t('assistedScripts')}</h4>
+          <p className="editor-hint">
+            {t('assistedScriptsPick')}{' '}
+            {(['assisted_carry_prepare', 'assisted_carry_start', 'assisted_carry_finish'] as const).map((key, index) => (
+              <span key={key}>{index > 0 && ' · '}<a href={blueprintImportUrl(BLUEPRINTS[key].file)} target="_blank" rel="noreferrer">{BLUEPRINTS[key].label}</a></span>
+            ))}
+          </p>
+          {(['assisted_carry_prepare_script', 'assisted_carry_start_script', 'assisted_carry_finish_script'] as const).map((key) => (
+            <label key={key}>{t(`entity_${key}`)}
+              <EntityPicker
+                hass={hass}
+                domains={['script']}
+                value={draft.entities?.[key]}
+                emptyLabel={t('notConfigured')}
+                onChange={(value) => onDraft({ ...draft, entities: { ...draft.entities, [key]: value } })}
+              />
+            </label>
           ))}
-        </p>
+        </section>
       )}
     </div>
   );

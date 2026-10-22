@@ -419,6 +419,9 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .wizard-facts dt { color: var(--rvm-muted); }
 .wizard-facts dd { margin: 0; }
 .wizard-warning { color: var(--rvm-warning); }
+.wizard-fixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.wizard-assisted { display: grid; gap: 8px; padding-top: 6px; border-top: 1px solid var(--rvm-border); }
+.wizard-assisted h4 { margin: 0; }
 .room-editor.unmapped { border-left: 3px solid var(--rvm-warning); }
 .yaml-preview { max-height: 360px; overflow: auto; margin: 0; padding: 12px; border-radius: 12px; background: var(--rvm-surface-2); font-size: 12px; white-space: pre; }
 .redetect-changes { display: grid; gap: 6px; margin: 8px 0 12px; padding: 0; list-style: none; }
