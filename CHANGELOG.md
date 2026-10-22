@@ -42,6 +42,7 @@
 - Add troubleshooting, FAQ and translation guides, CONTRIBUTING, Code of Conduct, SECURITY, bug and feature templates, a pull-request template and Dependabot.
 - Refresh screenshots and add an onboarding GIF (`scripts/capture-screenshots.mjs --gif`).
 - Split the card component into header, controls, dock and assisted-carry hooks without behaviour changes.
+- Update dependencies (zod 4.6, react-zoom-pan-pinch 4.2, lucide-react 0.577, tooling); bundle 374 → 405 KB.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21
