@@ -107,6 +107,12 @@ describe('device discovery (live Qrevo Curv 2 Flow fixture)', () => {
     expect(config.floors[0].rooms[0].icon).toBe('mdi:countertop-outline');
   });
 
+  it('keeps rooms Home Assistant never mapped off the card', async () => {
+    const { config } = await discover();
+    const hidden = config.floors.flatMap((floor) => floor.rooms.filter((room) => room.hidden).map((room) => `${floor.id}:${room.name}`));
+    expect(hidden).toEqual(['map_1:Room', 'onder_bed:Bathroom']);
+  });
+
   it('assigns a Vac followed by Mop routine only when its name names the map', async () => {
     const { config, report } = await discover();
     expect(config.floors[0].vacuum_then_mop_routine).toBe('button.woonkamer_qrevo_curv_2_flow_vac_followed_by_mop');

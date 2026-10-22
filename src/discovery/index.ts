@@ -185,6 +185,8 @@ export function buildConfig(
         name: room.name,
         ...(icon ? { icon } : {}),
         include_in_floor_clean: Boolean(area),
+        // A segment Home Assistant never mapped stays off the card until it gets an area.
+        ...(area ? {} : { hidden: true }),
       };
     });
     const routine = routineForMap(map.map_name, routines);

@@ -7,7 +7,7 @@ import type { AssistedCarryStage, FloorConfig, HomeAssistant, PresetConfig, Robo
 /** Rooms that make up "Entire floor": included and with an area that still exists. */
 export function entireFloorSegments(hass: HomeAssistant, floor: FloorConfig): number[] {
   return floor.rooms
-    .filter((room) => room.include_in_floor_clean !== false && roomUsable(hass, room))
+    .filter((room) => !room.hidden && room.include_in_floor_clean !== false && roomUsable(hass, room))
     .map((room) => room.segment_id);
 }
 

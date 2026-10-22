@@ -46,6 +46,7 @@
 - Add a sandbox test build (`npm run build:sandbox`): it registers as `custom:roborock-vacuum-map-card-beta`, so it runs next to an installed release, and it blocks every command except reads and writes to its own `rvmc_` helpers.
 - Fix discovery crashing on devices with numeric identifiers (found in the first live sandbox test), and let *Add card* fall back to the starter config instead of hanging if discovery ever fails.
 - Setup assistant: pick the assisted-carry scripts in the dock step, explain what assisted carry needs, and offer *Pick the scripts* or *Turn off assisted carry for now* instead of blocking Save with raw errors.
+- Add a per-room *Show on card* switch (`hidden` in YAML). Discovery hides segments Home Assistant never mapped to an area until they get one.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
 
 ## 0.8.0 — 2026-10-21

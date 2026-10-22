@@ -12,6 +12,7 @@ const roomSchema = z
     name: z.string().min(1),
     icon: z.string().optional(),
     include_in_floor_clean: z.boolean().optional().default(true),
+    hidden: z.boolean().optional(),
   })
   .passthrough();
 

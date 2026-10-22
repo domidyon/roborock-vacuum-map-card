@@ -468,4 +468,14 @@ describe('vacuum card flows', () => {
     await waitFor(() => expect(hass.callService).toHaveBeenCalledWith('button', 'press', {}, { entity_id: 'button.reset_sensor' }));
     confirm.mockRestore();
   });
+
+  it('does not draw hidden rooms or include them in Entire floor', async () => {
+    const config = structuredClone(configFixture);
+    config.floors[0].rooms[1] = { ...config.floors[0].rooms[1], hidden: true };
+    render(<VacuumCard hass={createHass()} config={config} />);
+    loadMap();
+    expect(screen.queryByRole('button', { name: config.floors[0].rooms[1].name })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Entire floor' }));
+    expect(screen.getByRole('dialog')).not.toHaveTextContent(config.floors[0].rooms[1].name);
+  });
 });

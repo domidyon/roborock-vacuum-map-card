@@ -73,12 +73,17 @@ export function RoomsStep(props: WizardStepProps) {
             {floor.rooms.map((room) => (
               <div className={`room-editor ${room.area_id ? '' : 'unmapped'}`} key={room.segment_id}>
                 <label>{t('name')}<input value={room.name} onChange={(event) => updateRoom(floor, room.segment_id, { name: event.target.value })} /></label>
-                <label>{t('area')}<AreaPicker hass={hass} areas={areas} emptyLabel={t('unmapped')} value={room.area_id} onChange={(area_id) => updateRoom(floor, room.segment_id, { area_id, include_in_floor_clean: area_id ? room.include_in_floor_clean ?? true : false })} /></label>
+                <label>{t('area')}<AreaPicker hass={hass} areas={areas} emptyLabel={t('unmapped')} value={room.area_id} onChange={(area_id) => updateRoom(floor, room.segment_id, { area_id, include_in_floor_clean: area_id ? room.include_in_floor_clean ?? true : false, hidden: area_id ? undefined : room.hidden })} /></label>
                 <label>{t('icon')}<IconPicker hass={hass} value={room.icon} placeholder={hass.areas?.[room.area_id ?? '']?.icon ?? 'mdi:floor-plan'} onChange={(icon) => updateRoom(floor, room.segment_id, { icon })} /></label>
                 <label className="checkbox">
-                  <input type="checkbox" disabled={!room.area_id} checked={room.include_in_floor_clean !== false && Boolean(room.area_id)} onChange={(event) => updateRoom(floor, room.segment_id, { include_in_floor_clean: event.target.checked })} />
+                  <input type="checkbox" checked={!room.hidden} onChange={(event) => updateRoom(floor, room.segment_id, { hidden: event.target.checked ? undefined : true })} />
+                  {t('showOnCard')}
+                </label>
+                <label className="checkbox">
+                  <input type="checkbox" disabled={!room.area_id || room.hidden} checked={room.include_in_floor_clean !== false && Boolean(room.area_id) && !room.hidden} onChange={(event) => updateRoom(floor, room.segment_id, { include_in_floor_clean: event.target.checked })} />
                   {t('includeFloor')}
                 </label>
+                {room.hidden && !room.area_id && <p className="editor-hint">{t('roomHiddenHint')}</p>}
               </div>
             ))}
           </div>

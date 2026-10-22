@@ -260,7 +260,7 @@ export function MapView({
                 event.currentTarget.releasePointerCapture?.(event.pointerId);
               }}
             >
-              {rooms.map((room) => {
+              {rooms.filter((room) => !configured.get(room.segment_id)?.hidden).map((room) => {
                 const config = configured.get(room.segment_id);
                 const missingArea = config ? areaMissing(hass, config) : false;
                 const mapped = Boolean(config?.area_id) && !missingArea;

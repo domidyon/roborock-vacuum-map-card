@@ -110,6 +110,29 @@ describe('setup assistant', () => {
   });
 });
 
+describe('rooms in the setup assistant', () => {
+  it('keeps unmapped rooms off the card until they get an area', async () => {
+    const onChange = vi.fn();
+    render(<CardEditor hass={createDiscoveryHass()} config={getStubConfig()} onChange={onChange} />);
+    await next();
+    await screen.findByText('Qrevo Curv 2 Flow');
+    await next();
+    await next();
+    const room = screen.getByDisplayValue('Room').closest('.room-editor') as HTMLElement;
+    expect(within(room).getByLabelText('Show on card')).not.toBeChecked();
+    expect(room).toHaveTextContent('Not on the card yet');
+    await userEvent.selectOptions(within(room).getByLabelText('Area'), 'office');
+    expect(within(room).getByLabelText('Show on card')).toBeChecked();
+    for (let step = 0; step < 3; step += 1) await next();
+    await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
+    const saved = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
+    const rooms = saved.floors.flatMap((floor) => floor.rooms);
+    expect(rooms.find((item) => item.name === 'Room')).toMatchObject({ area_id: 'office' });
+    expect(rooms.find((item) => item.name === 'Room')?.hidden).toBeUndefined();
+    expect(rooms.find((item) => item.name === 'Bathroom')?.hidden).toBe(true);
+  });
+});
+
 describe('assisted carry in the setup assistant', () => {
   async function toReview(hass = createDiscoveryHass()) {
     for (const id of ['script.carry_prepare', 'script.carry_start', 'script.carry_finish', 'input_select.rvmc_qrevo_curv_2_flow_assisted_carry_stage', 'input_text.rvmc_qrevo_curv_2_flow_assisted_carry_job']) {

@@ -14,6 +14,7 @@ function RoomRow({ hass, t, room, onRoom }: Pick<SectionProps, 'hass' | 't'> & {
       <label>{t('name')}<input value={room.name} onChange={(event) => onRoom({ ...room, name: event.target.value })} /></label>
       <label>{t('area')}<AreaPicker hass={hass} areas={areas} value={room.area_id} emptyLabel={t('unmapped')} onChange={(area_id) => onRoom({ ...room, area_id })} /></label>
       <label>{t('icon')}<IconPicker hass={hass} value={room.icon} placeholder={hass.areas?.[room.area_id ?? '']?.icon ?? 'mdi:floor-plan'} onChange={(icon) => onRoom({ ...room, icon })} /></label>
+      <label className="checkbox"><input type="checkbox" checked={!room.hidden} onChange={(event) => onRoom({ ...room, hidden: event.target.checked ? undefined : true })} /> {t('showOnCard')}</label>
       <label className="checkbox"><input type="checkbox" checked={room.include_in_floor_clean !== false} onChange={(event) => onRoom({ ...room, include_in_floor_clean: event.target.checked })} /> {t('includeFloor')}</label>
     </div>
   );

@@ -150,6 +150,8 @@ export interface RoomConfig {
   name: string;
   icon?: string;
   include_in_floor_clean?: boolean;
+  /** Not drawn on the card (for example a segment without an area). */
+  hidden?: boolean;
   [key: string]: unknown;
 }
 
