@@ -22,7 +22,8 @@ export function RedetectPanel({ hass, config, t, onApply, onClose }: {
     const [segmentOptions, flags] = await Promise.all([loadVacuumSegmentOptions(hass, config.entity), loadDeviceFlags(hass, config.entity)]);
     const found = diffConfig(hass, config, buildConfig(hass, config.entity, segmentOptions, flags));
     setChanges(found);
-    setSelected(new Set(found.map((change) => change.id)));
+    // Maps missing from the card were often left out on purpose: adding them back is opt-in.
+    setSelected(new Set(found.filter((change) => change.kind !== 'floor_added').map((change) => change.id)));
     setRunning(false);
   };
 

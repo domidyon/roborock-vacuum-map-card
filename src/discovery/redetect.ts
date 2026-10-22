@@ -25,7 +25,7 @@ const FACT_SOURCES: Record<FactKey, string> = {
 };
 
 /** Pairs a configured floor with its detected counterpart: same map image, map option, or name. */
-function matchFloor(floor: FloorConfig, detected: FloorConfig[]): FloorConfig | undefined {
+export function matchFloor(floor: FloorConfig, detected: FloorConfig[]): FloorConfig | undefined {
   return detected.find((candidate) => candidate.map_entity === floor.map_entity)
     ?? detected.find((candidate) => floor.map_select_option && normalizeName(candidate.map_select_option ?? '') === normalizeName(floor.map_select_option))
     ?? detected.find((candidate) => normalizeName(candidate.name) === normalizeName(floor.name));

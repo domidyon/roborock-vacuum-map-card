@@ -10,6 +10,15 @@ import { CardEditor } from '../CardEditor';
 // The fixture's Home Assistant user is Dutch; these tests read the English editor.
 const createDiscoveryHass = () => discoveryHass(undefined, { locale: { language: 'en' } });
 
+/** Discovery hass with the live setup's hand-made assisted-carry scripts and helpers. */
+function withScripts(): HomeAssistant {
+  const hass = createDiscoveryHass();
+  for (const id of ['script.qrevo_upstairs_prepare', 'script.qrevo_upstairs_start', 'script.qrevo_upstairs_finish', 'input_select.qrevo_upstairs_stage', 'input_text.qrevo_upstairs_job']) {
+    hass.states[id] ??= { entity_id: id, state: 'idle', attributes: {} };
+  }
+  return hass;
+}
+
 async function next() {
   await userEvent.click(screen.getByRole('button', { name: 'Next' }));
 }
@@ -90,13 +99,31 @@ describe('setup assistant', () => {
   it('keeps hand-made name, presets and default when re-run for the same vacuum', async () => {
     const onChange = vi.fn();
     const current = { ...(liveConfig as RoborockVacuumMapCardConfig), name: 'Robbie', presets: [{ id: 'avond', name: 'Avond', strategy: 'custom' as const, cleaning_type: 'vacuum' as const, fan_speed: 'quiet' }], default_preset: 'avond' };
-    render(<CardEditor hass={createDiscoveryHass()} config={current} onChange={onChange} />);
+    render(<CardEditor hass={withScripts()} config={current} onChange={onChange} />);
     await userEvent.click(screen.getByRole('button', { name: /Setup assistant/ }));
     await next();
     await screen.findByText('Qrevo Curv 2 Flow');
     for (let step = 0; step < 5; step += 1) await next();
     await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
     expect(onChange.mock.calls.at(-1)?.[0]).toMatchObject({ name: 'Robbie', default_preset: 'avond', presets: [{ id: 'avond' }] });
+  });
+
+  it('keeps the floors the user left out when re-run for the same vacuum', async () => {
+    const onChange = vi.fn();
+    const live = liveConfig as RoborockVacuumMapCardConfig;
+    const current = { ...live, floors: live.floors.slice(0, 2).map((floor, index) => (index === 0 ? { ...floor, name: 'Begane grond' } : floor)) };
+    render(<CardEditor hass={withScripts()} config={current} onChange={onChange} />);
+    await userEvent.click(screen.getByRole('button', { name: /Setup assistant/ }));
+    await next();
+    await screen.findByText('Qrevo Curv 2 Flow');
+    await next();
+    const floors = screen.getAllByRole('checkbox').filter((box) => box.closest('label')?.textContent?.includes('rooms'));
+    expect(floors.map((box) => (box as HTMLInputElement).checked)).toEqual([true, true, false, false]);
+    for (let step = 0; step < 4; step += 1) await next();
+    await userEvent.click(screen.getByRole('button', { name: 'Save card' }));
+    const saved = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
+    expect(saved.floors.map((floor) => floor.map_entity)).toEqual(current.floors.map((floor) => floor.map_entity));
+    expect(saved.floors[0].name).toBe('Begane grond');
   });
 
   it('stops at the checks when Roborock Custom Map is missing', () => {
@@ -188,7 +215,17 @@ describe('re-detect panel', () => {
     expect(applied.floors.find((floor) => floor.id === 'bathroom')?.rooms[0].area_id).toBe('bathroom');
     expect(applied.floors.find((floor) => floor.id === 'upstairs')?.rooms).toHaveLength(4);
   });
+  it('offers maps missing from the card without ticking them', async () => {
+    const live = liveConfig as RoborockVacuumMapCardConfig;
+    render(<CardEditor hass={createDiscoveryHass()} config={{ ...live, floors: live.floors.slice(0, 2) }} onChange={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: /Re-detect/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Check now' }));
+    const added = await screen.findAllByLabelText(/^Add floor /);
+    expect(added).toHaveLength(2);
+    for (const box of added) expect(box).not.toBeChecked();
+  });
 });
+
 
 describe('editor language', () => {
   it('follows the Home Assistant user language', async () => {

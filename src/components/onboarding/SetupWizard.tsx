@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadDeviceFlags, type DeviceFlags } from '../../catalog/device-flags';
 import { validateConfig } from '../../config';
 import { buildConfig, listRoborockVacuums, loadVacuumSegmentOptions, type DiscoveryResult } from '../../discovery';
+import { matchFloor } from '../../discovery/redetect';
 import { canSetUp, prerequisites } from '../../onboarding/prerequisites';
 import type { EditorKey } from '../../i18n/editor';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from '../../types';
@@ -24,11 +25,29 @@ export interface WizardStepProps {
 const STEPS = ['check', 'robot', 'floors', 'rooms', 'dock', 'presets', 'review'] as const;
 type Step = typeof STEPS[number];
 
-/** Keeps what the user set up by hand when re-running the assistant for the same vacuum. */
-function carryOver(detected: RoborockVacuumMapCardConfig, current: RoborockVacuumMapCardConfig): RoborockVacuumMapCardConfig {
+/**
+ * Keeps what the user set up by hand when re-running the assistant for the same vacuum:
+ * the card name and presets, entities picked by hand that still exist, which floors are on
+ * the card, and the floor and room names, icons and choices. Rooms and maps come from the
+ * fresh discovery.
+ */
+function carryOver(hass: HomeAssistant, detected: RoborockVacuumMapCardConfig, current: RoborockVacuumMapCardConfig): RoborockVacuumMapCardConfig {
   if (current.entity !== detected.entity) return detected;
   const kept = Object.fromEntries((['name', 'language', 'presets', 'default_preset'] as const).flatMap((key) => current[key] !== undefined ? [[key, current[key]]] : []));
-  return { ...detected, ...kept };
+  const floors = detected.floors.flatMap((found) => {
+    const mine = current.floors.find((floor) => matchFloor(floor, [found]));
+    if (!mine) return [];
+    const rooms = found.rooms.map((room) => {
+      const old = mine.rooms.find((candidate) => candidate.segment_id === room.segment_id);
+      if (!old) return room;
+      const area_id = room.area_id ?? old.area_id;
+      return { ...room, name: old.name, icon: old.icon, area_id, hidden: area_id ? old.hidden : room.hidden, include_in_floor_clean: old.include_in_floor_clean };
+    });
+    return [{ ...found, name: mine.name, vacuum_then_mop_routine: mine.vacuum_then_mop_routine, assisted_carry: mine.assisted_carry, rooms }];
+  });
+  const entities = { ...detected.entities, ...Object.fromEntries(Object.entries(current.entities ?? {}).filter(([, id]) => id && hass.states[id])) };
+  // A config whose floors match none of the detected maps (a fresh stub) starts from discovery.
+  return { ...detected, ...kept, entities, floors: floors.length > 0 ? floors : detected.floors };
 }
 
 export function SetupWizard({ hass, current, t, onFinish, onCancel }: {
@@ -55,7 +74,7 @@ export function SetupWizard({ hass, current, t, onFinish, onCancel }: {
       if (!active) return;
       const discovered = buildConfig(hass, vacuum, segmentOptions, flags);
       setDiscovery({ vacuum, result: discovered, deviceFlags: flags });
-      setDraft(carryOver(discovered.config, current));
+      setDraft(carryOver(hass, discovered.config, current));
     });
     return () => { active = false; };
     // Discovery uses the hass snapshot from when the vacuum was chosen; state updates don't restart it.
