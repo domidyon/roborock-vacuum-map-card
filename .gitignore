@@ -4,3 +4,6 @@ playwright-report/
 test-results/
 .DS_Store
 *.log
+
+# Sandbox test build (npm run build:sandbox), never committed or released
+dist-sandbox/

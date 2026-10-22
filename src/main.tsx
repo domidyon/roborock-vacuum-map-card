@@ -4,11 +4,16 @@ import { SetupState } from './components/SetupState';
 import { VacuumCard } from './components/VacuumCard';
 import { loadDeviceFlags } from './catalog/device-flags';
 import { buildConfig, listRoborockVacuums, loadVacuumSegmentOptions } from './discovery';
+import { CARD_ELEMENT, SANDBOX } from './build-flags';
 import { getStubConfig, normalizeConfig, validateConfig } from './config';
+import { sandboxHass } from './sandbox';
 import type { HomeAssistant, Language, RoborockVacuumMapCardConfig } from './types';
 import styles from './styles/main.scss?inline';
 
 const VERSION = __CARD_VERSION__;
+const EDITOR_ELEMENT = `${CARD_ELEMENT}-editor`;
+// In the sandbox build every hass the card sees can only read and touch rvmc_ test helpers.
+const guard = (hass: HomeAssistant) => (SANDBOX ? sandboxHass(hass) : hass);
 
 let warnedVacuumModeFallback = false;
 
@@ -58,7 +63,7 @@ export class RoborockVacuumMapCard extends ReactElement {
   }
 
   set hass(hass: HomeAssistant) {
-    this.homeAssistant = hass;
+    this.homeAssistant = guard(hass);
     this.render();
   }
 
@@ -81,14 +86,15 @@ export class RoborockVacuumMapCard extends ReactElement {
   }
 
   static getConfigElement() {
-    return document.createElement('roborock-vacuum-map-card-editor');
+    return document.createElement(EDITOR_ELEMENT);
   }
 
   /**
    * "Add card" starts from a discovered config for the first Roborock vacuum. Home
    * Assistant awaits this and passes `hass`; without a vacuum the plain stub is used.
    */
-  static async getStubConfig(hass?: HomeAssistant): Promise<RoborockVacuumMapCardConfig> {
+  static async getStubConfig(rawHass?: HomeAssistant): Promise<RoborockVacuumMapCardConfig> {
+    const hass = rawHass && guard(rawHass);
     const vacuum = hass ? listRoborockVacuums(hass)[0] : undefined;
     if (!hass || !vacuum || !hass.entities) return getStubConfig();
     const [segmentOptions, deviceFlags] = await Promise.all([loadVacuumSegmentOptions(hass, vacuum), loadDeviceFlags(hass, vacuum)]);
@@ -106,7 +112,7 @@ export class RoborockVacuumMapCardEditor extends ReactElement {
   }
 
   set hass(hass: HomeAssistant) {
-    this.homeAssistant = hass;
+    this.homeAssistant = guard(hass);
     this.render();
   }
 
@@ -126,18 +132,20 @@ export class RoborockVacuumMapCardEditor extends ReactElement {
   }
 }
 
-if (!customElements.get('roborock-vacuum-map-card')) {
-  customElements.define('roborock-vacuum-map-card', RoborockVacuumMapCard);
+if (!customElements.get(CARD_ELEMENT)) {
+  customElements.define(CARD_ELEMENT, RoborockVacuumMapCard);
 }
-if (!customElements.get('roborock-vacuum-map-card-editor')) {
-  customElements.define('roborock-vacuum-map-card-editor', RoborockVacuumMapCardEditor);
+if (!customElements.get(EDITOR_ELEMENT)) {
+  customElements.define(EDITOR_ELEMENT, RoborockVacuumMapCardEditor);
 }
 
 window.customCards ??= [];
 window.customCards.push({
-  type: 'roborock-vacuum-map-card',
-  name: 'Roborock Vacuum Map Card',
-  description: 'A Roborock-native room and whole-floor cleaning card',
+  type: CARD_ELEMENT,
+  name: SANDBOX ? 'Roborock Vacuum Map Card (beta sandbox)' : 'Roborock Vacuum Map Card',
+  description: SANDBOX
+    ? 'Test build: separate from the installed card, and it blocks every command to the vacuum'
+    : 'A Roborock-native room and whole-floor cleaning card',
   preview: true,
   documentationURL: 'https://github.com/domidyon/roborock-vacuum-map-card',
 });

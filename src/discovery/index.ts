@@ -1,4 +1,5 @@
 import { compatibility, modelFacts, type Compatibility } from '../catalog';
+import { CARD_TYPE } from '../build-flags';
 import { CONFIG_VERSION } from '../config';
 import type { DeviceFlags } from '../catalog/device-flags';
 import type { ModelProfile } from '../profiles';
@@ -219,7 +220,7 @@ export function buildConfig(
   const consumables = discoverConsumables(hass, devices);
   const localeLanguage = hass.locale?.language?.split('-')[0] as Language | undefined;
   const config: RoborockVacuumMapCardConfig = {
-    type: 'custom:roborock-vacuum-map-card',
+    type: CARD_TYPE as RoborockVacuumMapCardConfig['type'],
     config_version: CONFIG_VERSION,
     entity: vacuum,
     ...(localeLanguage && LANGUAGES.includes(localeLanguage) && localeLanguage !== 'en' ? { language: localeLanguage } : {}),

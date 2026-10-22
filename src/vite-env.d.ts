@@ -5,6 +5,10 @@ import type { DetailedHTMLProps, HTMLAttributes } from 'react';
 declare global {
   /** Injected from package.json by vite.config.ts. */
   const __CARD_VERSION__: string;
+  /** Custom element name; `roborock-vacuum-map-card-beta` in the sandbox build. */
+  const __CARD_ELEMENT__: string;
+  /** True only in the sandbox test build. */
+  const __SANDBOX__: boolean;
 }
 
 declare module 'react' {

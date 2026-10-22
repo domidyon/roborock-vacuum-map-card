@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CARD_TYPE } from './build-flags';
 import type { RoborockVacuumMapCardConfig } from './types';
 
 const entityId = z.string().regex(/^[a-z0-9_]+\.[a-z0-9_]+$/, 'Must be a Home Assistant entity ID');
@@ -42,7 +43,7 @@ const presetSchema = z
 
 export const cardConfigSchema = z
   .object({
-    type: z.literal('custom:roborock-vacuum-map-card').optional(),
+    type: z.enum(['custom:roborock-vacuum-map-card', 'custom:roborock-vacuum-map-card-beta']).optional(),
     config_version: z.number().int().positive().optional(),
     entity: entityId.refine((value) => value.startsWith('vacuum.'), 'Entity must be a vacuum'),
     name: z.string().optional(),
@@ -203,7 +204,7 @@ export function validateConfig(input: unknown): string[] {
 
 export function getStubConfig(): RoborockVacuumMapCardConfig {
   return {
-    type: 'custom:roborock-vacuum-map-card',
+    type: CARD_TYPE as RoborockVacuumMapCardConfig['type'],
     entity: 'vacuum.roborock',
     language: 'en',
     entities: {},

@@ -31,18 +31,29 @@ export const PREACT_ALIASES = [
   { find: /^react$/, replacement: 'preact/compat' },
 ];
 
+// RVMC_SANDBOX=1 builds the separately named, command-blocking test build.
+const SANDBOX = process.env.RVMC_SANDBOX === '1';
+const CARD_ELEMENT = SANDBOX ? 'roborock-vacuum-map-card-beta' : 'roborock-vacuum-map-card';
+
+export const CARD_DEFINES = {
+  __CARD_VERSION__: JSON.stringify(SANDBOX ? `${pkg.version}-sandbox` : pkg.version),
+  __CARD_ELEMENT__: JSON.stringify(CARD_ELEMENT),
+  __SANDBOX__: JSON.stringify(SANDBOX),
+};
+
 export default defineConfig(({ command }) => ({
   plugins: [react()],
   resolve: { alias: PREACT_ALIASES },
   define: {
-    __CARD_VERSION__: JSON.stringify(pkg.version),
+    ...CARD_DEFINES,
     ...(command === 'build' ? { 'process.env.NODE_ENV': JSON.stringify('production') } : {}),
   },
   build: {
+    outDir: SANDBOX ? 'dist-sandbox' : 'dist',
     lib: {
       entry: 'src/main.tsx',
       name: 'RoborockVacuumMapCard',
-      fileName: () => 'roborock-vacuum-map-card.js',
+      fileName: () => `${CARD_ELEMENT}.js`,
       formats: ['es'],
     },
     rollupOptions: {

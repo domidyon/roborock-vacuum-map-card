@@ -1,5 +1,6 @@
 import { Battery, Clock3, History, MapPin, ScanLine, Timer, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { SANDBOX } from '../../build-flags';
 import { configHealth } from '../../health';
 import { t } from '../../i18n';
 import type { HomeAssistant, Language, RoborockVacuumMapCardConfig } from '../../types';
@@ -64,6 +65,7 @@ export function CardHeader({ hass, config, language, jobActive, detailedStatus, 
         )}
       </div>
 
+      {SANDBOX && <div className="card-banner offline" role="note">Sandbox test build: commands to the vacuum and dock are blocked.</div>}
       {vacuum?.state === 'unavailable' && <div className="card-banner offline" role="status">{t(language, 'vacuumOffline')}</div>}
       {vacuumError && <div className="card-banner error" role="alert">{t(language, 'vacuumErrorBanner')} {vacuumError}</div>}
       {health.length > 0 && dismissedHealth !== healthKey && (

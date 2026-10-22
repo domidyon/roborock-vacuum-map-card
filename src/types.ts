@@ -193,7 +193,7 @@ export interface PresetConfig {
 }
 
 export interface RoborockVacuumMapCardConfig {
-  type?: 'custom:roborock-vacuum-map-card';
+  type?: 'custom:roborock-vacuum-map-card' | 'custom:roborock-vacuum-map-card-beta';
   entity: string;
   name?: string;
   language?: Language;
