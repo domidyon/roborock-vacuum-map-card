@@ -1,5 +1,5 @@
 import { act, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { validateConfig } from './config';
 import { RoborockVacuumMapCard } from './main';
 import { createDiscoveryHass } from './test/discovery-hass';
@@ -24,6 +24,16 @@ describe('card element', () => {
     expect(config.floors).toHaveLength(4);
     // HA's room-to-area mapping was read through callWS.
     expect(config.floors[0].rooms[0].area_id).toBe('kitchen');
+  });
+
+  it('falls back to a starter config instead of hanging when discovery fails', async () => {
+    const hass = createDiscoveryHass();
+    Object.defineProperty(hass, 'areas', { get() { throw new TypeError('broken registry'); } });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const config = await RoborockVacuumMapCard.getStubConfig(hass);
+    expect(config.entity).toBe('vacuum.qrevo_curv_2_flow');
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('falls back to the plain stub without Roborock devices', async () => {

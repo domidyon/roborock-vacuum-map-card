@@ -37,7 +37,7 @@ async function fetchDeviceFlags(hass: HomeAssistant, vacuum: string): Promise<De
   const deviceId = hass.entities?.[vacuum]?.device_id;
   const device = deviceId ? hass.devices?.[deviceId] : undefined;
   if (!device || !hass.callApi || hass.user?.is_admin === false) return undefined;
-  const duids = new Set((device.identifiers ?? []).filter(([domain]) => domain === 'roborock').map(([, id]) => id));
+  const duids = new Set((device.identifiers ?? []).filter(([domain]) => domain === 'roborock').map(([, id]) => String(id)));
   const model = device.model_id ?? device.model ?? undefined;
 
   for (const entryId of device.config_entries ?? []) {

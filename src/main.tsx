@@ -97,8 +97,15 @@ export class RoborockVacuumMapCard extends ReactElement {
     const hass = rawHass && guard(rawHass);
     const vacuum = hass ? listRoborockVacuums(hass)[0] : undefined;
     if (!hass || !vacuum || !hass.entities) return getStubConfig();
-    const [segmentOptions, deviceFlags] = await Promise.all([loadVacuumSegmentOptions(hass, vacuum), loadDeviceFlags(hass, vacuum)]);
-    return buildConfig(hass, vacuum, segmentOptions, deviceFlags).config;
+    // Home Assistant's card picker waits for this forever if it rejects, so discovery
+    // problems fall back to the plain stub; the setup assistant can retry.
+    try {
+      const [segmentOptions, deviceFlags] = await Promise.all([loadVacuumSegmentOptions(hass, vacuum), loadDeviceFlags(hass, vacuum)]);
+      return buildConfig(hass, vacuum, segmentOptions, deviceFlags).config;
+    } catch (error) {
+      console.warn('roborock-vacuum-map-card: discovery failed, using the starter config', error);
+      return { ...getStubConfig(), entity: vacuum };
+    }
   }
 }
 

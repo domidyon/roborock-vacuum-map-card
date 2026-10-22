@@ -16,8 +16,16 @@ function domainOf(entityId: string): string {
   return entityId.split('.')[0];
 }
 
+/**
+ * Identifier values as strings. Other integrations register numeric identifiers, so the
+ * registry type ([string, string]) can't be trusted for every device.
+ */
+function identifierIds(device: HassDevice): string[] {
+  return (device.identifiers ?? []).map(([, id]) => String(id));
+}
+
 function robotIdentifiers(device: HassDevice): Set<string> {
-  return new Set((device.identifiers ?? []).map(([, id]) => id));
+  return new Set(identifierIds(device));
 }
 
 /** Roborock vacuums, using the entity registry when the frontend provides it. */
@@ -45,7 +53,7 @@ export function resolveRoborockDevices(hass: HomeAssistant, vacuum: string): Rob
   const ids = robotIdentifiers(robot);
   const others = Object.values(hass.devices ?? {}).filter((device) => device.id !== robot.id);
   const dock =
-    others.find((device) => (device.identifiers ?? []).some(([, id]) => id.endsWith('_dock') && ids.has(id.slice(0, -5)))) ??
+    others.find((device) => identifierIds(device).some((id) => id.endsWith('_dock') && ids.has(id.slice(0, -5)))) ??
     others.find((device) => device.via_device_id === robot.id && /\sDock$/.test(device.model ?? device.name ?? '')) ??
     others.find((device) => robot.name && device.name === `${robot.name} Dock`) ??
     others.find((device) => robot.model && device.model === `${robot.model} Dock`);

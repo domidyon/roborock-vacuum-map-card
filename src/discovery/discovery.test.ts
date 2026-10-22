@@ -155,6 +155,17 @@ describe('device discovery (live Qrevo Curv 2 Flow fixture)', () => {
     expect(report.issues).toContainEqual({ code: 'custom_map_missing' });
   });
 
+  it('ignores other integrations\' numeric device identifiers', async () => {
+    // Real installs have devices whose identifier values are numbers, not strings.
+    const hass = createDiscoveryHass();
+    hass.devices!.zwave = { id: 'zwave', name: 'Z-Wave node', identifiers: [['zwave_js', 3925142398 as unknown as string]] };
+    hass.devices!.mixed = { id: 'mixed', name: 'Hue', identifiers: [['hue', 12 as unknown as string], ['hue', 'abc']] };
+    const devices = resolveRoborockDevices(hass, VACUUM);
+    expect(devices.dock?.id).toBe(DOCK);
+    expect(devices.companions.map((device) => device.id)).toEqual([CUSTOM_MAP]);
+    expect(validateConfig((await discover(hass)).config)).toEqual([]);
+  });
+
   it('keeps an unknown vacuum harmless', () => {
     const { report } = buildConfig(createDiscoveryHass(), 'vacuum.missing');
     expect(report.issues).toContainEqual({ code: 'robot_device_missing' });
