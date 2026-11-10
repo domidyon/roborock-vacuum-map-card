@@ -84,6 +84,7 @@ export interface HomeAssistant {
   user?: { is_admin: boolean };
   callWS?: <T>(message: Record<string, unknown>) => Promise<T>;
   callApi?: <T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, parameters?: Record<string, unknown>) => Promise<T>;
+  connected?: boolean;
   locale?: { language?: string };
   callService: (
     domain: string,
