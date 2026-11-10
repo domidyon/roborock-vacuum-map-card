@@ -67,6 +67,16 @@ export class RoborockVacuumMapCard extends ReactElement {
     this.render();
   }
 
+  // Lovelace keeps left views detached in memory and stops sending them hass,
+  // so the card has to stop its own background work while it is off the page.
+  connectedCallback() {
+    this.render();
+  }
+
+  disconnectedCallback() {
+    this.render();
+  }
+
   private render() {
     const hass = this.homeAssistant;
     if (!hass) return;
@@ -74,7 +84,7 @@ export class RoborockVacuumMapCard extends ReactElement {
       this.renderReact(<SetupState hass={hass} language={this.language} errors={this.configErrors} missingVacuum={this.config?.entity} config={this.rawConfig} />);
       return;
     }
-    this.renderReact(<VacuumCard hass={hass} config={this.config} />);
+    this.renderReact(<VacuumCard hass={hass} config={this.config} connected={this.isConnected} />);
   }
 
   getCardSize() {
