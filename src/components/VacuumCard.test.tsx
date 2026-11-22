@@ -316,6 +316,18 @@ describe('vacuum card flows', () => {
     expect(screen.getByRole('button', { name: 'Ustaw sprzątanie' })).toBeInTheDocument();
   });
 
+  it('renders the card and dock controls in Spanish', async () => {
+    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'es' }} />);
+    expect(screen.getByRole('button', { name: 'Planta completa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Configurar limpieza' })).toBeInTheDocument();
+    const dockButtons = screen.getAllByRole('button', { name: 'Base' });
+    await userEvent.click(dockButtons[1]);
+    const dialog = screen.getByRole('dialog', { name: 'Base' });
+    expect(dialog).toHaveTextContent('Vaciar');
+    expect(dialog).toHaveTextContent('Ajustes de la base');
+    expect(screen.getByRole('switch', { name: 'Vaciado automático' })).toBeInTheDocument();
+  });
+
   it('translates mode names, descriptions and option values in Polish', async () => {
     render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'pl', enable_mop_only: true }} />);
     loadMap();

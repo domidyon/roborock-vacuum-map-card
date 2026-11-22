@@ -6,7 +6,7 @@ import { EntityPicker } from '../fields';
 import type { SectionProps } from './shared';
 
 const MODEL_REPORT_URL = 'https://github.com/domidyon/roborock-vacuum-map-card/issues/new?template=model_report.yml';
-const LANGUAGES: Array<[Language, string]> = [['en', 'English'], ['nl', 'Nederlands'], ['pl', 'Polski'], ['tr', 'Türkçe']];
+const LANGUAGES: Array<[Language, string]> = [['en', 'English'], ['es', 'Español'], ['nl', 'Nederlands'], ['pl', 'Polski'], ['tr', 'Türkçe']];
 
 function ModelNote({ hass, config, t }: SectionProps) {
   const { profile, model } = detectCapabilities(hass, config);
