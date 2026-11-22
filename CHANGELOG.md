@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add Spanish language support across the card UI, dock controls, configuration editor, and option labels.
+
 ## 0.8.0 — 2026-10-21
 
 - Add an explicitly opt-in Mop-only mode for supported Roborock models without exposing it on the Qrevo Curv 2 Flow by default.

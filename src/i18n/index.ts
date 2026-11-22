@@ -616,6 +616,140 @@ const pl: typeof en = {
   minuteShort: 'min',
 };
 
+const es: typeof en = {
+  status: 'Estado',
+  battery: 'Batería',
+  room: 'Habitación',
+  area: 'Superficie',
+  duration: 'Duración',
+  progress: 'Progreso',
+  entireFloor: 'Planta completa',
+  configureJob: 'Configurar limpieza',
+  selectionMode: 'Modo de selección del mapa',
+  rooms: 'Habitaciones',
+  zone: 'Zona',
+  selectedRooms: 'Habitaciones seleccionadas',
+  noRoomsSelected: 'Toca una o varias habitaciones en el mapa',
+  selectedZone: 'Zona seleccionada',
+  noZoneSelected: 'Arrastra en el mapa para dibujar una zona de limpieza',
+  zoneReady: 'Arrastra para mover o usa las esquinas para cambiar el tamaño',
+  customZone: 'Zona personalizada',
+  clearZone: 'Borrar zona',
+  resizeZone: 'Cambiar tamaño de zona',
+  pause: 'Pausar',
+  resume: 'Reanudar',
+  stop: 'Detener',
+  dock: 'Base',
+  dryingMop: 'Secando la mopa',
+  washingMop: 'Lavando la mopa',
+  remaining: 'restantes',
+  configureTitle: 'Configurar limpieza',
+  presets: 'Preajustes',
+  cleaningType: 'Tipo de limpieza',
+  smartPlan: 'AI SmartPlan',
+  vacuumOnly: 'Solo aspirar',
+  vacuumAndMop: 'Aspirar y fregar',
+  vacuumThenMop: 'Aspirar y después fregar',
+  smartPlanDescription:
+    'Roborock AI elige la potencia de succión, el caudal de agua y la ruta para cada habitación seleccionada.',
+  vacuumDescription: 'Solo aspira. La mopa permanece levantada.',
+  mopOnly: 'Solo fregar',
+  mopOnlyDescription: 'Solo friega. La succión permanece desactivada.',
+  vacuumAndMopDescription:
+    'Aspira y friega a la vez para la limpieza diaria.',
+  vacuumThenMopDescription:
+    'Ejecuta la rutina Roborock guardada para esta planta. Las habitaciones, la succión, el caudal de agua, las pasadas y la ruta se definen en la aplicación Roborock.',
+  suction: 'Succión',
+  waterFlow: 'Caudal de agua',
+  cleaningCount: 'Número de pasadas',
+  savedProfiles: 'Perfiles guardados',
+  mopRoute: 'Ruta de fregado',
+  mopIntensity: 'Intensidad de fregado',
+  cancel: 'Cancelar',
+  start: 'Iniciar',
+  starting: 'Iniciando…',
+  unsupported: 'No disponible',
+  mapMissing: 'La entidad de mapa configurada no está disponible.',
+  imageMissing: 'La entidad de mapa no proporciona una imagen.',
+  calibrationMissing:
+    'Falta la calibración de Roborock Custom Map. Instala y configura Roborock Custom Map.',
+  roomsMissing:
+    'Faltan los datos de habitaciones de Roborock Custom Map. No se han deducido zonas de selección.',
+  roomUnmapped:
+    'Este segmento no está asociado a un área de Home Assistant.',
+  launched: 'Limpieza iniciada',
+  floor: 'Planta',
+  close: 'Cerrar',
+  dockStation: 'Base',
+  dockOverview: 'Lavado, vaciado, secado y ajustes de la base',
+  empty: 'Vaciar',
+  wash: 'Lavar',
+  dry: 'Secar',
+  dockSettings: 'Ajustes de la base',
+  mopWashFrequency: 'Frecuencia de lavado de la mopa',
+  washingMode: 'Modo de lavado',
+  washTemperature: 'Temperatura del agua',
+  dustbin: 'Depósito de polvo',
+  autoEmpty: 'Vaciado automático',
+  emptyMode: 'Modo de vaciado',
+  drying: 'Secado',
+  autoDry: 'Secado automático',
+  dryDuration: 'Duración',
+  safetyMaintenance: 'Seguridad y mantenimiento',
+  childLock: 'Bloqueo infantil de la base',
+  drainWaterTank: 'Vaciar el depósito de agua sucia del robot',
+  drainWarning:
+    'No está disponible mediante la integración actual de Roborock para Home Assistant. Usa la aplicación Roborock.',
+  confirmEmpty: '¿Iniciar el vaciado de la base? Hará ruido.',
+  confirmWash:
+    '¿Iniciar el lavado de la mopa? Se activará la bomba de la base.',
+  confirmDry:
+    '¿Iniciar el secado de la mopa? Se activará el ventilador de la base.',
+  confirmDrain: '¿Vaciar ahora el depósito de agua sucia del robot?',
+  drainRejected:
+    'Home Assistant no puede codificar correctamente este comando de Roborock en este momento. Usa la aplicación Roborock.',
+  settingSaved: 'Ajuste de la base guardado',
+  dockActionSent: 'Comando enviado a la base',
+  active: 'Activo',
+  inactive: 'Desactivado',
+  prepareUpstairs: 'Preparar planta superior',
+  preparingUpstairs: 'Preparando…',
+  startUpstairs: 'Iniciar en la planta superior',
+  dockAndFinish: 'Volver a la base y finalizar',
+  newUpstairsJob: 'Nueva limpieza de la planta superior',
+  assistedCarryTitle: 'Limpieza guiada en otra planta',
+  assistedCarryDescription:
+    'La base prepara la mopa y la tarjeta guía los dos traslados del robot y finaliza el mantenimiento de la base.',
+  assisted_preparing_title: 'Preparando en la base',
+  assisted_preparing_description:
+    'Deteniendo el secado, lavando la mopa y llevando el robot al punto de recogida.',
+  assisted_carry_upstairs_title: 'Lleva el robot a la planta superior',
+  assisted_carry_upstairs_description:
+    'Colócalo en un punto de inicio despejado y después inicia la limpieza guardada de aspirado y fregado.',
+  assisted_cleaning_upstairs_title: 'Limpiando la planta superior',
+  assisted_cleaning_upstairs_description:
+    'Al terminar, el robot volverá a este punto de inicio de la planta superior.',
+  assisted_carry_downstairs_title: 'Lleva el robot a la planta inferior',
+  assisted_carry_downstairs_description:
+    'Colócalo en la planta inferior cerca de la base o directamente sobre ella.',
+  assisted_finishing_title: 'Finalizando en la base',
+  assisted_finishing_description:
+    'Volviendo a la base, vaciando el depósito, lavando la mopa y comprobando el secado automático.',
+  assisted_complete_title: 'Limpieza de la planta superior completada',
+  assisted_complete_description:
+    'El robot está en la base, la mopa está lavada y el secado se ha iniciado si estaba configurado.',
+  assisted_error_title: 'El asistente requiere atención',
+  assisted_error_description:
+    'Comprueba el robot y la base y, después, restablece el flujo para volver a intentarlo.',
+  lastClean: 'Última limpieza',
+  justNow: 'ahora mismo',
+  yesterday: 'ayer',
+  ago: 'hace',
+  daysAgo: 'días',
+  hourShort: 'h',
+  minuteShort: 'min',
+};
+
 export type TranslationKey = keyof typeof en;
 
 export function t(
@@ -630,6 +764,10 @@ export function t(
     return pl[key];
   }
 
+  if (language === 'es') {
+    return es[key];
+  }
+
   if (language === 'tr') {
     return tr[key];
   }
@@ -641,6 +779,23 @@ export function t(
 // Values without a translation fall back to English, then to a title-cased ID.
 const optionLabels: Partial<Record<Language, Record<string, string>>> = {
   en: { deep_plus: 'Deep+' },
+  es: {
+    quiet: 'Silencioso',
+    balanced: 'Equilibrado',
+    turbo: 'Turbo',
+    max: 'Máximo',
+    max_plus: 'Máximo+',
+    slight: 'Muy bajo',
+    low: 'Bajo',
+    medium: 'Medio',
+    moderate: 'Moderado',
+    high: 'Alto',
+    extreme: 'Extremo',
+    fast: 'Rápido',
+    standard: 'Estándar',
+    deep: 'Intenso',
+    deep_plus: 'Intenso+',
+  },
   pl: {
     quiet: 'Cichy',
     balanced: 'Zrównoważony',

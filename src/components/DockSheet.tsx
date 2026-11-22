@@ -65,25 +65,25 @@ function currentSetting(
 }
 
 function optionLabel(language: Language | undefined, value: string): string {
-  const labels: Record<string, [string, string, string, string]> = {
-    smart: ['Smart', 'Slim', 'Akıllı', 'Inteligentny'],
-    light: ['Light', 'Licht', 'Hafif', 'Lekki'],
-    balanced: ['Balanced', 'Gebalanceerd', 'Dengeli', 'Zrównoważony'],
-    deep: ['Deep', 'Diep', 'Derin', 'Głęboki'],
-    max: ['Max', 'Max', 'Maksimum', 'Maks.'],
-    normal: ['Normal', 'Normaal', 'Normal', 'Normalna'],
-    warm: ['Warm', 'Warm', 'Ilık', 'Ciepła'],
-    hot: ['High temperature', 'Hoge temperatuur', 'Yüksek sıcaklık', 'Wysoka temperatura'],
-    '2h': ['2 hours', '2 uur', '2 saat', '2 godziny'],
-    '3h': ['3 hours · Standard', '3 uur · Standaard', '3 saat · Standart', '3 godziny · Standard'],
-    '4h': ['4 hours', '4 uur', '4 saat', '4 godziny'],
+  const labels: Record<string, [string, string, string, string, string]> = {
+    smart: ['Smart', 'Slim', 'Akıllı', 'Inteligentny', 'Inteligente'],
+    light: ['Light', 'Licht', 'Hafif', 'Lekki', 'Ligero'],
+    balanced: ['Balanced', 'Gebalanceerd', 'Dengeli', 'Zrównoważony', 'Equilibrado'],
+    deep: ['Deep', 'Diep', 'Derin', 'Głęboki', 'Intensivo'],
+    max: ['Max', 'Max', 'Maksimum', 'Maks.', 'Máximo'],
+    normal: ['Normal', 'Normaal', 'Normal', 'Normalna', 'Normal'],
+    warm: ['Warm', 'Warm', 'Ilık', 'Ciepła', 'Templada'],
+    hot: ['High temperature', 'Hoge temperatuur', 'Yüksek sıcaklık', 'Wysoka temperatura', 'Alta temperatura'],
+    '2h': ['2 hours', '2 uur', '2 saat', '2 godziny', '2 horas'],
+    '3h': ['3 hours · Standard', '3 uur · Standaard', '3 saat · Standart', '3 godziny · Standard', '3 horas · Estándar'],
+    '4h': ['4 hours', '4 uur', '4 saat', '4 godziny', '4 horas'],
   };
 
   if (value.endsWith('_min')) {
     return `${value.replace('_min', '')} ${t(language, 'minuteShort')}`;
   }
 
-  const languageIndex = language === 'nl' ? 1 : language === 'tr' ? 2 : language === 'pl' ? 3 : 0;
+  const languageIndex = language === 'nl' ? 1 : language === 'tr' ? 2 : language === 'pl' ? 3 : language === 'es' ? 4 : 0;
   return labels[value]?.[languageIndex] ?? value;
 }
 
