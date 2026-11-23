@@ -301,8 +301,8 @@ describe('vacuum card flows', () => {
     hass.states['binary_sensor.mop_drying'].state = 'on';
     hass.states['sensor.mop_drying_remaining'].state = '3.9';
     render(<VacuumCard hass={hass} config={configFixture} />);
-    const stateLine = screen.getByText('docked').closest('.state-line');
-    expect(stateLine).toHaveTextContent('docked · Drying mop · 3 h 54 min remaining');
+    const stateLine = screen.getByText('Docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('Docked · Drying mop · 3 h 54 min remaining');
   });
 
   it('renders the card in Polish', () => {
@@ -310,14 +310,15 @@ describe('vacuum card flows', () => {
     hass.states['binary_sensor.mop_drying'].state = 'on';
     hass.states['sensor.mop_drying_remaining'].state = '3.9';
     render(<VacuumCard hass={hass} config={{ ...configFixture, language: 'pl' }} />);
-    const stateLine = screen.getByText('docked').closest('.state-line');
-    expect(stateLine).toHaveTextContent('docked · Suszenie mopa · 3 godz. 54 min pozostało');
+    const stateLine = screen.getByText('W stacji').closest('.state-line');
+    expect(stateLine).toHaveTextContent('W stacji · Suszenie mopa · 3 godz. 54 min pozostało');
     expect(screen.getByRole('button', { name: 'Całe piętro' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustaw sprzątanie' })).toBeInTheDocument();
   });
 
   it('renders the card and dock controls in Spanish', async () => {
     render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'es' }} />);
+    expect(screen.getByText('En la base').closest('.state-line')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Planta completa' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Configurar limpieza' })).toBeInTheDocument();
     const dockButtons = screen.getAllByRole('button', { name: 'Base' });
@@ -350,8 +351,8 @@ describe('vacuum card flows', () => {
     const hass = createHass();
     hass.states['sensor.status'] = { entity_id: 'sensor.status', state: 'washing_the_mop', attributes: {} };
     render(<VacuumCard hass={hass} config={{ ...configFixture, entities: { ...configFixture.entities, status: 'sensor.status' } }} />);
-    const stateLine = screen.getByText('docked').closest('.state-line');
-    expect(stateLine).toHaveTextContent('docked · Washing mop');
+    const stateLine = screen.getByText('Docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('Docked · Washing mop');
   });
 
   it('opens an app-style dock panel and saves a setting through the raw API', async () => {

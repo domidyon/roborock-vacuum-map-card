@@ -96,6 +96,15 @@ const en = {
   dockActionSent: 'Dock command sent',
   active: 'Active',
   inactive: 'Off',
+  stateCleaning: 'Cleaning',
+  stateDocked: 'Docked',
+  statePaused: 'Paused',
+  stateIdle: 'Idle',
+  stateReturning: 'Returning',
+  stateCharging: 'Charging',
+  stateError: 'Error',
+  stateUnavailable: 'Unavailable',
+  stateUnknown: 'Unknown',
   prepareUpstairs: 'Prepare upstairs',
   preparingUpstairs: 'Preparing…',
   startUpstairs: 'Start upstairs',
@@ -290,6 +299,15 @@ const nl: typeof en = {
   dockActionSent: 'Dockopdracht verzonden',
   active: 'Actief',
   inactive: 'Uit',
+  stateCleaning: 'Reinigt',
+  stateDocked: 'In het dock',
+  statePaused: 'Gepauzeerd',
+  stateIdle: 'Inactief',
+  stateReturning: 'Keert terug',
+  stateCharging: 'Opladen',
+  stateError: 'Fout',
+  stateUnavailable: 'Niet beschikbaar',
+  stateUnknown: 'Onbekend',
   prepareUpstairs: 'Boven voorbereiden',
   preparingUpstairs: 'Voorbereiden…',
   startUpstairs: 'Start boven',
@@ -530,6 +548,15 @@ const tr: typeof en = {
 
   active: 'Aktif',
   inactive: 'Kapalı',
+  stateCleaning: 'Temizleniyor',
+  stateDocked: 'İstasyonda',
+  statePaused: 'Duraklatıldı',
+  stateIdle: 'Boşta',
+  stateReturning: 'İstasyona dönüyor',
+  stateCharging: 'Şarj oluyor',
+  stateError: 'Hata',
+  stateUnavailable: 'Kullanılamıyor',
+  stateUnknown: 'Bilinmiyor',
 
   prepareUpstairs: 'Üst katı hazırla',
   preparingUpstairs: 'Hazırlanıyor…',
@@ -746,6 +773,15 @@ const pl: typeof en = {
   dockActionSent: 'Wysłano komendę do stacji',
   active: 'Aktywne',
   inactive: 'Wyłączone',
+  stateCleaning: 'Sprząta',
+  stateDocked: 'W stacji',
+  statePaused: 'Wstrzymano',
+  stateIdle: 'Bezczynny',
+  stateReturning: 'Wraca',
+  stateCharging: 'Ładowanie',
+  stateError: 'Błąd',
+  stateUnavailable: 'Niedostępny',
+  stateUnknown: 'Nieznany',
   prepareUpstairs: 'Przygotuj piętro',
   preparingUpstairs: 'Przygotowywanie…',
   startUpstairs: 'Start na piętrze',
@@ -937,6 +973,15 @@ const es: typeof en = {
   dockActionSent: 'Comando enviado a la base',
   active: 'Activo',
   inactive: 'Desactivado',
+  stateCleaning: 'Limpiando',
+  stateDocked: 'En la base',
+  statePaused: 'En pausa',
+  stateIdle: 'Inactivo',
+  stateReturning: 'Volviendo a la base',
+  stateCharging: 'Cargando',
+  stateError: 'Error',
+  stateUnavailable: 'No disponible',
+  stateUnknown: 'Desconocido',
   prepareUpstairs: 'Preparar planta superior',
   preparingUpstairs: 'Preparando…',
   startUpstairs: 'Iniciar en la planta superior',
@@ -1051,6 +1096,7 @@ export function optionText(language: Language | undefined, value: string): strin
     ?? value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+<<<<<<< HEAD
 type DockOptionLabels = Record<'smart' | 'light' | 'balanced' | 'deep' | 'max' | 'normal' | 'warm' | 'hot' | '2h' | '3h' | '4h', string>;
 
 /** Dock setting values. Every language must name every value, so TypeScript catches gaps. */
@@ -1075,9 +1121,31 @@ export const DOCK_OPTION_LABELS: Record<Language, DockOptionLabels> = {
     normal: 'Normalna', warm: 'Ciepła', hot: 'Wysoka temperatura',
     '2h': '2 godziny', '3h': '3 godziny · Standard', '4h': '4 godziny',
   },
+  es: {
+    smart: 'Inteligente', light: 'Ligero', balanced: 'Equilibrado', deep: 'Intenso', max: 'Máximo',
+    normal: 'Normal', warm: 'Templada', hot: 'Alta temperatura',
+    '2h': '2 horas', '3h': '3 horas · Estándar', '4h': '4 horas',
+  },
 };
 
 export function dockOptionText(language: Language | undefined, value: string): string {
   const labels: Record<string, string> = DOCK_OPTION_LABELS[language ?? 'en'] ?? DOCK_OPTION_LABELS.en;
   return labels[value] ?? (DOCK_OPTION_LABELS.en as Record<string, string>)[value] ?? value;
+}
+
+export function vacuumStateText(language: Language | undefined, state: string | undefined): string {
+  if (!state) return t(language, 'stateUnknown');
+  const keys: Record<string, TranslationKey> = {
+    cleaning: 'stateCleaning',
+    docked: 'stateDocked',
+    paused: 'statePaused',
+    idle: 'stateIdle',
+    returning: 'stateReturning',
+    charging: 'stateCharging',
+    error: 'stateError',
+    unavailable: 'stateUnavailable',
+    unknown: 'stateUnknown',
+  };
+  const key = keys[state];
+  return key ? t(language, key) : state.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
 }
