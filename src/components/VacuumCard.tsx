@@ -39,6 +39,7 @@ import { AssistedCarryPanel } from './AssistedCarryPanel';
 interface VacuumCardProps {
   hass: HomeAssistant;
   config: RoborockVacuumMapCardConfig;
+  connected?: boolean;
 }
 
 function stateText(hass: HomeAssistant, entityId?: string): string | undefined {
@@ -97,7 +98,7 @@ function initialFloor(config: RoborockVacuumMapCardConfig, hass: HomeAssistant):
   return config.floors.find((floor) => floor.map_select_option === current) ?? config.floors[0];
 }
 
-export function VacuumCard({ hass, config }: VacuumCardProps) {
+export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) {
   const hassRef = useRef(hass);
   const submittingRef = useRef(false);
   const language = config.language;
@@ -563,6 +564,7 @@ export function VacuumCard({ hass, config }: VacuumCardProps) {
         selected={selected}
         launched={launched}
         active={jobActive}
+        connected={connected}
         disabled={selectionBusy}
         selectionMode={selectionMode}
         zone={zone}

@@ -5,7 +5,7 @@ import { getStubConfig, normalizeConfig } from './config';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from './types';
 import styles from './styles/main.scss?inline';
 
-const VERSION = '0.8.0';
+const VERSION = '0.8.1';
 
 abstract class ReactElement extends HTMLElement {
   protected root?: ReactDOM.Root;
@@ -41,9 +41,19 @@ export class RoborockVacuumMapCard extends ReactElement {
     this.render();
   }
 
+  // Lovelace keeps left views detached in memory and stops sending them hass,
+  // so the card has to stop its own background work while it is off the page.
+  connectedCallback() {
+    this.render();
+  }
+
+  disconnectedCallback() {
+    this.render();
+  }
+
   private render() {
     if (!this.config || !this.homeAssistant) return;
-    this.renderReact(<VacuumCard hass={this.homeAssistant} config={this.config} />);
+    this.renderReact(<VacuumCard hass={this.homeAssistant} config={this.config} connected={this.isConnected} />);
   }
 
   getCardSize() {

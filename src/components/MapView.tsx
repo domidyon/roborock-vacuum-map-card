@@ -23,6 +23,7 @@ interface MapViewProps {
   selected: Set<number>;
   launched: Set<number>;
   active?: boolean;
+  connected?: boolean;
   disabled?: boolean;
   selectionMode: SelectionMode;
   zone?: MapZone;
@@ -74,6 +75,7 @@ export function MapView({
   selected,
   launched,
   active,
+  connected = true,
   disabled,
   selectionMode,
   zone,
@@ -99,10 +101,19 @@ export function MapView({
     zoneRef.current = zone;
   }, [zone]);
 
+  // Without fresh hass the token in the map URL expires. Polling it would make
+  // Home Assistant count failed logins while the image entity is reloading.
+  const shouldPoll = Boolean(active) && connected && hass.connected !== false;
+
+  useEffect(() => {
+    if (!shouldPoll) return;
+    const id = setInterval(() => setRefreshTick((n) => n + 1), 5000);
+    return () => clearInterval(id);
+  }, [shouldPoll]);
+
   useEffect(() => {
     if (!active) return;
-    const id = setInterval(() => setRefreshTick((n) => n + 1), 5000);
-    return () => { clearInterval(id); setRefreshTick(0); };
+    return () => setRefreshTick(0);
   }, [active]);
 
   useEffect(() => {

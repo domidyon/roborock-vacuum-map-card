@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1 — 2026-11-25
+
+- Stop refreshing the map while the card is off the page or the Home Assistant connection is down. Detached cards kept polling with an expired token, and Home Assistant counts those requests as failed logins while the map image is reloading, which could ban the user's own IP (#16, thanks @infy1995).
+- Update the build tooling: sass 1.107.0, typescript-eslint 8.72.1 (#15).
+
 ## 0.8.0 — 2026-10-21
 
 - Add an explicitly opt-in Mop-only mode for supported Roborock models without exposing it on the Qrevo Curv 2 Flow by default.

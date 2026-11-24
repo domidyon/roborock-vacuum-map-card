@@ -50,6 +50,7 @@ export interface HassArea {
 export interface HomeAssistant {
   states: Record<string, HassEntity>;
   areas?: Record<string, HassArea>;
+  connected?: boolean;
   locale?: { language?: string };
   callService: (
     domain: string,
