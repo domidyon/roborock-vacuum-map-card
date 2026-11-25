@@ -31,6 +31,15 @@ const ZONE_MODE_IDS = ['vacuum_only', 'vacuum_and_mop', 'mop_only'] as const;
 const VACUUM_SUCTION = ['quiet', 'balanced', 'turbo', 'max', 'max_plus'];
 const MOP_SUCTION = ['quiet', 'balanced', 'turbo', 'max'];
 const APP_ROUTES = ['fast', 'standard', 'deep'];
+// Models offer either Deep or Deep+. A preset saved before model profiles existed may name
+// the one this robot lacks; keep the user's intent instead of dropping to the first route.
+const ROUTE_ALIASES: Record<string, string> = { deep: 'deep_plus', deep_plus: 'deep' };
+
+function pickRoute(routes: string[], wanted: string | undefined): string | undefined {
+  if (wanted && routes.includes(wanted)) return wanted;
+  const alias = wanted ? ROUTE_ALIASES[wanted] : undefined;
+  return alias && routes.includes(alias) ? alias : routes[0];
+}
 // Water-slider models use slight…extreme; older models (S7) use mild/standard/intense.
 const WATER_FLOW = ['mild', 'standard', 'intense', 'slight', 'low', 'medium', 'moderate', 'high', 'extreme'];
 const WATER_LEVEL: Record<string, number> = { slight: 1, low: 5, medium: 15, moderate: 25, high: 28, extreme: 30 };
@@ -118,7 +127,7 @@ export function JobSheet({
   const fanSpeeds = fanAllowList.filter((option) => capabilities.fanSpeeds.includes(option));
   const routeAllowList = (draft.cleaning_type === 'mop' ? mopRoutes?.mop : mopRoutes?.vacuum_and_mop) ?? APP_ROUTES;
   const routes = routeAllowList.filter((option) => capabilities.mopModes.includes(option));
-  const selectedRoute = routes.includes(draft.mop_mode ?? '') ? draft.mop_mode : routes[0];
+  const selectedRoute = pickRoute(routes, draft.mop_mode);
   const waterOptions = WATER_FLOW.filter((option) => capabilities.mopIntensities.includes(option));
   const waterIndex = Math.max(0, waterOptions.indexOf(draft.mop_intensity ?? 'medium'));
   const waterLevel = WATER_LEVEL[waterOptions[waterIndex]];

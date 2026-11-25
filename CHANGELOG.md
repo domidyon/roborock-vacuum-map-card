@@ -2,12 +2,25 @@
 
 ## Unreleased
 
+## 0.9.0 — 2026-11-25
+
+Setup that mostly does itself: *Add card* discovers your robot, maps, rooms and areas, a setup
+assistant and Re-detect keep the config right, and model profiles pick the right options for
+each robot. This release also adds pre-start checks, a maintenance view, presets as scripts,
+a redesigned and translated editor, and a smaller bundle.
+
+**Upgrading from 0.8:** existing configs keep working unchanged and are never rewritten.
+0.9 needs Home Assistant 2026.8 or newer, and HACS won't install it on older versions. To use the new
+pre-start checks, maintenance view and dock sensors, open the card editor and press
+**Re-detect**. See *Upgrading from 0.8* in the README.
+
+- Keep a preset's Deep or Deep+ route on models that offer only the other one. A 0.8 preset with `mop_mode: deep` on a Qrevo Curv 2 Flow now runs Deep+ instead of dropping to Fast.
 - Require Home Assistant 2026.8 or newer, which provides the Roborock Cleaning mode select.
 - Deprecate `vacuum_mode_fallback`. Existing configs keep working and log a console notice; the option is hidden from the editor unless already set.
 - Report the card version from `package.json` instead of a hand-maintained constant.
 - Add a backward-compatibility test suite for v0.8.0 configs.
 - Run CI and HACS validation on the `beta` branch.
-- Add registry-based device discovery (`src/discovery/`): finds the robot, its separate dock device and the Roborock Custom Map device. Entities are matched by translation key instead of entity ID, every map becomes a floor, and rooms are mapped to areas using Home Assistant's own segment ↔ area mapping. Not wired into the UI yet.
+- Add registry-based device discovery (`src/discovery/`): finds the robot, its separate dock device and the Roborock Custom Map device. Entities are matched by translation key instead of entity ID, every map becomes a floor, and rooms are mapped to areas using Home Assistant's own segment ↔ area mapping.
 - Add model profiles (`src/profiles.ts`, `docs/models.md`) for the Qrevo Curv 2 Flow, Saros 10R and S7/S7+. They decide SmartPlan, Mop only, mop routes and how the cleaning count is sent. Explicit config wins over the profile, and the profile wins over live-option detection.
 - Support the S7/S7+ (issue #2, from PR #3): no `set_clean_repeat_times`, two-pass room jobs via `app_segment_clean`, mild/standard/intense water flow, and SmartPlan hidden.
 - Add the `enable_smartplan` and `cleaning_count_command` config overrides.
@@ -17,7 +30,7 @@
 - During setup, read the robot's own feature flags from Home Assistant's Roborock diagnostics (admin only, flags only) for models the card doesn't know yet.
 - Add a compatibility verdict (supported / limited / unsupported) to discovery, and show recognised and unsupported models in the editor. B01/A01 protocol robots and wet-dry vacuums are reported as unsupported.
 - Audit native dock entities. None replaces a dock helper yet: the *Empty mode* select needs a Home Assistant fix due in 2026.11, and the dock switches are actions, not settings. The result is documented in `docs/configuration.md`.
-- Add helper provisioning (`src/provisioning/helpers.ts`): deterministic `rvmc_` dock and assisted-carry helpers, created idempotently by an administrator, or as a `configuration.yaml` snippet. Not wired into the UI yet.
+- Add helper provisioning (`src/provisioning/helpers.ts`): deterministic `rvmc_` dock and assisted-carry helpers, created idempotently by an administrator, or as a `configuration.yaml` snippet.
 - Add script blueprints for Vac followed by Mop and the three assisted-carry scripts, linked from the card editor.
 - Share the dock option lists and defaults between the dock panel, the dock commands and the helpers (`src/dock-settings.ts`).
 - Add pre-start checks: an empty clean-water tank, a water shortage or a detached mop or water tank blocks jobs that use water. A full dirty-water tank, a dock error, low battery or overdue maintenance shows a warning with *Start anyway*. The executor enforces the blocking checks too.

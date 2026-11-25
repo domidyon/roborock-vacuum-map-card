@@ -92,6 +92,26 @@ describe('vacuum card flows', () => {
     expect(within(dialog).queryByRole('button', { name: 'Deep' })).not.toBeInTheDocument();
   });
 
+  it('maps a 0.8 Deep preset to Deep+ on a profile that offers Deep+ instead of Deep', async () => {
+    // Home Assistant lists both routes, so 0.8 offered Deep; the a245 profile now offers Deep+.
+    const hass = withModel(createHass(), 'roborock.vacuum.a245');
+    const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+    hass.callService = vi.fn(async (domain, service, data, target) => {
+      calls.push({ domain, service, data });
+      if (domain === 'select') hass.states[String(target?.entity_id)].state = String(data?.option);
+    });
+    const deepPreset = { id: 'deep_mop', name: 'Deep mop', strategy: 'custom' as const, cleaning_type: 'vacuum_and_mop' as const, mop_mode: 'deep' };
+    render(<VacuumCard hass={hass} config={{ ...configFixture, presets: [deepPreset], default_preset: 'deep_mop' }} />);
+    loadMap();
+    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Configure job' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: 'Deep+' })).toHaveClass('active');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Start' }));
+    await waitFor(() => expect(calls).toContainEqual({ domain: 'select', service: 'select_option', data: { option: 'deep_plus' } }));
+    expect(calls).not.toContainEqual({ domain: 'select', service: 'select_option', data: { option: 'fast' } });
+  });
+
   it('submits the first allowed route when a mode preset defaults to an excluded route', async () => {
     const hass = createHass();
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];

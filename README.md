@@ -45,8 +45,8 @@ guesses room boundaries.
 | 🧽 **Dock control** | Empty, wash, dry, wash frequency/mode/temperature, auto-empty, drying duration, child lock, with confirmation before anything noisy |
 | 🪜 **Assisted carry** | A guided, reload-safe workflow for cleaning a floor that has no dock |
 | 🛡️ **Safe by design** | Settings stay a draft until you press Start. Every option is validated against live entities, and a failed step aborts before cleaning |
-| 🚰 **Pre-start checks** *(beta)* | An empty clean-water tank or a detached mop blocks a mop job; a full dirty tank, a dock error or low battery gets a warning first |
-| 🧹 **Maintenance** *(beta)* | Brush, filter, sensor and strainer life in the dock panel, a badge when something is due, and resets with confirmation |
+| 🚰 **Pre-start checks** | An empty clean-water tank or a detached mop blocks a mop job; a full dirty tank, a dock error or low battery gets a warning first |
+| 🧹 **Maintenance** | Brush, filter, sensor and strainer life in the dock panel, a badge when something is due, and resets with confirmation |
 | 📱 **Feels native** | Mobile bottom sheet, desktop dialog, light and dark themes, keyboard support |
 | 🌍 **Translated** | English, Nederlands, Polski, Türkçe ([add yours](#-translations)) |
 | 🧩 **Visual editor** | Setup assistant, Re-detect, sections, Home Assistant's own pickers, lossless YAML round-tripping |
@@ -69,7 +69,7 @@ integration supports. Features adapt to the entities your model exposes.
 |---|---|---|
 | Qrevo Curv 2 Flow | ✅ Tested daily | Full dock, multi-floor, assisted carry |
 | Saros 10R | 🟢 Community | Mop only supported (`enable_mop_only: true`) |
-| S7 / S7+ | 🟡 Experimental | Profile included on beta, awaiting hardware confirmation ([#2](https://github.com/domidyon/roborock-vacuum-map-card/issues/2)) |
+| S7 / S7+ | 🟡 Experimental | Profile included, awaiting hardware confirmation ([#2](https://github.com/domidyon/roborock-vacuum-map-card/issues/2)) |
 | Others | ❔ Probably works | [Send a model report](https://github.com/domidyon/roborock-vacuum-map-card/issues/new?template=model_report.yml) |
 
 See [supported models](docs/models.md) for what each model profile changes.
@@ -96,11 +96,24 @@ See [supported models](docs/models.md) for what each model profile changes.
 2. Copy it to `/config/www/`.
 3. Under **Settings → Dashboards → ⋮ → Resources**, add `/local/roborock-vacuum-map-card.js` as a **JavaScript module**.
 
+### Upgrading from 0.8
+
+Update through HACS and reload the browser. Your existing card config keeps working as it is:
+nothing is rewritten, and the card type stays `custom:roborock-vacuum-map-card`.
+
+- 0.9 needs **Home Assistant 2026.8** or newer. HACS won't install it on older versions, so they stay on 0.8.
+- The new pre-start checks, maintenance view and dock sensors only use entities that are in
+  your config. Open the card editor and press **Re-detect** to add the ones Home Assistant
+  has for your robot. You can accept or skip each suggestion.
+- `vacuum_mode_fallback` is deprecated. It still works but logs a notice in the browser console.
+- Mop jobs that use water are now blocked while the clean-water tank is empty or the mop is
+  detached, if those sensors are in your config.
+
 ## 🚀 Quick start
 
 1. Edit a dashboard → **Add card** → **Roborock Vacuum Map Card**.
 2. The card starts with your vacuum, maps, rooms and areas already filled in. Open the
-   editor and the **setup assistant** *(beta)* walks you through checking them: floors,
+   editor and the **setup assistant** walks you through checking them: floors,
    rooms, dock helpers and a default mode.
 3. Save, tap a room, and press **Start**.
 
@@ -161,13 +174,12 @@ Reporting a bug? Use **Copy diagnostics** in the card editor and paste the resul
 
 The road to **1.0** is all about setup that just works:
 
-- ✅ On the beta branch now: setup assistant, Re-detect, model profiles and a model catalog,
-  one-click dock helpers, presets as scripts, pre-start checks and maintenance
+- ✅ Shipped in 0.9: setup assistant, Re-detect, model profiles and a model catalog,
+  one-click dock helpers, presets as scripts, pre-start checks, maintenance and diagnostics export
 - 🧰 Native dock entities instead of helpers, once Home Assistant's fixes ship and they pass every check
-- 🩹 **Diagnostics export** for quick, useful bug reports
 
-Work happens on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)
-branch. See the [CHANGELOG](CHANGELOG.md) for what has already shipped.
+New work lands on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)
+branch before it is released. See the [CHANGELOG](CHANGELOG.md) for what has already shipped.
 
 ## 🤝 Contributing
 
