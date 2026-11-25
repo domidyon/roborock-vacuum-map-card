@@ -1,9 +1,11 @@
-import { act, screen, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateConfig } from './config';
 import { RoborockVacuumMapCard } from './main';
 import { createDiscoveryHass } from './test/discovery-hass';
 import { configFixture, createHass } from './test/fixtures';
+import liveConfig from './test/fixtures/qrevo-live-card-config.json';
 import type { HomeAssistant, RoborockVacuumMapCardConfig } from './types';
 
 function mount(config: unknown, hass: HomeAssistant): HTMLElement {
@@ -141,5 +143,27 @@ describe('map polling lifecycle', () => {
     });
     advance(POLL_INTERVAL);
     expect(imageSrc(card)).toContain('&r=2');
+  });
+});
+
+describe('card editor element', () => {
+  afterEach(() => document.body.replaceChildren());
+
+  it('waits for setConfig, so an existing card never opens the setup assistant on the stub', async () => {
+    // Home Assistant sets hass before setConfig.
+    const hass = createDiscoveryHass(undefined, { locale: { language: 'en' } });
+    for (const id of Object.values(liveConfig.entities)) hass.states[id] ??= { entity_id: id, state: 'smart', attributes: {} };
+    const editor = document.createElement('roborock-vacuum-map-card-editor') as HTMLElement & { hass: HomeAssistant; setConfig(config: unknown): void };
+    document.body.append(editor);
+    act(() => { editor.hass = hass; });
+    expect(editor.shadowRoot?.querySelector('div')?.childElementCount).toBe(0);
+    act(() => editor.setConfig(liveConfig));
+    const root = editor.shadowRoot as unknown as HTMLElement;
+    expect(within(root).queryByRole('heading', { name: 'Before you start' })).toBeNull();
+
+    // Run by hand, the assistant starts from the real config and finds every existing helper.
+    await userEvent.click(within(root).getByRole('button', { name: /Setup assistant/ }));
+    for (let step = 0; step < 4; step += 1) await userEvent.click(await within(root).findByRole('button', { name: 'Next' }));
+    await waitFor(() => expect(root.querySelector('.helper-provisioner')?.textContent).toContain('All 9 helpers are in place'));
   });
 });

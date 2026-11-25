@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.9.3 — 2026-11-25
+
+- Fix the card editor opening the setup assistant on an empty starter config for existing cards. Home Assistant hands the editor `hass` before the card config, and the editor drew the starter config in between, so the assistant reported every hand-made helper as missing and offered to create duplicates. The editor now waits for the real config.
+
 ## 0.9.2 — 2026-11-25
 
 - Rooms in the setup assistant and editor: ignoring a segment is now clearly a choice. An unticked *Show on card* reads *Ignored: this segment stays off the card*, with no prompt to pick an area and no warning border. Only a shown room without an area is flagged.

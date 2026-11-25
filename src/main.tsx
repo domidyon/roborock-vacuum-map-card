@@ -121,10 +121,14 @@ export class RoborockVacuumMapCard extends ReactElement {
 
 export class RoborockVacuumMapCardEditor extends ReactElement {
   private config: RoborockVacuumMapCardConfig = getStubConfig();
+  // Home Assistant sets hass before setConfig. Rendering the stub in between would make the
+  // editor think the card is new and open the setup assistant on the stub, not the real config.
+  private configured = false;
   private homeAssistant?: HomeAssistant;
 
   setConfig(config: RoborockVacuumMapCardConfig) {
     this.config = structuredClone(config);
+    this.configured = true;
     this.render();
   }
 
@@ -134,7 +138,7 @@ export class RoborockVacuumMapCardEditor extends ReactElement {
   }
 
   private render() {
-    if (!this.homeAssistant) return;
+    if (!this.homeAssistant || !this.configured) return;
     this.renderReact(
       <CardEditor
         hass={this.homeAssistant}
