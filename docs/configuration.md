@@ -244,7 +244,7 @@ second model.
 
 | Card setting | Native Home Assistant entity | Status (2026-11-25) |
 |---|---|---|
-| Empty mode | Dock `select` *Empty mode* (`dust_collection_mode`) | Native from Home Assistant 2026.11 (core PR #186486). Discovery and Re-detect pick it; on older versions the card keeps sending its own command, and a helper still works |
+| Empty mode | Dock `select` *Empty mode* (`dust_collection_mode`) | Native from Home Assistant 2026.11 (core PR #186486). Verified on a Qrevo Curv 2 Flow: the dock accepts values set from Home Assistant, app changes show up after the next poll, and the value survives an integration reload. A second model is still unconfirmed. Discovery and Re-detect pick it; on older versions the card keeps sending its own command, and a helper still works |
 | Auto-empty on/off | none | Helper. The dock *Dust emptying* switch starts emptying right away; it's an action, not this setting |
 | Mop wash frequency | none | Helper |
 | Washing mode | none | Helper |
