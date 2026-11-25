@@ -1082,27 +1082,13 @@ export function tf(language: Language | undefined, key: TranslationKey, values: 
   return t(language, key).replace(/\{(\w+)\}/g, (match, name: string) => values[name] ?? match);
 }
 
+const DICTIONARIES: Record<Language, typeof en> = { en, nl, pl, es, tr };
+
 export function t(
   language: Language | undefined,
   key: TranslationKey,
 ): string {
-  if (language === 'nl') {
-    return nl[key];
-  }
-
-  if (language === 'pl') {
-    return pl[key];
-  }
-
-  if (language === 'es') {
-    return es[key];
-  }
-
-  if (language === 'tr') {
-    return tr[key];
-  }
-
-  return en[key];
+  return (DICTIONARIES[language ?? 'en'] ?? en)[key];
 }
 
 // Labels for live Roborock option values (suction, water flow, mop route).
@@ -1195,6 +1181,7 @@ export function vacuumStateText(language: Language | undefined, state: string | 
     paused: 'statePaused',
     idle: 'stateIdle',
     returning: 'stateReturning',
+    returning_home: 'stateReturning',
     charging: 'stateCharging',
     error: 'stateError',
     unavailable: 'stateUnavailable',

@@ -12,7 +12,8 @@ The card has two dictionaries:
 1. In both files, copy the `en` dictionary, give it your language code (for example `de`)
    and translate every value. Keep `{placeholders}` exactly as they are.
 2. Register the language: add it to the `Language` type in `src/types.ts`, to `language`
-   in the schema in `src/config.ts`, to the dictionaries map in each i18n file, and to the
+   in the schema in `src/config.ts`, to the `DICTIONARIES` map in each i18n file, to
+   `LANGUAGES` in `src/discovery/index.ts` (so new cards default to it), and to the
    *Card language* list in `src/components/editor/BasicsSection.tsx`.
 3. Add the dock setting labels to `DOCK_OPTION_LABELS` in `src/i18n/index.ts`, and
    optionally option labels (suction, water flow, routes) to `optionLabels`.
@@ -24,4 +25,4 @@ The card has two dictionaries:
 ## Improving a translation
 
 Polish and Turkish strings added after 0.8 were machine-assisted and would benefit from
-a native speaker's review. Pull requests against the `beta` branch are welcome.
+a native speaker's review. Pull requests against `main` are welcome.

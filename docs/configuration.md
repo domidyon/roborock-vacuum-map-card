@@ -33,7 +33,7 @@ from what your robot supports) and **Advanced: entities**. Entity fields are mar
 *auto-detected* when they match discovery and *manual* when they differ, and an empty
 field offers the detected entity. Pickers use Home Assistant's own entity, area and icon
 pickers, narrowed to the vacuum's devices. The editor follows your Home Assistant
-language (English, Nederlands, Polski, Türkçe); the card's own language is set
+language (English, Nederlands, Polski, Español, Türkçe); the card's own language is set
 separately.
 
 **Re-detect** compares the config with a fresh discovery and lists each fix or addition

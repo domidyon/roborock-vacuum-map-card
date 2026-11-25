@@ -925,7 +925,7 @@ const es: Dictionary = {
   assistedNeedsScripts: 'El traslado asistido necesita sus tres scripts. Selecciónalos en Base y ayudantes, o desactiva el traslado asistido por ahora y añádelos más tarde.',
   pickScripts: 'Seleccionar los scripts',
   disableAssisted: 'Desactivar el traslado asistido por ahora',
-  assistedScriptsPick: 'Selecciona los tres scripts. ¿Aún no los tienes? Créelos desde las plantillas y vuelve aquí.',
+  assistedScriptsPick: 'Selecciona los tres scripts. ¿Aún no los tienes? Créalos desde las plantillas y vuelve aquí.',
 
   dockHelpers: 'Ajustes de la base guardados',
   dockHelpersHint: 'Home Assistant no puede leer la mayoría de los ajustes de la base, así que la tarjeta guarda aquí el último ajuste aceptado. Estos ayudantes son opcionales.',

@@ -63,7 +63,7 @@ export interface DiscoveryResult {
   report: DiscoveryReport;
 }
 
-const LANGUAGES: Language[] = ['en', 'nl', 'pl', 'tr'];
+const LANGUAGES: Language[] = ['en', 'nl', 'pl', 'es', 'tr'];
 
 /**
  * Reads the vacuum's segment ↔ area mapping. It lives in the entity registry options,

@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Add Spanish language support across the card UI, dock controls, configuration editor and live option labels.
-- Translate vacuum header states using each language's casing and wording.
+- Translate vacuum header states using each language's casing and wording, including `returning_home`.
+- New cards default to Spanish when Home Assistant's language is Spanish.
 
 ## 0.9.3 — 2026-11-25
 
