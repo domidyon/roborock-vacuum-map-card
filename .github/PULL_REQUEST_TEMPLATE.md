@@ -4,7 +4,7 @@
 
 ## Checklist
 
-- [ ] Targets the `beta` branch
+- [ ] Targets the `main` branch
 - [ ] `npm run verify` passes and `npm run test:e2e` passes
 - [ ] Tests added or updated
 - [ ] `dist/roborock-vacuum-map-card.js` rebuilt and committed

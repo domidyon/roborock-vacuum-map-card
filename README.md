@@ -178,8 +178,7 @@ The road to **1.0** is all about setup that just works:
   one-click dock helpers, presets as scripts, pre-start checks, maintenance and diagnostics export
 - 🧰 Native dock entities instead of helpers, once Home Assistant's fixes ship and they pass every check
 
-New work lands on the [`beta`](https://github.com/domidyon/roborock-vacuum-map-card/tree/beta)
-branch before it is released. See the [CHANGELOG](CHANGELOG.md) for what has already shipped.
+All work happens on `main`, and every release is tagged from it. See the [CHANGELOG](CHANGELOG.md) for what has already shipped.
 
 ## 🤝 Contributing
 

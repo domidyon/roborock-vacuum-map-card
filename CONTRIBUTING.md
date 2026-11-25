@@ -18,7 +18,6 @@ patient with reviews.
 ```bash
 git clone https://github.com/domidyon/roborock-vacuum-map-card.git
 cd roborock-vacuum-map-card
-git switch beta
 npm install
 npm run dev        # fixture page with a simulated Home Assistant (?view=editor for the editor)
 npm run verify     # lint, typecheck, unit tests, production build
@@ -30,7 +29,7 @@ and the build, the unit tests and the e2e fixture all alias `react` to `preact/c
 
 ## Pull requests
 
-- Target the **`beta`** branch.
+- Target the **`main`** branch.
 - Include the rebuilt `dist/roborock-vacuum-map-card.js` (HACS serves it from the repository).
 - Add or update tests. The job and dock executors are fully unit-tested; keep them that way.
 - Existing configs must keep working: `src/legacy-config.test.ts` guards that.

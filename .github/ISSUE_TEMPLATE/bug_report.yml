@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting! Please check [troubleshooting](https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/docs/troubleshooting.md) first.
+        Thanks for reporting! Please check [troubleshooting](https://github.com/domidyon/roborock-vacuum-map-card/blob/main/docs/troubleshooting.md) first.
   - type: textarea
     id: what
     attributes:

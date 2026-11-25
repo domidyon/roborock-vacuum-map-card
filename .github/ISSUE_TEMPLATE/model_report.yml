@@ -8,7 +8,7 @@ body:
       value: |
         Thanks! Model reports are how the card learns what each Roborock app offers.
         Find your model id under **Settings → Devices & services → Roborock → your vacuum**
-        (e.g. `roborock.vacuum.a245`). See [supported models](https://github.com/domidyon/roborock-vacuum-map-card/blob/beta/docs/models.md).
+        (e.g. `roborock.vacuum.a245`). See [supported models](https://github.com/domidyon/roborock-vacuum-map-card/blob/main/docs/models.md).
   - type: input
     id: model
     attributes:

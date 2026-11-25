@@ -1,10 +1,9 @@
 version: 2
-# One grouped pull request per ecosystem per month, against beta. Major versions are
+# One grouped pull request per ecosystem per month, against main. Major versions are
 # skipped; upgrade those deliberately (they often need code or workflow changes).
 updates:
   - package-ecosystem: npm
     directory: /
-    target-branch: beta
     schedule:
       interval: monthly
     groups:
@@ -16,7 +15,6 @@ updates:
     open-pull-requests-limit: 2
   - package-ecosystem: github-actions
     directory: /
-    target-branch: beta
     schedule:
       interval: monthly
     groups:
