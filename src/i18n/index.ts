@@ -1013,8 +1013,9 @@ const es: typeof en = {
   lastClean: 'Última limpieza',
   justNow: 'ahora mismo',
   yesterday: 'ayer',
-  ago: 'hace',
-  daysAgo: 'días',
+  minutesAgo: 'hace {n} min',
+  hoursAgo: 'hace {n} h',
+  daysAgo: 'hace {n} días',
   hourShort: 'h',
   minuteShort: 'min',
   preflightBlocked: 'No se puede iniciar todavía',
@@ -1070,6 +1071,8 @@ const es: typeof en = {
   copyDiagnostics: 'Copiar diagnóstico',
   diagnosticsCopied: 'Diagnóstico copiado. Pégalo en tu incidencia de GitHub.',
   diagnosticsManual: 'Copia el texto siguiente en tu incidencia de GitHub.',
+  upgradeHintTitle: 'Hay sensores nuevos disponibles',
+  upgradeHint: 'Esta tarjeta se configuró antes de la versión 0.9. Edita la tarjeta y pulsa Volver a detectar para añadir las comprobaciones previas, el mantenimiento y los nuevos sensores de la base.',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -1148,7 +1151,6 @@ export function optionText(language: Language | undefined, value: string): strin
     ?? value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-<<<<<<< HEAD
 type DockOptionLabels = Record<'smart' | 'light' | 'balanced' | 'deep' | 'max' | 'normal' | 'warm' | 'hot' | '2h' | '3h' | '4h', string>;
 
 /** Dock setting values. Every language must name every value, so TypeScript catches gaps. */

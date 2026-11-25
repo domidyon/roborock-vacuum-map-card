@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configFixture, createHass, createS7Hass, withModel } from '../test/fixtures';
+import { formatRelativeTime } from './card/format';
 import { VacuumCard } from './VacuumCard';
 
 function loadMap() {
@@ -21,6 +22,19 @@ function drawZone(start = { x: 700, y: 200 }, end = { x: 900, y: 400 }) {
   fireEvent.pointerMove(overlay, { clientX: end.x, clientY: end.y, pointerId: 1 });
   fireEvent.pointerUp(overlay, { clientX: end.x, clientY: end.y, pointerId: 1 });
 }
+
+describe('relative time formatting', () => {
+  it('uses locale-specific word order for elapsed minutes and days', () => {
+    const now = Date.now();
+    const minutesAgo = new Date(now - 5 * 60_000).toISOString();
+    const daysAgo = new Date(now - 3 * 24 * 60 * 60_000).toISOString();
+
+    expect(formatRelativeTime(minutesAgo, 'es')).toBe('hace 5 min');
+    expect(formatRelativeTime(daysAgo, 'es')).toBe('hace 3 días');
+    expect(formatRelativeTime(minutesAgo, 'en')).toBe('5 min ago');
+    expect(formatRelativeTime(daysAgo, 'en')).toBe('3 days ago');
+  });
+});
 
 describe('vacuum card flows', () => {
   it('draws a zone and offers only Vacuum and Vac & Mop by default before using the native action', async () => {

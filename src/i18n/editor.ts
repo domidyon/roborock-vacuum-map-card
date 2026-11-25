@@ -918,6 +918,7 @@ const es: Dictionary = {
   includeFloor: 'Incluir en toda la planta',
   showOnCard: 'Mostrar en la tarjeta',
   roomHiddenHint: 'Aún no aparece en la tarjeta: selecciona un área para añadirla.',
+  roomHiddenMapped: 'Oculta: esta habitación no aparece en la tarjeta ni se incluirá en la limpieza de toda la planta.',
   assistedScripts: 'Traslado asistido',
   assistedScriptsHint: 'El traslado asistido necesita un ayudante de etapa, otro de trabajo y tres scripts. Crea los scripts a partir de las plantillas:',
   assistedHint: 'Necesita tres scripts, que puedes crear desde las plantillas en los pasos siguientes.',
