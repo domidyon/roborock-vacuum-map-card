@@ -1075,7 +1075,7 @@ const es: Dictionary = {
   change_config_version: 'Guardar la versión {n} del formato de configuración',
 };
 
-const DICTIONARIES: Record<Language, Dictionary> = { en, es, nl, pl, tr };
+const DICTIONARIES: Record<Language, Dictionary> = { en, nl, pl, tr, es };
 export const EDITOR_DICTIONARIES = DICTIONARIES;
 
 /** The editor follows the Home Assistant user's language, then the card language. */

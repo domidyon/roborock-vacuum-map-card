@@ -1109,23 +1109,6 @@ export function t(
 // Values without a translation fall back to English, then to a title-cased ID.
 const optionLabels: Partial<Record<Language, Record<string, string>>> = {
   en: { deep_plus: 'Deep+' },
-  es: {
-    quiet: 'Silencioso',
-    balanced: 'Equilibrado',
-    turbo: 'Turbo',
-    max: 'Máximo',
-    max_plus: 'Máximo+',
-    slight: 'Muy bajo',
-    low: 'Bajo',
-    medium: 'Medio',
-    moderate: 'Moderado',
-    high: 'Alto',
-    extreme: 'Extremo',
-    fast: 'Rápido',
-    standard: 'Estándar',
-    deep: 'Intenso',
-    deep_plus: 'Intenso+',
-  },
   pl: {
     quiet: 'Cichy',
     balanced: 'Zrównoważony',
@@ -1142,6 +1125,23 @@ const optionLabels: Partial<Record<Language, Record<string, string>>> = {
     standard: 'Ogólne',
     deep: 'Intensywny',
     deep_plus: 'Intensywny+',
+  },
+  es: {
+    quiet: 'Silencioso',
+    balanced: 'Equilibrado',
+    turbo: 'Turbo',
+    max: 'Máximo',
+    max_plus: 'Máximo+',
+    slight: 'Muy bajo',
+    low: 'Bajo',
+    medium: 'Medio',
+    moderate: 'Moderado',
+    high: 'Alto',
+    extreme: 'Extremo',
+    fast: 'Rápido',
+    standard: 'Estándar',
+    deep: 'Intenso',
+    deep_plus: 'Intenso+',
   },
 };
 

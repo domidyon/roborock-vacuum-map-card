@@ -48,7 +48,7 @@ export const cardConfigSchema = z
     config_version: z.number().int().positive().optional(),
     entity: entityId.refine((value) => value.startsWith('vacuum.'), 'Entity must be a vacuum'),
     name: z.string().optional(),
-    language: z.enum(['en', 'es', 'nl', 'pl', 'tr']).optional().default('en'),
+    language: z.enum(['en', 'nl', 'pl', 'tr', 'es']).optional().default('en'),
     entities: z
       .object({
         map_select: optionalEntityId,
