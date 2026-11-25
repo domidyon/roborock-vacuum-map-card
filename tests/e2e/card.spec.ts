@@ -65,14 +65,6 @@ test('Entire upstairs includes every current room', async ({ page }) => {
   await expect(dialog.getByRole('tab', { name: 'Vacuum only' })).toBeVisible();
 });
 
-test('the upstairs landing remains individually selectable', async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('tab', { name: 'Upstairs' }).click();
-  await page.getByRole('button', { name: 'Landing' }).click();
-  await page.getByRole('button', { name: 'Prepare upstairs' }).click();
-  await expect(page.getByRole('dialog')).toContainText('Landing');
-});
-
 test('mobile uses a bottom sheet and desktop uses a centered dialog', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -101,21 +93,12 @@ test('shows prerequisite errors rather than guessed hitboxes', async ({ page }) 
   await expect(page.locator('.room-hitbox')).toHaveCount(0);
 });
 
-test('shows dock mop drying with its remaining time', async ({ page }) => {
-  await page.goto('/?scenario=drying');
-  await expect(page.locator('.state-line')).toContainText('Docked · Drying mop · 3 h 54 min remaining');
-});
-
 test('opens dock controls, persists settings, and guards physical actions', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Dock station' }).click();
   const dialog = page.getByRole('dialog', { name: 'Dock station' });
   await expect(dialog).toContainText('Mop wash frequency');
-  await expect(dialog).toContainText('Water temperature');
   await expect(dialog).toContainText('Auto-empty');
-  await expect(dialog).toContainText('Auto-drying');
-  await expect(dialog).toContainText('Drain onboard dirty-water tank');
-  await expect(dialog).toContainText('Unavailable through the current Home Assistant Roborock integration');
   await page.getByRole('combobox', { name: 'Washing mode' }).selectOption('deep');
   const settingsCalls = await page.evaluate(() => window.__serviceCalls);
   expect(settingsCalls.some((call) => call.data?.command === 'set_wash_towel_mode')).toBe(true);

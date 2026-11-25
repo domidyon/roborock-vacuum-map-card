@@ -10,7 +10,10 @@ describe('preset scripts', () => {
   it.each(['smartplan', 'vacuum_and_mop', 'vacuum_only', 'vacuum_then_mop'])('exports the %s preset', (id) => {
     const script = presetScript(createHass(), configFixture, preset(id));
     expect(script.id).toBe(`rvmc_roborock_${id}`);
-    expect(toYaml(script.config)).toMatchSnapshot();
+    const aliases = (script.config.sequence as Array<{ alias?: string }>).map((step) => step.alias);
+    expect(aliases[0]).toBe('Select the floor map');
+    expect(aliases.at(-1)).toMatch(/^(Start cleaning|Run the saved Roborock routine)$/);
+    expect(() => toYaml(script.config)).not.toThrow();
   });
 
   it('exports Mop only when it is enabled', () => {

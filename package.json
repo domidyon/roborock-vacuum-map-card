@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "docs:models": "UPDATE_MODELS_DOC=1 vitest run src/models-doc.test.ts",
     "test:e2e": "npm run build && playwright test",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build",
     "build:sandbox": "npm run typecheck && RVMC_SANDBOX=1 vite build"

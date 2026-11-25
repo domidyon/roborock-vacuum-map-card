@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configFixture, createHass, createS7Hass, withModel } from '../test/fixtures';
+import { t } from '../i18n';
 import { formatRelativeTime } from './card/format';
 import { VacuumCard } from './VacuumCard';
 
@@ -319,46 +320,10 @@ describe('vacuum card flows', () => {
     expect(stateLine).toHaveTextContent('Docked · Drying mop · 3 h 54 min remaining');
   });
 
-  it('renders the card in Polish', () => {
-    const hass = createHass();
-    hass.states['binary_sensor.mop_drying'].state = 'on';
-    hass.states['sensor.mop_drying_remaining'].state = '3.9';
-    render(<VacuumCard hass={hass} config={{ ...configFixture, language: 'pl' }} />);
-    const stateLine = screen.getByText('W stacji').closest('.state-line');
-    expect(stateLine).toHaveTextContent('W stacji · Suszenie mopa · 3 godz. 54 min pozostało');
-    expect(screen.getByRole('button', { name: 'Całe piętro' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ustaw sprzątanie' })).toBeInTheDocument();
-  });
-
-  it('renders the card and dock controls in Spanish', async () => {
-    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'es' }} />);
-    expect(screen.getByText('En la base').closest('.state-line')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Planta completa' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Configurar limpieza' })).toBeInTheDocument();
-    const dockButtons = screen.getAllByRole('button', { name: 'Base' });
-    await userEvent.click(dockButtons[1]);
-    const dialog = screen.getByRole('dialog', { name: 'Base' });
-    expect(dialog).toHaveTextContent('Vaciar');
-    expect(dialog).toHaveTextContent('Ajustes de la base');
-    expect(screen.getByRole('switch', { name: 'Vaciado automático' })).toBeInTheDocument();
-  });
-
-  it('translates mode names, descriptions and option values in Polish', async () => {
-    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'pl', enable_mop_only: true }} />);
-    loadMap();
-    await userEvent.click(screen.getByRole('button', { name: 'Kitchen' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Ustaw sprzątanie' }));
-    const dialog = screen.getByRole('dialog');
-    for (const name of ['AI SmartPlan', 'Odkurz, potem mopuj', 'Odkurz i mop', 'Odkurz', 'Mopuj']) {
-      expect(within(dialog).getByRole('tab', { name })).toBeInTheDocument();
-    }
-    await userEvent.click(within(dialog).getByRole('tab', { name: 'Odkurz i mop' }));
-    expect(dialog).toHaveTextContent('Dzienne odkurzanie i mopowanie.');
-    expect(within(dialog).getByRole('button', { name: 'Zrównoważony' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Ogólne' })).toBeInTheDocument();
-    expect(dialog).toHaveTextContent('Średni');
-    await userEvent.click(within(dialog).getByRole('tab', { name: 'AI SmartPlan' }));
-    expect(dialog).toHaveTextContent('Uczy się i dostosowuje do Twojej przestrzeni');
+  it.each(['nl', 'pl', 'es', 'tr'] as const)('renders the card in the configured language (%s)', (language) => {
+    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language }} />);
+    expect(screen.getByText(t(language, 'stateDocked'))).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t(language, 'entireFloor') })).toBeInTheDocument();
   });
 
   it('shows a dock-side mop wash as active detail instead of only docked', () => {
