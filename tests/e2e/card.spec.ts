@@ -103,7 +103,7 @@ test('shows prerequisite errors rather than guessed hitboxes', async ({ page }) 
 
 test('shows dock mop drying with its remaining time', async ({ page }) => {
   await page.goto('/?scenario=drying');
-  await expect(page.locator('.state-line')).toContainText('docked · Drying mop · 3 h 54 min remaining');
+  await expect(page.locator('.state-line')).toContainText('Docked · Drying mop · 3 h 54 min remaining');
 });
 
 test('opens dock controls, persists settings, and guards physical actions', async ({ page }) => {
