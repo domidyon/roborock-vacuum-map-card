@@ -48,7 +48,7 @@ guesses room boundaries.
 | 🚰 **Pre-start checks** | An empty clean-water tank or a detached mop blocks a mop job; a full dirty tank, a dock error or low battery gets a warning first |
 | 🧹 **Maintenance** | Brush, filter, sensor and strainer life in the dock panel, a badge when something is due, and resets with confirmation |
 | 📱 **Feels native** | Mobile bottom sheet, desktop dialog, light and dark themes, keyboard support |
-| 🌍 **Translated** | English, Nederlands, Polski, Türkçe ([add yours](#-translations)) |
+| 🌍 **Translated** | English, Nederlands, Polski, Türkçe, Español ([add yours](#-translations)) |
 | 🧩 **Visual editor** | Setup assistant, Re-detect, sections, Home Assistant's own pickers, lossless YAML round-tripping |
 | 🩹 **Diagnostics** | One click copies a redacted report for bug and model reports |
 
@@ -190,7 +190,7 @@ and the [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: see [SECURITY](S
 
 ### 🌍 Translations
 
-The card and the editor are translated into English, Nederlands, Polski and Türkçe.
+The card and the editor are translated into English, Nederlands, Polski, Türkçe and Español.
 [docs/translating.md](docs/translating.md) explains how to add or improve a language.
 Thanks to everyone who contributed Turkish and Polish!
 

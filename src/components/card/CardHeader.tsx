@@ -2,7 +2,7 @@ import { Battery, Clock3, History, MapPin, ScanLine, Sparkles, Timer, TriangleAl
 import { useMemo, useState } from 'react';
 import { SANDBOX } from '../../build-flags';
 import { configHealth } from '../../health';
-import { t } from '../../i18n';
+import { t, vacuumStateText } from '../../i18n';
 import type { HomeAssistant, Language, RoborockVacuumMapCardConfig } from '../../types';
 import { healthText } from '../notices';
 import { detailedActivity, formatRelativeTime, stateText } from './format';
@@ -72,7 +72,7 @@ export function CardHeader({ hass, config, language, jobActive, detailedStatus, 
           <h1>{config.name ?? vacuum?.attributes.friendly_name ?? 'Roborock'}</h1>
           <div className="state-line">
             <span className={`state-dot state-${vacuum?.state ?? 'unavailable'}`} />
-            <span>{vacuum?.state?.replaceAll('_', ' ') ?? 'unavailable'}</span>
+            <span>{vacuumStateText(language, vacuum?.state ?? 'unavailable')}</span>
             {headerDetails.map((detail) => <span className="state-detail" key={detail}>{` · ${detail}`}</span>)}
           </div>
         </div>

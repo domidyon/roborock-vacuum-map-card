@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add Spanish language support across the card UI, dock controls, configuration editor and live option labels.
+- Translate vacuum header states using each language's casing and wording.
+
 ## 0.9.3 — 2026-11-25
 
 - Fix the card editor opening the setup assistant on an empty starter config for existing cards. Home Assistant hands the editor `hass` before the card config, and the editor drew the starter config in between, so the assistant reported every hand-made helper as missing and offered to create duplicates. The editor now waits for the real config.

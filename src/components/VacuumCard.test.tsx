@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configFixture, createHass, createS7Hass, withModel } from '../test/fixtures';
+import { formatRelativeTime } from './card/format';
 import { VacuumCard } from './VacuumCard';
 
 function loadMap() {
@@ -21,6 +22,19 @@ function drawZone(start = { x: 700, y: 200 }, end = { x: 900, y: 400 }) {
   fireEvent.pointerMove(overlay, { clientX: end.x, clientY: end.y, pointerId: 1 });
   fireEvent.pointerUp(overlay, { clientX: end.x, clientY: end.y, pointerId: 1 });
 }
+
+describe('relative time formatting', () => {
+  it('uses locale-specific word order for elapsed minutes and days', () => {
+    const now = Date.now();
+    const minutesAgo = new Date(now - 5 * 60_000).toISOString();
+    const daysAgo = new Date(now - 3 * 24 * 60 * 60_000).toISOString();
+
+    expect(formatRelativeTime(minutesAgo, 'es')).toBe('hace 5 min');
+    expect(formatRelativeTime(daysAgo, 'es')).toBe('hace 3 días');
+    expect(formatRelativeTime(minutesAgo, 'en')).toBe('5 min ago');
+    expect(formatRelativeTime(daysAgo, 'en')).toBe('3 days ago');
+  });
+});
 
 describe('vacuum card flows', () => {
   it('draws a zone and offers only Vacuum and Vac & Mop by default before using the native action', async () => {
@@ -301,8 +315,8 @@ describe('vacuum card flows', () => {
     hass.states['binary_sensor.mop_drying'].state = 'on';
     hass.states['sensor.mop_drying_remaining'].state = '3.9';
     render(<VacuumCard hass={hass} config={configFixture} />);
-    const stateLine = screen.getByText('docked').closest('.state-line');
-    expect(stateLine).toHaveTextContent('docked · Drying mop · 3 h 54 min remaining');
+    const stateLine = screen.getByText('Docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('Docked · Drying mop · 3 h 54 min remaining');
   });
 
   it('renders the card in Polish', () => {
@@ -310,10 +324,23 @@ describe('vacuum card flows', () => {
     hass.states['binary_sensor.mop_drying'].state = 'on';
     hass.states['sensor.mop_drying_remaining'].state = '3.9';
     render(<VacuumCard hass={hass} config={{ ...configFixture, language: 'pl' }} />);
-    const stateLine = screen.getByText('docked').closest('.state-line');
-    expect(stateLine).toHaveTextContent('docked · Suszenie mopa · 3 godz. 54 min pozostało');
+    const stateLine = screen.getByText('W stacji').closest('.state-line');
+    expect(stateLine).toHaveTextContent('W stacji · Suszenie mopa · 3 godz. 54 min pozostało');
     expect(screen.getByRole('button', { name: 'Całe piętro' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustaw sprzątanie' })).toBeInTheDocument();
+  });
+
+  it('renders the card and dock controls in Spanish', async () => {
+    render(<VacuumCard hass={createHass()} config={{ ...configFixture, language: 'es' }} />);
+    expect(screen.getByText('En la base').closest('.state-line')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Planta completa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Configurar limpieza' })).toBeInTheDocument();
+    const dockButtons = screen.getAllByRole('button', { name: 'Base' });
+    await userEvent.click(dockButtons[1]);
+    const dialog = screen.getByRole('dialog', { name: 'Base' });
+    expect(dialog).toHaveTextContent('Vaciar');
+    expect(dialog).toHaveTextContent('Ajustes de la base');
+    expect(screen.getByRole('switch', { name: 'Vaciado automático' })).toBeInTheDocument();
   });
 
   it('translates mode names, descriptions and option values in Polish', async () => {
@@ -338,8 +365,8 @@ describe('vacuum card flows', () => {
     const hass = createHass();
     hass.states['sensor.status'] = { entity_id: 'sensor.status', state: 'washing_the_mop', attributes: {} };
     render(<VacuumCard hass={hass} config={{ ...configFixture, entities: { ...configFixture.entities, status: 'sensor.status' } }} />);
-    const stateLine = screen.getByText('docked').closest('.state-line');
-    expect(stateLine).toHaveTextContent('docked · Washing mop');
+    const stateLine = screen.getByText('Docked').closest('.state-line');
+    expect(stateLine).toHaveTextContent('Docked · Washing mop');
   });
 
   it('opens an app-style dock panel and saves a setting through the raw API', async () => {

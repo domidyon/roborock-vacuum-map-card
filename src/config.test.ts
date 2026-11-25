@@ -11,6 +11,10 @@ describe('card config', () => {
     expect(parsed.future_option).toEqual({ enabled: true });
   });
 
+  it('accepts Spanish as a card language', () => {
+    expect(normalizeConfig({ ...configFixture, language: 'es' }).language).toBe('es');
+  });
+
   it('accepts per-mode mop routes and rejects empty route lists', () => {
     expect(validateConfig({ ...configFixture, mop_routes: { vacuum_and_mop: ['fast', 'standard'], mop: ['deep'] } })).toEqual([]);
     expect(validateConfig({ ...configFixture, mop_routes: { mop: [] } }).join('\n')).toContain('mop_routes.mop');
