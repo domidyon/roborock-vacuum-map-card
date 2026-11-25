@@ -1,5 +1,5 @@
 import type { EditorKey } from '../../i18n/editor';
-import type { HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig } from '../../types';
+import type { HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../../types';
 
 export type Translate = (key: EditorKey, values?: Record<string, string | number>) => string;
 
@@ -74,4 +74,10 @@ export function move<T>(items: T[], from: number, to: number): T[] {
   const [item] = next.splice(from, 1);
   next.splice(to, 0, item);
   return next;
+}
+
+/** Ignored rooms are a choice, not a problem; only a shown room without an area needs attention. */
+export function roomState(room: Pick<RoomConfig, 'hidden' | 'area_id'>): string {
+  if (room.hidden) return 'ignored';
+  return room.area_id ? '' : 'unmapped';
 }

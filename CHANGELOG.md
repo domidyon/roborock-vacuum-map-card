@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.9.2 — 2026-11-25
+
+- Rooms in the setup assistant and editor: ignoring a segment is now clearly a choice. An unticked *Show on card* reads *Ignored: this segment stays off the card*, with no prompt to pick an area and no warning border. Only a shown room without an area is flagged.
+- Fix the room checkboxes being cut off in Home Assistant's card editor dialog: room rows now wrap to the available width.
+
 ## 0.9.1 — 2026-11-25
 
 - Use the dock's own *Empty mode* select on Home Assistant 2026.11 and newer, which fixed it (core PR #186486). New cards pick it during setup, and *Re-detect* offers it in place of the Empty mode helper. Older Home Assistant versions keep the card's own command.

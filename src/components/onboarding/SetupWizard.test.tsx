@@ -147,7 +147,10 @@ describe('rooms in the setup assistant', () => {
     await next();
     const room = screen.getByDisplayValue('Room').closest('.room-editor') as HTMLElement;
     expect(within(room).getByLabelText('Show on card')).not.toBeChecked();
-    expect(room).toHaveTextContent('Not on the card yet');
+    expect(room).toHaveTextContent('Ignored: this segment stays off the card');
+    // Ignoring a segment is a choice, so it is not flagged like a shown room without an area.
+    expect(room).toHaveClass('ignored');
+    expect(room).not.toHaveClass('unmapped');
     await userEvent.selectOptions(within(room).getByLabelText('Area'), 'office');
     expect(within(room).getByLabelText('Show on card')).toBeChecked();
     for (let step = 0; step < 3; step += 1) await next();

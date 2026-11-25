@@ -18,3 +18,22 @@ test('the setup assistant turns a new card into a working config', async ({ page
   // Back in the editor, with Re-detect available.
   await expect(page.getByRole('button', { name: /Re-detect/ })).toBeVisible();
 });
+
+test('room options stay visible in a narrow editor and ignored rooms read as a choice', async ({ page }) => {
+  // Home Assistant's card editor dialog is narrower than the page on desktop.
+  await page.setViewportSize({ width: 560, height: 900 });
+  await page.goto('/?view=editor');
+  for (let step = 0; step < 3; step += 1) await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.getByRole('heading', { name: 'Rooms' })).toBeVisible();
+  const ignored = page.locator('.room-editor.ignored').first();
+  await expect(ignored).toContainText('Ignored: this segment stays off the card');
+  for (const row of await page.locator('.room-editor').all()) {
+    const box = await row.boundingBox();
+    for (const label of await row.locator('label.checkbox').all()) {
+      const labelBox = await label.boundingBox();
+      expect(labelBox && box && labelBox.x + labelBox.width <= box.x + box.width + 1).toBe(true);
+    }
+  }
+  await ignored.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'test-results/rooms-step-narrow.png', fullPage: false });
+});

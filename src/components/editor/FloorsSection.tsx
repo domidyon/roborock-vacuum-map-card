@@ -4,18 +4,21 @@ import { parseRooms } from '../../map';
 import type { FloorConfig, RoborockEntityConfig, RoomConfig } from '../../types';
 import { AreaPicker, EntityPicker, IconPicker } from '../fields';
 import { EntityFields } from './EntityFields';
-import { fieldsOf, move, type SectionProps } from './shared';
+import { fieldsOf, move, roomState, type SectionProps } from './shared';
 
 function RoomRow({ hass, t, room, onRoom }: Pick<SectionProps, 'hass' | 't'> & { room: RoomConfig; onRoom: (room: RoomConfig) => void }) {
   const areas = Object.values(hass.areas ?? {}).sort((a, b) => a.name.localeCompare(b.name));
   return (
-    <div className={`room-editor ${room.area_id ? '' : 'unmapped'}`}>
+    <div className={`room-editor ${roomState(room)}`}>
       <strong>{t('segment', { n: room.segment_id })}</strong>
       <label>{t('name')}<input value={room.name} onChange={(event) => onRoom({ ...room, name: event.target.value })} /></label>
       <label>{t('area')}<AreaPicker hass={hass} areas={areas} value={room.area_id} emptyLabel={t('unmapped')} onChange={(area_id) => onRoom({ ...room, area_id })} /></label>
       <label>{t('icon')}<IconPicker hass={hass} value={room.icon} placeholder={hass.areas?.[room.area_id ?? '']?.icon ?? 'mdi:floor-plan'} onChange={(icon) => onRoom({ ...room, icon })} /></label>
-      <label className="checkbox"><input type="checkbox" checked={!room.hidden} onChange={(event) => onRoom({ ...room, hidden: event.target.checked ? undefined : true })} /> {t('showOnCard')}</label>
-      <label className="checkbox"><input type="checkbox" checked={room.include_in_floor_clean !== false} onChange={(event) => onRoom({ ...room, include_in_floor_clean: event.target.checked })} /> {t('includeFloor')}</label>
+      <div className="room-options">
+        <label className="checkbox"><input type="checkbox" checked={!room.hidden} onChange={(event) => onRoom({ ...room, hidden: event.target.checked ? undefined : true })} /> {t('showOnCard')}</label>
+        <label className="checkbox"><input type="checkbox" disabled={!room.area_id || room.hidden} checked={room.include_in_floor_clean !== false && Boolean(room.area_id) && !room.hidden} onChange={(event) => onRoom({ ...room, include_in_floor_clean: event.target.checked })} /> {t('includeFloor')}</label>
+        {room.hidden && <p className="editor-hint">{t(room.area_id ? 'roomHiddenMapped' : 'roomHiddenHint')}</p>}
+      </div>
     </div>
   );
 }

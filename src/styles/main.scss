@@ -499,7 +499,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .editor-card { margin-top: 12px; padding: 14px; border-radius: 14px; background: var(--rvm-surface-2); }
 .editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; margin-top: 12px; }
 .room-editor-list { display: grid; gap: 8px; }
-.room-editor { display: grid; grid-template-columns: 100px 1fr 1.2fr 1fr 1.2fr; align-items: end; gap: 8px; padding: 10px; border: 1px solid var(--rvm-border); border-radius: 12px; background: var(--rvm-surface); }
+.room-editor { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); align-items: end; gap: 8px; padding: 10px; border: 1px solid var(--rvm-border); border-radius: 12px; background: var(--rvm-surface); }
+.room-editor > strong, .room-editor > .room-options { grid-column: 1 / -1; }
+.room-options { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; }
+.room-options .editor-hint { flex-basis: 100%; margin: 0; }
+.room-editor.ignored { border-style: dashed; }
+.room-editor.ignored > label:not(.checkbox) { opacity: 0.6; }
 .room-editor label { margin: 0; }
 
 button:focus-visible, select:focus-visible, input:focus-visible, .room-hitbox:focus-visible { outline: 3px solid color-mix(in srgb, var(--rvm-accent) 55%, transparent); outline-offset: 2px; }
@@ -527,8 +532,6 @@ button:focus-visible, select:focus-visible, input:focus-visible, .room-hitbox:fo
   .cleaning-mode-tabs button:nth-child(-n + 2) { border-bottom: 1px solid var(--rvm-border); }
   .cleaning-mode-tabs button { min-height: 56px; }
   .editor-grid { grid-template-columns: 1fr; }
-  .room-editor { grid-template-columns: 1fr 1fr; }
-  .room-editor > strong { grid-column: 1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
