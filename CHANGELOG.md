@@ -48,7 +48,11 @@
 - Setup assistant: pick the assisted-carry scripts in the dock step, explain what assisted carry needs, and offer *Pick the scripts* or *Turn off assisted carry for now* instead of blocking Save with raw errors.
 - Add a per-room *Show on card* switch (`hidden` in YAML). Discovery hides segments Home Assistant never mapped to an area until they get one.
 - Add `scripts/capture-discovery-fixture.mjs`, which takes a redacted, read-only registry snapshot for tests and model reports.
-- Stop refreshing the map while the card is off the page or the Home Assistant connection is down. Detached cards kept polling with an expired token, and Home Assistant counts those requests as failed logins while the map image is reloading, which could ban the user's own IP.
+
+## 0.8.1 — 2026-11-25
+
+- Stop refreshing the map while the card is off the page or the Home Assistant connection is down. Detached cards kept polling with an expired token, and Home Assistant counts those requests as failed logins while the map image is reloading, which could ban the user's own IP (#16, thanks @infy1995).
+- Update the build tooling: sass 1.107.0, typescript-eslint 8.72.1 (#15).
 
 ## 0.8.0 — 2026-10-21
 
