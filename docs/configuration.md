@@ -181,7 +181,7 @@ default_preset: vacuum_only
 | `entities.dock_wash_mode` | No | Persistent `input_select` with `smart`, `light`, `balanced`, and `deep` |
 | `entities.dock_wash_temperature` | No | Persistent `input_select` with `normal`, `warm`, and `hot` |
 | `entities.dock_auto_empty` | No | Persistent `input_boolean` reflecting the last accepted auto-empty setting |
-| `entities.dock_empty_mode` | No | Persistent `input_select` with `smart`, `light`, `balanced`, and `max` |
+| `entities.dock_empty_mode` | No | The dock's own *Empty mode* select (Home Assistant 2026.11 or newer), or a persistent `input_select` with `smart`, `light`, `balanced`, and `max` |
 | `entities.dock_auto_dry` | No | Persistent `input_boolean` reflecting the last accepted auto-drying setting |
 | `entities.dock_dry_duration` | No | Persistent `input_select` with `2h`, `3h`, and `4h` |
 | `entities.assisted_carry_stage` | For assisted carry | Persistent `input_select` with `idle`, `preparing`, `carry_upstairs`, `cleaning_upstairs`, `carry_downstairs`, `finishing`, `complete`, and `error` |
@@ -242,9 +242,9 @@ they pass every check: a 1:1 value mapping, app changes showing up in Home Assis
 settings from Home Assistant accepted and kept after a restart, and confirmation on a
 second model.
 
-| Card setting | Native Home Assistant entity | Status (2026-10-22) |
+| Card setting | Native Home Assistant entity | Status (2026-11-25) |
 |---|---|---|
-| Empty mode | Dock `select` *Empty mode* (`dust_collection_mode`) | Helper for now. Home Assistant 2026.10 and older send this command in a format docks reject; fixed in core PR #186486 (expected in 2026.11). Re-check after that release |
+| Empty mode | Dock `select` *Empty mode* (`dust_collection_mode`) | Native from Home Assistant 2026.11 (core PR #186486). Discovery and Re-detect pick it; on older versions the card keeps sending its own command, and a helper still works |
 | Auto-empty on/off | none | Helper. The dock *Dust emptying* switch starts emptying right away; it's an action, not this setting |
 | Mop wash frequency | none | Helper |
 | Washing mode | none | Helper |

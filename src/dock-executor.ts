@@ -5,6 +5,7 @@ import type {
   RoborockVacuumMapCardConfig,
 } from './types';
 import { DOCK_SETTING_ENTITIES } from './dock-settings';
+import { isNativeRoborockSelect, nativeEmptyModeWorks } from './native-dock';
 
 const WASH_MODE_CODES: Record<string, number> = {
   light: 0,
@@ -115,11 +116,25 @@ export async function executeDockSetting(
       case 'auto_empty':
         await sendDockCommand(hass, config, 'set_dust_collection_switch_status', { status: value ? 1 : 0 });
         break;
-      case 'empty_mode':
+      case 'empty_mode': {
+        const entityId = config.entities?.dock_empty_mode;
+        if (isNativeRoborockSelect(hass, entityId)) {
+          numberCode(EMPTY_MODE_CODES, String(value), setting);
+          if (nativeEmptyModeWorks(hass)) {
+            // The native select sends the command and reads the dock's setting back.
+            await hass.callService('select', 'select_option', { option: value }, { entity_id: entityId });
+          } else {
+            // Before 2026.11 the select's own command is rejected by docks: send ours and
+            // leave the select alone.
+            await sendDockCommand(hass, config, 'set_dust_collection_mode', { mode: EMPTY_MODE_CODES[String(value)] });
+          }
+          return;
+        }
         await sendDockCommand(hass, config, 'set_dust_collection_mode', {
           mode: numberCode(EMPTY_MODE_CODES, String(value), setting),
         });
         break;
+      }
       case 'auto_dry':
         await sendDockCommand(hass, config, 'app_set_dryer_setting', { status: value ? 1 : 0 });
         break;

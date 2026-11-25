@@ -6,6 +6,7 @@ import type { ModelProfile } from '../profiles';
 import type { ConsumableConfig, FloorConfig, HomeAssistant, Language, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
 import { entitiesOfDevices, findCandidate, listRoutines, resolveRoborockDevices, type RoborockDevices } from './devices';
 import { CONSUMABLE_CANDIDATES, ENTITY_CANDIDATES, NATIVE_DOCK_CANDIDATES } from './keys';
+import { nativeEmptyModeWorks } from '../native-dock';
 import {
   discoverCustomMaps,
   listSegments,
@@ -146,6 +147,9 @@ export function buildConfig(
   if (!devices.robot) issues.push({ code: 'robot_device_missing' });
 
   const entities = discoverEntities(hass, devices);
+  const nativeDock = discoverNativeDock(hass, devices);
+  // The native Empty mode select replaces the helper from Home Assistant 2026.11 on.
+  if (nativeDock.dust_collection_mode && nativeEmptyModeWorks(hass)) entities.dock_empty_mode = nativeDock.dust_collection_mode;
   const mapOptions = entities.map_select ? (hass.states[entities.map_select]?.attributes.options ?? []).map(String) : [];
   const maps = discoverCustomMaps(hass, devices);
   if (devices.robot && maps.length === 0) issues.push({ code: 'custom_map_missing' });
@@ -248,7 +252,7 @@ export function buildConfig(
       entities,
       floors: discoveredFloors,
       routines,
-      native_dock: discoverNativeDock(hass, devices),
+      native_dock: nativeDock,
       area_source: segmentOptions?.area_mapping ? 'mapping' : 'name',
       issues,
     },

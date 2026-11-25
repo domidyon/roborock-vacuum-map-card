@@ -1,4 +1,4 @@
-import { Battery, Clock3, History, MapPin, ScanLine, Timer, TriangleAlert } from 'lucide-react';
+import { Battery, Clock3, History, MapPin, ScanLine, Sparkles, Timer, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { SANDBOX } from '../../build-flags';
 import { configHealth } from '../../health';
@@ -17,6 +17,22 @@ interface CardHeaderProps {
   dryingRemaining?: string;
 }
 
+function readFlag(key: string): boolean {
+  try {
+    return window.localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeFlag(key: string): void {
+  try {
+    window.localStorage.setItem(key, '1');
+  } catch {
+    // Private mode or blocked storage: the hint just comes back next time.
+  }
+}
+
 /** Name, state line, status strip, offline/error banners and the setup-health notice. */
 export function CardHeader({ hass, config, language, jobActive, detailedStatus, mopDrying, dryingRemaining }: CardHeaderProps) {
   const vacuum = hass.states[config.entity];
@@ -24,6 +40,10 @@ export function CardHeader({ hass, config, language, jobActive, detailedStatus, 
   const healthKey = JSON.stringify(health);
   // Dismissal lasts until the set of issues changes.
   const [dismissedHealth, setDismissedHealth] = useState<string>();
+  const hintKey = `roborock-vacuum-map-card:redetect-hint:${config.entity}`;
+  const [hintDismissed, setHintDismissed] = useState(() => readFlag(hintKey));
+  // Cards set up before 0.9 have no config_version; Re-detect adds one along with the new sensors.
+  const showUpgradeHint = config.config_version === undefined && hass.user?.is_admin !== false && !hintDismissed;
   const errorState = config.entities?.error ? hass.states[config.entities.error]?.state : undefined;
   const vacuumError = errorState && !['none', 'ok', 'unknown', 'unavailable', ''].includes(errorState) ? errorState.replaceAll('_', ' ') : undefined;
   const lastCleanState = config.entities?.last_clean_end ? hass.states[config.entities.last_clean_end]?.state : undefined;
@@ -68,6 +88,13 @@ export function CardHeader({ hass, config, language, jobActive, detailedStatus, 
       {SANDBOX && <div className="card-banner offline" role="note">Sandbox test build: commands to the vacuum and dock are blocked.</div>}
       {vacuum?.state === 'unavailable' && <div className="card-banner offline" role="status">{t(language, 'vacuumOffline')}</div>}
       {vacuumError && <div className="card-banner error" role="alert">{t(language, 'vacuumErrorBanner')} {vacuumError}</div>}
+      {showUpgradeHint && (
+        <div className="health-notice upgrade-hint" role="note">
+          <p className="upgrade-hint-title"><Sparkles />{t(language, 'upgradeHintTitle')}</p>
+          <p>{t(language, 'upgradeHint')}</p>
+          <button type="button" className="secondary" onClick={() => { writeFlag(hintKey); setHintDismissed(true); }}>{t(language, 'dismiss')}</button>
+        </div>
+      )}
       {health.length > 0 && dismissedHealth !== healthKey && (
         <details className="health-notice">
           <summary><TriangleAlert />{t(language, 'setupAttention')} ({health.length})</summary>

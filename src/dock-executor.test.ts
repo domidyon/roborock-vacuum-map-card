@@ -30,6 +30,27 @@ describe('dock executor', () => {
     expect(calls.filter(({ domain }) => domain !== 'vacuum')).toHaveLength(7);
   });
 
+  it('sets Empty mode through the native dock select on Home Assistant 2026.11+', async () => {
+    const native = 'select.qrevo_dock_empty_mode';
+    const config = { ...configFixture, entities: { ...configFixture.entities, dock_empty_mode: native } };
+    const run = async (version: string) => {
+      const hass = createHass({ config: { version }, entities: { [native]: { entity_id: native, platform: 'roborock' } } });
+      const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
+      hass.callService = vi.fn(async (domain, service, data) => {
+        calls.push({ domain, service, data });
+      });
+      await executeDockSetting(hass, config, 'empty_mode', 'balanced');
+      return calls;
+    };
+    expect(await run('2026.11.1')).toEqual([{ domain: 'select', service: 'select_option', data: { option: 'balanced' } }]);
+    // Before the core fix the select's own command is rejected, so the card sends its own.
+    expect(await run('2026.10.2')).toEqual([
+      { domain: 'vacuum', service: 'send_command', data: { command: 'set_dust_collection_mode', params: { mode: 2 } } },
+    ]);
+    await expect(executeDockSetting(createHass({ config: { version: '2026.11.1' }, entities: { [native]: { entity_id: native, platform: 'roborock' } } }), config, 'empty_mode', 'turbo'))
+      .rejects.toMatchObject({ operation: 'empty_mode' });
+  });
+
   it('does not update a helper if the vacuum rejects the setting', async () => {
     const hass = createHass();
     hass.callService = vi.fn(async (domain) => {

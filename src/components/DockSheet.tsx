@@ -1,7 +1,7 @@
 import { Droplets, Lock, Trash2, Waves, Wind, Wrench, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { DOCK_SETTING_DEFAULTS, DOCK_SETTING_ENTITIES, DOCK_SETTING_OPTIONS } from '../dock-settings';
-import { t, type TranslationKey } from '../i18n';
+import { dockOptionText, t, type TranslationKey } from '../i18n';
 import type { ConsumableStatus } from '../maintenance';
 import { levelText, remainingText } from './notices';
 import { useDialog } from './useDialog';
@@ -43,26 +43,10 @@ function currentSetting(
 }
 
 function optionLabel(language: Language | undefined, value: string): string {
-  const labels: Record<string, [string, string, string, string]> = {
-    smart: ['Smart', 'Slim', 'Akıllı', 'Inteligentny'],
-    light: ['Light', 'Licht', 'Hafif', 'Lekki'],
-    balanced: ['Balanced', 'Gebalanceerd', 'Dengeli', 'Zrównoważony'],
-    deep: ['Deep', 'Diep', 'Derin', 'Głęboki'],
-    max: ['Max', 'Max', 'Maksimum', 'Maks.'],
-    normal: ['Normal', 'Normaal', 'Normal', 'Normalna'],
-    warm: ['Warm', 'Warm', 'Ilık', 'Ciepła'],
-    hot: ['High temperature', 'Hoge temperatuur', 'Yüksek sıcaklık', 'Wysoka temperatura'],
-    '2h': ['2 hours', '2 uur', '2 saat', '2 godziny'],
-    '3h': ['3 hours · Standard', '3 uur · Standaard', '3 saat · Standart', '3 godziny · Standard'],
-    '4h': ['4 hours', '4 uur', '4 saat', '4 godziny'],
-  };
-
   if (value.endsWith('_min')) {
     return `${value.replace('_min', '')} ${t(language, 'minuteShort')}`;
   }
-
-  const languageIndex = language === 'nl' ? 1 : language === 'tr' ? 2 : language === 'pl' ? 3 : 0;
-  return labels[value]?.[languageIndex] ?? value;
+  return dockOptionText(language, value);
 }
 
 function SettingSelect({

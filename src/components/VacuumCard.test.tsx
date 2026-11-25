@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configFixture, createHass, createS7Hass, withModel } from '../test/fixtures';
 import { VacuumCard } from './VacuumCard';
 
@@ -93,7 +93,7 @@ describe('vacuum card flows', () => {
   });
 
   it('maps a 0.8 Deep preset to Deep+ on a profile that offers Deep+ instead of Deep', async () => {
-    // Home Assistant lists both routes, so 0.8 offered Deep; the a245 profile now offers Deep+.
+    // When Home Assistant lists both routes, 0.8 offered Deep; the a245 profile offers only Deep+.
     const hass = withModel(createHass(), 'roborock.vacuum.a245');
     const calls: Array<{ domain: string; service: string; data?: Record<string, unknown> }> = [];
     hass.callService = vi.fn(async (domain, service, data, target) => {
@@ -497,5 +497,38 @@ describe('vacuum card flows', () => {
     expect(screen.queryByRole('button', { name: config.floors[0].rooms[1].name })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Entire floor' }));
     expect(screen.getByRole('dialog')).not.toHaveTextContent(config.floors[0].rooms[1].name);
+  });
+});
+
+describe('upgrade hint for cards set up before 0.9', () => {
+  const hint = () => screen.queryByText('New sensors available');
+
+  beforeEach(() => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => { store.set(key, value); },
+      clear: () => store.clear(),
+    });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('tells administrators to run Re-detect and stays dismissed', async () => {
+    const { unmount } = render(<VacuumCard hass={createHass()} config={configFixture} />);
+    expect(hint()).toBeInTheDocument();
+    await userEvent.click(within(screen.getByRole('note')).getByRole('button', { name: 'Dismiss' }));
+    expect(hint()).toBeNull();
+    unmount();
+    render(<VacuumCard hass={createHass()} config={configFixture} />);
+    expect(hint()).toBeNull();
+  });
+
+  it('is hidden for re-detected configs and for non-administrators', () => {
+    const { unmount } = render(<VacuumCard hass={createHass()} config={{ ...configFixture, config_version: 1 }} />);
+    expect(hint()).toBeNull();
+    unmount();
+    render(<VacuumCard hass={createHass({ user: { is_admin: false } })} config={configFixture} />);
+    expect(hint()).toBeNull();
   });
 });

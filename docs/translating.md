@@ -14,8 +14,10 @@ The card has two dictionaries:
 2. Register the language: add it to the `Language` type in `src/types.ts`, to `language`
    in the schema in `src/config.ts`, to the dictionaries map in each i18n file, and to the
    *Card language* list in `src/components/editor/BasicsSection.tsx`.
-3. Optional: add option labels (suction, water flow, routes) to `optionLabels` in
-   `src/i18n/index.ts`.
+3. Add the dock setting labels to `DOCK_OPTION_LABELS` in `src/i18n/index.ts`, and
+   optionally option labels (suction, water flow, routes) to `optionLabels`.
+   Strings with `{n}` are whole phrases, such as `minutesAgo: '{n} min ago'`, so put `{n}`
+   wherever your language needs it.
 4. Run `npm run verify`. TypeScript refuses missing keys, and a test checks that every
    string exists and keeps its placeholders.
 

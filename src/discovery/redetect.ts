@@ -1,4 +1,5 @@
 import { areaMissing } from '../health';
+import { isNativeRoborockSelect } from '../native-dock';
 import type { EditorKey } from '../i18n/editor';
 import type { ConsumableConfig, FloorConfig, HomeAssistant, RoborockEntityConfig, RoborockVacuumMapCardConfig, RoomConfig } from '../types';
 import type { DiscoveryResult } from '.';
@@ -42,7 +43,9 @@ export function diffConfig(hass: HomeAssistant, current: RoborockVacuumMapCardCo
 
   for (const [key, to] of Object.entries(detected.config.entities ?? {}) as Array<[keyof RoborockEntityConfig, string | undefined]>) {
     const from = current.entities?.[key];
-    if (to && from !== to && !exists(from)) changes.push({ id: `entity:${key}`, kind: 'entity', key, from, to });
+    // A working helper stays, except Empty mode, where the native select (2026.11+) is the better source.
+    const nativeUpgrade = key === 'dock_empty_mode' && isNativeRoborockSelect(hass, to) && !isNativeRoborockSelect(hass, from);
+    if (to && from !== to && (!exists(from) || nativeUpgrade)) changes.push({ id: `entity:${key}`, kind: 'entity', key, from, to });
   }
 
   const matched = new Set<FloorConfig>();

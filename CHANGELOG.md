@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Use the dock's own *Empty mode* select on Home Assistant 2026.11 and newer, which fixed it (core PR #186486). New cards pick it during setup, and *Re-detect* offers it in place of the Empty mode helper. Older Home Assistant versions keep the card's own command.
+- Show a one-time *New sensors available* hint to administrators on cards set up before 0.9, pointing to *Re-detect*. It disappears after Re-detect or *Dismiss*.
+- Translations: relative times (*5 min ago*) are now whole phrases with a `{n}` placeholder, and dock setting labels moved into typed dictionaries, so new languages can use their own word order and can't miss a label.
+
 ## 0.9.0 — 2026-11-25
 
 Setup that mostly does itself: *Add card* discovers your robot, maps, rooms and areas, a setup

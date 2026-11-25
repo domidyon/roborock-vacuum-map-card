@@ -128,8 +128,9 @@ const en = {
   lastClean: 'Last clean',
   justNow: 'just now',
   yesterday: 'yesterday',
-  ago: 'ago',
-  daysAgo: 'days ago',
+  minutesAgo: '{n} min ago',
+  hoursAgo: '{n} h ago',
+  daysAgo: '{n} days ago',
   hourShort: 'h',
   minuteShort: 'min',
   preflightBlocked: "Can't start yet",
@@ -160,6 +161,8 @@ const en = {
   consumable_roller: "Roller brush",
   consumable_cleaning_brush: "Dock cleaning brush",
   setupAttention: "Setup needs attention",
+  upgradeHintTitle: "New sensors available",
+  upgradeHint: "This card was set up before 0.9. Edit the card and press Re-detect to add pre-start checks, maintenance and the new dock sensors.",
   health_area_missing: "Room {room} uses area {area}, which no longer exists.",
   health_entity_missing: "{entity} no longer exists.",
   health_map_option_missing: "The map selector no longer offers {option}.",
@@ -319,8 +322,9 @@ const nl: typeof en = {
   lastClean: 'Laatste schoonmaak',
   justNow: 'zojuist',
   yesterday: 'gisteren',
-  ago: 'geleden',
-  daysAgo: 'dagen geleden',
+  minutesAgo: '{n} min geleden',
+  hoursAgo: '{n} u geleden',
+  daysAgo: '{n} dagen geleden',
   hourShort: 'u',
   minuteShort: 'min',
   preflightBlocked: "Kan nog niet starten",
@@ -351,6 +355,8 @@ const nl: typeof en = {
   consumable_roller: "Rolborstel",
   consumable_cleaning_brush: "Reinigingsborstel station",
   setupAttention: "Instellingen vragen aandacht",
+  upgradeHintTitle: "Nieuwe sensoren beschikbaar",
+  upgradeHint: "Deze kaart is ingesteld vóór 0.9. Bewerk de kaart en kies Opnieuw detecteren om startcontroles, onderhoud en de nieuwe dock-sensoren toe te voegen.",
   health_area_missing: "Ruimte {room} gebruikt gebied {area}, dat niet meer bestaat.",
   health_entity_missing: "{entity} bestaat niet meer.",
   health_map_option_missing: "De kaartkeuze biedt {option} niet meer aan.",
@@ -582,8 +588,9 @@ const tr: typeof en = {
   lastClean: 'Son temizlik',
   justNow: 'az önce',
   yesterday: 'dün',
-  ago: 'önce',
-  daysAgo: 'gün önce',
+  minutesAgo: '{n} dk önce',
+  hoursAgo: '{n} sa önce',
+  daysAgo: '{n} gün önce',
   hourShort: 'sa',
   minuteShort: 'dk',
   preflightBlocked: "Henüz başlatılamıyor",
@@ -614,6 +621,8 @@ const tr: typeof en = {
   consumable_roller: "Silindir fırça",
   consumable_cleaning_brush: "İstasyon temizleme fırçası",
   setupAttention: "Kurulum ilgi gerektiriyor",
+  upgradeHintTitle: "Yeni sensörler mevcut",
+  upgradeHint: "Bu kart 0.9 öncesinde kuruldu. Başlangıç kontrolleri, bakım ve yeni istasyon sensörlerini eklemek için kartı düzenleyin ve Yeniden algıla'ya basın.",
   health_area_missing: "{room} odası artık mevcut olmayan {area} alanını kullanıyor.",
   health_entity_missing: "{entity} artık mevcut değil.",
   health_map_option_missing: "Harita seçici artık {option} sunmuyor.",
@@ -769,8 +778,9 @@ const pl: typeof en = {
   lastClean: 'Ostatnie sprzątanie',
   justNow: 'przed chwilą',
   yesterday: 'wczoraj',
-  ago: 'temu',
-  daysAgo: 'dni temu',
+  minutesAgo: '{n} min temu',
+  hoursAgo: '{n} godz. temu',
+  daysAgo: '{n} dni temu',
   hourShort: 'godz.',
   minuteShort: 'min',
   preflightBlocked: "Nie można jeszcze rozpocząć",
@@ -801,6 +811,8 @@ const pl: typeof en = {
   consumable_roller: "Szczotka wałkowa",
   consumable_cleaning_brush: "Szczotka czyszcząca stacji",
   setupAttention: "Konfiguracja wymaga uwagi",
+  upgradeHintTitle: "Dostępne nowe czujniki",
+  upgradeHint: "Ta karta została skonfigurowana przed wersją 0.9. Edytuj kartę i naciśnij Wykryj ponownie, aby dodać kontrole przed startem, konserwację i nowe czujniki stacji.",
   health_area_missing: "Pomieszczenie {room} używa obszaru {area}, który już nie istnieje.",
   health_entity_missing: "{entity} już nie istnieje.",
   health_map_option_missing: "Wybór mapy nie oferuje już {option}.",
@@ -881,4 +893,35 @@ export function optionText(language: Language | undefined, value: string): strin
   return optionLabels[language ?? 'en']?.[value]
     ?? optionLabels.en?.[value]
     ?? value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+type DockOptionLabels = Record<'smart' | 'light' | 'balanced' | 'deep' | 'max' | 'normal' | 'warm' | 'hot' | '2h' | '3h' | '4h', string>;
+
+/** Dock setting values. Every language must name every value, so TypeScript catches gaps. */
+export const DOCK_OPTION_LABELS: Record<Language, DockOptionLabels> = {
+  en: {
+    smart: 'Smart', light: 'Light', balanced: 'Balanced', deep: 'Deep', max: 'Max',
+    normal: 'Normal', warm: 'Warm', hot: 'High temperature',
+    '2h': '2 hours', '3h': '3 hours · Standard', '4h': '4 hours',
+  },
+  nl: {
+    smart: 'Slim', light: 'Licht', balanced: 'Gebalanceerd', deep: 'Diep', max: 'Max',
+    normal: 'Normaal', warm: 'Warm', hot: 'Hoge temperatuur',
+    '2h': '2 uur', '3h': '3 uur · Standaard', '4h': '4 uur',
+  },
+  tr: {
+    smart: 'Akıllı', light: 'Hafif', balanced: 'Dengeli', deep: 'Derin', max: 'Maksimum',
+    normal: 'Normal', warm: 'Ilık', hot: 'Yüksek sıcaklık',
+    '2h': '2 saat', '3h': '3 saat · Standart', '4h': '4 saat',
+  },
+  pl: {
+    smart: 'Inteligentny', light: 'Lekki', balanced: 'Zrównoważony', deep: 'Głęboki', max: 'Maks.',
+    normal: 'Normalna', warm: 'Ciepła', hot: 'Wysoka temperatura',
+    '2h': '2 godziny', '3h': '3 godziny · Standard', '4h': '4 godziny',
+  },
+};
+
+export function dockOptionText(language: Language | undefined, value: string): string {
+  const labels: Record<string, string> = DOCK_OPTION_LABELS[language ?? 'en'] ?? DOCK_OPTION_LABELS.en;
+  return labels[value] ?? (DOCK_OPTION_LABELS.en as Record<string, string>)[value] ?? value;
 }

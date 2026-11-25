@@ -1,4 +1,4 @@
-import { t } from '../../i18n';
+import { t, tf } from '../../i18n';
 import type { FloorConfig, HomeAssistant, Language, RoborockVacuumMapCardConfig } from '../../types';
 
 export function stateText(hass: HomeAssistant, entityId?: string): string | undefined {
@@ -44,12 +44,12 @@ export function formatRelativeTime(isoString: string, language: Language | undef
   if (diffMs < 0) return undefined;
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return t(language, 'justNow');
-  if (diffMins < 60) return `${diffMins} ${t(language, 'minuteShort')} ${t(language, 'ago')}`;
+  if (diffMins < 60) return tf(language, 'minutesAgo', { n: String(diffMins) });
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} ${t(language, 'hourShort')} ${t(language, 'ago')}`;
+  if (diffHours < 24) return tf(language, 'hoursAgo', { n: String(diffHours) });
   const diffDays = Math.floor(diffHours / 24);
   if (diffDays === 1) return t(language, 'yesterday');
-  return `${diffDays} ${t(language, 'daysAgo')}`;
+  return tf(language, 'daysAgo', { n: String(diffDays) });
 }
 
 export function initialFloor(config: RoborockVacuumMapCardConfig, hass: HomeAssistant): FloorConfig {

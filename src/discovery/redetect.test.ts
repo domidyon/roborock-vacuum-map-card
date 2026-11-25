@@ -33,6 +33,28 @@ describe('re-detect against the live dashboard config', () => {
     expect(changes.some((change) => change.kind === 'floor_added' || change.kind === 'floor_map')).toBe(false);
   });
 
+  it('offers the native Empty mode select instead of the helper from Home Assistant 2026.11', async () => {
+    const hass = createDiscoveryHass(undefined, { config: { version: '2026.11.1' } });
+    const current = normalizeConfig(liveConfig);
+    const changes = diffConfig(hass, current, await detect(hass));
+    expect(changes).toContainEqual({
+      id: 'entity:dock_empty_mode',
+      kind: 'entity',
+      key: 'dock_empty_mode',
+      from: 'input_select.qrevo_dock_empty_mode',
+      to: 'select.woonkamer_qrevo_curv_2_flow_dock_empty_mode',
+    });
+    // Other working helpers are never replaced.
+    expect(changes.filter((change) => change.kind === 'entity').map((change) => change.id)).not.toContain('entity:dock_wash_mode');
+  });
+
+  it('keeps the Empty mode helper before Home Assistant 2026.11', async () => {
+    const hass = createDiscoveryHass();
+    const detected = await detect(hass);
+    expect(detected.config.entities?.dock_empty_mode).toBeUndefined();
+    expect(diffConfig(hass, normalizeConfig(liveConfig), detected).map((change) => change.id)).not.toContain('entity:dock_empty_mode');
+  });
+
   it('applies accepted changes and keeps everything else', async () => {
     const hass = createDiscoveryHass();
     const current = normalizeConfig(liveConfig);
