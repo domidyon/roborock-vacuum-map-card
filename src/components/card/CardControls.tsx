@@ -1,4 +1,4 @@
-import { Bot, Home, Pause, Play, SlidersHorizontal, Sparkles, Square } from 'lucide-react';
+import { Bot, CalendarClock, Home, Pause, Play, SlidersHorizontal, Sparkles, Square } from 'lucide-react';
 import { t } from '../../i18n';
 import type { FloorConfig, Language, MapZone, RoborockCapabilities, SelectionMode } from '../../types';
 
@@ -72,6 +72,7 @@ export function ActionBar(props: {
   onDock: () => void;
   /** Opens the robot settings panel; absent when no robot setting entity is configured. */
   onRobot?: () => void;
+  onSchedule?: () => void;
 }) {
   const { language, floor, selectionMode, zone, capabilities } = props;
   const zoneMode = selectionMode === 'zone';
@@ -118,6 +119,11 @@ export function ActionBar(props: {
           <SlidersHorizontal />{t(language, 'dockStation')}
           {props.overdue > 0 && <span className="maintenance-badge" title={t(language, 'maintenanceBadge')} aria-label={t(language, 'maintenanceBadge')}>{props.overdue}</span>}
         </button>
+        {props.onSchedule && (
+          <button type="button" onClick={props.onSchedule}>
+            <CalendarClock />{t(language, 'schedule')}
+          </button>
+        )}
         {props.onRobot && (
           <button type="button" onClick={props.onRobot}>
             <Bot />{t(language, 'robot')}
