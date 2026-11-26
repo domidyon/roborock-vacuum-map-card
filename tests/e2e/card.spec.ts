@@ -119,3 +119,34 @@ test('retains the draft and never starts cleaning after a settings error', async
   const calls = await page.evaluate(() => window.__serviceCalls);
   expect(calls.some((call) => call.service === 'clean_area')).toBe(false);
 });
+
+test('sheets stay inside the card and the page behind them does not scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/?view=element');
+  const card = page.locator('roborock-vacuum-map-card');
+  await page.getByRole('button', { name: 'Kitchen' }).click();
+  await page.getByRole('button', { name: 'Configure job' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const cardBox = (await card.boundingBox())!;
+  const box = (await dialog.boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(cardBox.x);
+  expect(box.x + box.width).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+  expect(box.y).toBeGreaterThanOrEqual(Math.max(0, cardBox.y) - 1);
+  expect(box.y + box.height).toBeLessThanOrEqual(Math.min(900, cardBox.y + cardBox.height) + 1);
+
+  const before = await page.evaluate(() => window.scrollY);
+  await page.mouse.move(100, 400);
+  await page.mouse.wheel(0, 800);
+  await page.mouse.move(box.x + box.width / 2, box.y + 30);
+  await page.mouse.wheel(0, 800);
+  await page.keyboard.press('PageDown');
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => window.scrollY)).toBe(before);
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await page.mouse.move(100, 400);
+  await page.mouse.wheel(0, 400);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
+});
