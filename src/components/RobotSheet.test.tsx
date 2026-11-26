@@ -95,4 +95,35 @@ describe('robot panel', () => {
     expect(within(dialog).queryByRole('switch')).not.toBeInTheDocument();
     expect(dialog).toHaveTextContent('Cleanings');
   });
+
+  it('lists system health with problems first', async () => {
+    const hass = robotHass();
+    const add = (entity_id: string, state: string) => {
+      hass.states[entity_id] = { entity_id, state, attributes: {} } as HomeAssistant['states'][string];
+    };
+    add('sensor.robot_error', 'none');
+    add('sensor.dock_error', 'water_empty');
+    add('binary_sensor.robot_mop', 'on');
+    add('binary_sensor.robot_water_box', 'off');
+    add('binary_sensor.robot_water_shortage', 'off');
+    add('binary_sensor.dock_dirty_full', 'off');
+    const config = robotConfig();
+    config.entities = {
+      ...config.entities,
+      error: 'sensor.robot_error',
+      dock_error: 'sensor.dock_error',
+      mop_attached: 'binary_sensor.robot_mop',
+      water_box_attached: 'binary_sensor.robot_water_box',
+      water_shortage: 'binary_sensor.robot_water_shortage',
+      dock_dirty_water_full: 'binary_sensor.dock_dirty_full',
+      dock_clean_water_empty: 'binary_sensor.missing',
+    };
+    render(<VacuumCard hass={hass} config={config} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Robot' }));
+    const dialog = screen.getByRole('dialog', { name: 'Robot settings' });
+    const group = within(dialog).getByRole('heading', { name: 'System health' }).closest('section') as HTMLElement;
+    const rows = [...group.querySelectorAll('.robot-stat-row')].map((row) => row.textContent);
+    expect(rows).toEqual(['Dockwater empty', 'Water tankNot attached', 'RobotOK', 'MopAttached', 'Robot waterOK', 'Dirty water tankOK']);
+    expect(group.querySelectorAll('.is-problem')).toHaveLength(2);
+  });
 });

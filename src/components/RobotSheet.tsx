@@ -1,6 +1,6 @@
-import { BarChart3, BatteryCharging, MoonStar, Volume2, X } from 'lucide-react';
+import { Activity, BarChart3, BatteryCharging, MoonStar, Volume2, X } from 'lucide-react';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { t } from '../i18n';
+import { t, type TranslationKey } from '../i18n';
 import { formatRelativeTime, stateText } from './card/format';
 import { useDialog } from './useDialog';
 import type { RobotSwitchKey, RobotTimeKey } from '../robot-settings';
@@ -121,14 +121,45 @@ function VolumeRow({ hass, entityId, label, disabled, onChange }: { hass: HomeAs
   );
 }
 
-function StatRow({ label, value }: { label: string; value?: string }) {
+function StatRow({ label, value, problem }: { label: string; value?: string; problem?: boolean }) {
   if (!value) return null;
   return (
-    <div className="dock-setting-row robot-stat-row">
+    <div className={`dock-setting-row robot-stat-row${problem ? ' is-problem' : ''}`}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
   );
+}
+
+type HealthRow = { label: string; value?: string; problem?: boolean };
+
+/** Binary sensors and error sensors shown as a live status list, worst first. */
+function healthRows(hass: HomeAssistant, entities: NonNullable<RoborockVacuumMapCardConfig['entities']>, language: Language | undefined): HealthRow[] {
+  const ok = t(language, 'healthOk');
+  const binary = (entityId: string | undefined, label: TranslationKey, problemWhen: 'on' | 'off', problemText: TranslationKey, okText = ok): HealthRow => {
+    const state = liveState(hass, entityId);
+    if (state !== 'on' && state !== 'off') return { label: t(language, label) };
+    const problem = state === problemWhen;
+    return { label: t(language, label), value: problem ? t(language, problemText) : okText, problem };
+  };
+  const errorRow = (entityId: string | undefined, label: TranslationKey): HealthRow => {
+    const state = liveState(hass, entityId);
+    if (!state) return { label: t(language, label) };
+    const fine = ['none', 'ok', 'no_error', '0'].includes(state.toLowerCase());
+    return { label: t(language, label), value: fine ? ok : state.replaceAll('_', ' '), problem: !fine };
+  };
+  const attached = t(language, 'healthAttached');
+  const rows = [
+    errorRow(entities.error, 'healthRobotError'),
+    errorRow(entities.dock_error, 'healthDockError'),
+    binary(entities.mop_attached, 'healthMop', 'off', 'healthDetached', attached),
+    binary(entities.water_box_attached, 'healthWaterTank', 'off', 'healthDetached', attached),
+    binary(entities.water_shortage, 'healthWaterLevel', 'on', 'healthLow'),
+    binary(entities.dock_clean_water_empty, 'healthCleanTank', 'on', 'healthEmpty'),
+    binary(entities.dock_dirty_water_full, 'healthDirtyTank', 'on', 'healthFull'),
+    binary(entities.dock_clean_fluid_empty, 'healthCleaningFluid', 'on', 'healthEmpty'),
+  ].filter((row) => row.value);
+  return [...rows.filter((row) => row.problem), ...rows.filter((row) => !row.problem)];
 }
 
 /** Robot-level settings (volume, do not disturb, off-peak charging) and cleaning totals. */
@@ -157,6 +188,8 @@ export function RobotSheet({ hass, config, language, pending, onClose, onSwitch,
     { label: t(language, 'lastCleanStart'), value: lastStart ? formatRelativeTime(lastStart, language) : undefined },
   ];
 
+  const health = healthRows(hass, entities, language);
+
   return (
     <div className="sheet-layer" role="presentation">
       <button type="button" className="sheet-backdrop" aria-label={t(language, 'close')} onClick={onClose} />
@@ -171,6 +204,13 @@ export function RobotSheet({ hass, config, language, pending, onClose, onSwitch,
         </header>
 
         <div className="sheet-body dock-sheet-body">
+          {health.length > 0 && (
+            <section className="dock-settings-group">
+              <h3><Activity />{t(language, 'robotHealth')}</h3>
+              {health.map((row) => <StatRow key={row.label} label={row.label} value={row.value} problem={row.problem} />)}
+            </section>
+          )}
+
           {entities.robot_volume && (
             <section className="dock-settings-group">
               <h3><Volume2 />{t(language, 'robotVolume')}</h3>
