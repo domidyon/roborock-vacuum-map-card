@@ -51,7 +51,7 @@ If areas are missing, configure segment-to-area mapping in the Roborock vacuum e
 ### Schedules
 
 With the [Scheduler integration](https://github.com/nielsfaber/scheduler-component)
-installed, the robot panel lists cleaning schedules, with their next run and an on/off
+installed, a *Schedule* button in the action bar lists cleaning schedules, with their next run and an on/off
 switch, and creates, edits and deletes them. A schedule runs a Home Assistant script, so
 it runs whether or not a dashboard is open. The card offers:
 
