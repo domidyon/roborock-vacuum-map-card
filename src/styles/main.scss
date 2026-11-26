@@ -377,6 +377,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .robot-stat-row strong { font-variant-numeric: tabular-nums; }
 .robot-stat-row.is-problem strong { color: var(--rvm-danger); }
 .schedule-row { gap: 12px; }
+.schedule-group > :first-child, .schedule-group > .schedule-form > :first-child { border-top: 0; }
 .schedule-text { display: grid; gap: 2px; min-width: 0; font-weight: 400 !important; }
 .schedule-text strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .schedule-text small { color: var(--rvm-muted); }
@@ -386,7 +387,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .schedule-add { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; border: 0; border-top: 1px solid var(--rvm-border); color: var(--rvm-accent); background: transparent; font: inherit; font-weight: 600; cursor: pointer; }
 .schedule-add svg { width: 18px; height: 18px; }
 .schedule-add:hover:not(:disabled) { background: color-mix(in srgb, var(--rvm-accent) 8%, transparent); }
-.schedule-form h4 { margin: 0; padding: 10px 16px 6px; border-top: 1px solid var(--rvm-border); font-size: 14px; color: var(--rvm-muted); }
+.schedule-form h4 { margin: 0; padding: 12px 16px 6px; font-size: 14px; color: var(--rvm-muted); }
 .schedule-field-stack { align-items: flex-start; flex-direction: column; gap: 8px; }
 .schedule-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .schedule-chips button { min-height: 34px; padding: 6px 12px; border: 1px solid var(--rvm-border); border-radius: 17px; color: var(--rvm-text); background: var(--rvm-surface); font: inherit; font-size: 13px; cursor: pointer; }
