@@ -128,6 +128,18 @@ describe('robot panel', () => {
   });
 
   describe('schedules', () => {
+    it('has its own button, only with the Scheduler integration', async () => {
+      const { hass, config } = scheduleSetup();
+      const { unmount } = render(<VacuumCard hass={hass} config={config} />);
+      expect(screen.getByRole('button', { name: 'Schedule' })).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Robot' }));
+      expect(within(screen.getByRole('dialog', { name: 'Robot settings' })).queryByText('Vac & Mop')).not.toBeInTheDocument();
+      unmount();
+      delete hass.services?.scheduler;
+      render(<VacuumCard hass={hass} config={config} />);
+      expect(screen.queryByRole('button', { name: 'Schedule' })).not.toBeInTheDocument();
+    });
+
     const schedule = {
       schedule_id: 'abc',
       entity_id: 'switch.schedule_abc',
@@ -165,10 +177,10 @@ describe('robot panel', () => {
 
     async function openSchedules(hass: HomeAssistant, config: RoborockVacuumMapCardConfig) {
       render(<VacuumCard hass={hass} config={config} />);
-      await userEvent.click(screen.getByRole('button', { name: 'Robot' }));
-      const dialog = screen.getByRole('dialog', { name: 'Robot settings' });
+      await userEvent.click(screen.getByRole('button', { name: 'Schedule' }));
+      const dialog = screen.getByRole('dialog', { name: 'Schedules' });
       await within(dialog).findByText('Vac & Mop');
-      return within(dialog).getByRole('heading', { name: 'Schedules' }).closest('section') as HTMLElement;
+      return dialog;
     }
 
     it('lists the robot schedules and switches them on and off', async () => {

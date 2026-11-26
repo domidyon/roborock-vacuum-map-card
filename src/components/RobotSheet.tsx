@@ -2,9 +2,7 @@ import { Activity, BarChart3, BatteryCharging, MoonStar, Volume2, X } from 'luci
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { t, type TranslationKey } from '../i18n';
 import { formatRelativeTime, stateText } from './card/format';
-import { ScheduleSection } from './ScheduleSection';
 import { useDialog } from './useDialog';
-import { hasScheduler } from '../schedules';
 import type { RobotSwitchKey, RobotTimeKey } from '../robot-settings';
 import type { HomeAssistant, Language, RoborockVacuumMapCardConfig } from '../types';
 
@@ -17,7 +15,6 @@ interface RobotSheetProps {
   onSwitch: (key: RobotSwitchKey, enabled: boolean) => void;
   onTime: (key: RobotTimeKey, value: string) => void;
   onVolume: (value: number) => void;
-  onToast: (message: string) => void;
 }
 
 function liveState(hass: HomeAssistant, entityId?: string): string | undefined {
@@ -166,7 +163,7 @@ function healthRows(hass: HomeAssistant, entities: NonNullable<RoborockVacuumMap
 }
 
 /** Robot-level settings (volume, do not disturb, off-peak charging) and cleaning totals. */
-export function RobotSheet({ hass, config, language, pending, onClose, onSwitch, onTime, onVolume, onToast }: RobotSheetProps) {
+export function RobotSheet({ hass, config, language, pending, onClose, onSwitch, onTime, onVolume }: RobotSheetProps) {
   const dialogRef = useDialog<HTMLElement>(onClose);
   const disabled = Boolean(pending);
   const entities = config.entities ?? {};
@@ -238,8 +235,6 @@ export function RobotSheet({ hass, config, language, pending, onClose, onSwitch,
               {entities.off_peak_end && <TimeRow label={t(language, 'timeUntil')} value={timeValue(hass, entities.off_peak_end)} disabled={disabled} onChange={(value) => onTime('off_peak_end', value)} />}
             </section>
           )}
-
-          {hasScheduler(hass) && <ScheduleSection hass={hass} config={config} language={language} onToast={onToast} />}
 
           {stats.some((item) => item.value) && (
             <section className="dock-settings-group">

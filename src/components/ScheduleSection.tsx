@@ -1,4 +1,4 @@
-import { CalendarClock, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t, tf, type TranslationKey } from '../i18n';
 import {
@@ -306,7 +306,6 @@ export function ScheduleSection({ hass, config, language, onToast }: ScheduleSec
 
   return (
     <section className="dock-settings-group schedule-group">
-      <h3><CalendarClock />{t(language, 'schedules')}</h3>
       {editing ? (
         <ScheduleForm
           hass={hass}

@@ -31,6 +31,8 @@ import { useDockControls } from './card/useDockControls';
 import { useRobotControls } from './card/useRobotControls';
 import { DockSheet } from './DockSheet';
 import { RobotSheet } from './RobotSheet';
+import { ScheduleSheet } from './ScheduleSheet';
+import { hasScheduler, scheduleActions } from '../schedules';
 import { hasRobotPanel } from '../robot-settings';
 import { JobSheet } from './JobSheet';
 import { MapView } from './MapView';
@@ -54,6 +56,7 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
   const [assistedConfiguring, setAssistedConfiguring] = useState(false);
   const [dockOpen, setDockOpen] = useState(false);
   const [robotOpen, setRobotOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [toast, setToast] = useState<string>();
   const [execution, setExecution] = useState<JobExecutionState>({ phase: 'idle' });
   const capabilities = useMemo(() => detectCapabilities(hass, config), [hass, config]);
@@ -342,6 +345,7 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
         onTransport={transport}
         onDock={() => setDockOpen(true)}
         onRobot={hasRobotPanel(config) ? () => setRobotOpen(true) : undefined}
+        onSchedule={hasScheduler(hass) && scheduleActions(config, hass).length > 0 ? () => setScheduleOpen(true) : undefined}
       />
 
       {sheetOpen && (
@@ -381,6 +385,8 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
         />
       )}
 
+      {scheduleOpen && <ScheduleSheet hass={hass} config={config} language={language} onClose={() => setScheduleOpen(false)} onToast={setToast} />}
+
       {robotOpen && (
         <RobotSheet
           hass={hass}
@@ -391,7 +397,6 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
           onSwitch={robot.changeRobotSwitch}
           onTime={robot.changeRobotTime}
           onVolume={robot.changeRobotVolume}
-          onToast={setToast}
         />
       )}
 
