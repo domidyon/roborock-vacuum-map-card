@@ -43,6 +43,14 @@ describe('schedules', () => {
     expect(isSimpleSchedule(item({ timeslots: [...item().timeslots, ...item().timeslots] }))).toBe(false);
   });
 
+  it('keeps real conditions when editing', () => {
+    const conditions = [{ entity_id: 'binary_sensor.home', value: 'on', match_type: 'is' }];
+    const existing = item({ timeslots: [{ start: '03:00:00', stop: null, conditions, condition_type: 'and', track_conditions: false, actions: item().timeslots[0].actions }] });
+    const payload = schedulePayload({ action: 0, time: '03:00', values: {} }, vacAndMop, existing) as { timeslots: Array<Record<string, unknown>> };
+    expect(payload.timeslots[0]).toMatchObject({ conditions, condition_type: 'and', track_conditions: false });
+    expect(payload.timeslots[0]).not.toHaveProperty('stop');
+  });
+
   it('reads and writes weekdays', () => {
     expect([...weekdaySet(['workday'])]).toEqual(['mon', 'tue', 'wed', 'thu', 'fri']);
     expect(weekdayList(weekdaySet(['daily']))).toEqual(['daily']);
@@ -60,7 +68,7 @@ describe('schedules', () => {
       entity_id: 'switch.schedule_abc',
       name: 'Night',
       weekdays: ['workday'],
-      timeslots: [{ stop: null, conditions: [], start: '04:00:00', actions: [{ service: 'script.clean', service_data: { cleaning_mode: 'vac_and_mop', kitchen: 'skip', job_source: 'Scheduled' } }] }],
+      timeslots: [{ start: '04:00:00', actions: [{ service: 'script.clean', service_data: { cleaning_mode: 'vac_and_mop', kitchen: 'skip', job_source: 'Scheduled' } }] }],
       repeat_type: 'repeat',
     });
   });

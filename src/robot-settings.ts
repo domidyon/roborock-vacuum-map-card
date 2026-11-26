@@ -19,5 +19,5 @@ export const ROBOT_PANEL_KEYS: Array<keyof RoborockEntityConfig> = [
 ];
 
 export function hasRobotPanel(config: RoborockVacuumMapCardConfig): boolean {
-  return ROBOT_PANEL_KEYS.some((key) => Boolean(config.entities?.[key])) || Boolean(config.schedule_actions?.length);
+  return ROBOT_PANEL_KEYS.some((key) => Boolean(config.entities?.[key]));
 }

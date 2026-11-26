@@ -144,9 +144,14 @@ export function schedulePayload(draft: ScheduleDraft, action: ScheduleActionConf
   const slot = existing?.timeslots[0];
   const previous = slot?.actions[0]?.service === action.script ? slot.actions[0].service_data ?? {} : {};
   const values = Object.fromEntries(Object.entries(draft.values).filter(([, value]) => value !== undefined && value !== ''));
-  const slotRest: Record<string, unknown> = { ...(slot ?? {}) };
-  delete slotRest.start;
-  delete slotRest.actions;
+  // Keep what the editor doesn't show (conditions, an end time), but not the empty or null
+  // values the scheduler reports: its services reject `stop: null` and `conditions: []`.
+  const slotRest = Object.fromEntries(Object.entries(slot ?? {}).filter(([key, value]) => !['start', 'actions'].includes(key) && value !== null && value !== undefined));
+  if (!Array.isArray(slotRest.conditions) || slotRest.conditions.length === 0) {
+    delete slotRest.conditions;
+    delete slotRest.condition_type;
+    delete slotRest.track_conditions;
+  }
   const payload: Record<string, unknown> = {
     weekdays: draft.days ? weekdayList(draft.days) : existing?.weekdays ?? ['daily'],
     timeslots: [{ ...slotRest, start: `${draft.time}:00`, actions: [{ service: action.script, service_data: { ...previous, ...action.data, ...values } }] }],
