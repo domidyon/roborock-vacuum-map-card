@@ -18,6 +18,13 @@ describe('re-detect against the live dashboard config', () => {
     const current = normalizeConfig(liveConfig);
     const changes = diffConfig(hass, current, await detect(hass));
     expect(changes.map((change) => change.id)).toEqual([
+      'entity:do_not_disturb_start',
+      'entity:do_not_disturb_end',
+      'entity:robot_volume',
+      'entity:total_cleaning_time',
+      'entity:total_cleaning_area',
+      'entity:total_cleaning_count',
+      'entity:last_clean_start',
       'entity:dock_clean_water_empty',
       'entity:dock_dirty_water_full',
       'entity:dock_error',

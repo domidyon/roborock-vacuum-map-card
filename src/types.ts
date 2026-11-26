@@ -83,6 +83,8 @@ export interface HomeAssistant {
   config?: { version: string };
   user?: { is_admin: boolean };
   callWS?: <T>(message: Record<string, unknown>) => Promise<T>;
+  /** Registered services, with script fields. */
+  services?: Record<string, Record<string, { name?: string; description?: string; fields?: Record<string, unknown> }>>;
   callApi?: <T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, parameters?: Record<string, unknown>) => Promise<T>;
   connected?: boolean;
   locale?: { language?: string };
@@ -120,6 +122,16 @@ export interface RoborockEntityConfig {
   mop_attached?: string;
   water_box_attached?: string;
   do_not_disturb?: string;
+  do_not_disturb_start?: string;
+  do_not_disturb_end?: string;
+  robot_volume?: string;
+  off_peak_charging?: string;
+  off_peak_start?: string;
+  off_peak_end?: string;
+  total_cleaning_time?: string;
+  total_cleaning_area?: string;
+  total_cleaning_count?: string;
+  last_clean_start?: string;
   battery?: string;
   current_room?: string;
   cleaning_area?: string;
@@ -212,6 +224,8 @@ export interface RoborockVacuumMapCardConfig {
   enable_smartplan?: boolean;
   /** Overrides the model profile: how room jobs apply the cleaning count. */
   cleaning_count_command?: RepeatStrategy;
+  /** Jobs offered when scheduling cleanings with the Scheduler integration. */
+  schedule_actions?: Array<{ name: string; script: string; icon?: string; data?: Record<string, unknown>; fields?: string[]; option_icons?: Record<string, Record<string, string>>; options?: Record<string, string[]> }>;
   [key: string]: unknown;
 }
 

@@ -75,6 +75,16 @@ export const cardConfigSchema = z
         mop_attached: optionalEntityId,
         water_box_attached: optionalEntityId,
         do_not_disturb: optionalEntityId,
+        do_not_disturb_start: optionalEntityId,
+        do_not_disturb_end: optionalEntityId,
+        robot_volume: optionalEntityId,
+        off_peak_charging: optionalEntityId,
+        off_peak_start: optionalEntityId,
+        off_peak_end: optionalEntityId,
+        total_cleaning_time: optionalEntityId,
+        total_cleaning_area: optionalEntityId,
+        total_cleaning_count: optionalEntityId,
+        last_clean_start: optionalEntityId,
         battery: optionalEntityId,
         current_room: optionalEntityId,
         cleaning_area: optionalEntityId,
@@ -114,6 +124,19 @@ export const cardConfigSchema = z
       .optional(),
     enable_smartplan: z.boolean().optional(),
     cleaning_count_command: z.enum(['set_clean_repeat_times', 'app_segment_clean']).optional(),
+    schedule_actions: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          script: entityId.refine((value) => value.startsWith('script.'), 'Schedule actions run a script'),
+          icon: z.string().optional(),
+          option_icons: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+          options: z.record(z.string(), z.array(z.string())).optional(),
+          data: z.record(z.string(), z.unknown()).optional(),
+          fields: z.array(z.string().min(1)).optional(),
+        }),
+      )
+      .optional(),
   })
   .passthrough()
   .superRefine((config, ctx) => {
