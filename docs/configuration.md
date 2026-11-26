@@ -48,6 +48,32 @@ and is a snapshot, so create it again after changing the preset.
 
 If areas are missing, configure segment-to-area mapping in the Roborock vacuum entity settings first.
 
+### Schedules
+
+With the [Scheduler integration](https://github.com/nielsfaber/scheduler-component)
+installed, the robot panel lists cleaning schedules, with their next run and an on/off
+switch, and creates, edits and deletes them. A schedule runs a Home Assistant script, so
+it runs whether or not a dashboard is open. The card offers:
+
+- the preset scripts made with **Presets as scripts** (`script.rvmc_<vacuum>_<preset>`),
+  with their `floor` and `areas` fields (areas are picked from the card's rooms), or
+- the jobs in `schedule_actions`, which replace them:
+
+```yaml
+schedule_actions:
+  - name: Vac & Mop
+    script: script.roborock_scheduled_cleaning
+    # Sent with every run of this job, and used to recognise its schedules.
+    data:
+      cleaning_mode: vac_and_mop
+    # Optional: which script fields to ask for (default: all fields not in data).
+    fields: [kitchen, living_room, suction, mop_mode, mop_intensity]
+```
+
+The editor builds each field from the script's selector (select, boolean, number, time,
+text, area). A schedule with several times, an end time or several actions is listed and
+can be switched or deleted, but is edited in the Scheduler card.
+
 ### Config versions
 
 Configs written by the assistant include `config_version: 1`. Configs without it are
