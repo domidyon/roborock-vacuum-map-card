@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a robot panel (*Robot* in the action bar) for the robot's own settings: volume, do not disturb on/off and hours, and off-peak charging on/off and hours, each written to its native Home Assistant entity. It also shows lifetime cleaning time, area and count and when the last clean started. Setup and *Re-detect* find the new entities by translation key; the button only appears when at least one is configured.
+
 ## 0.10.0 — 2026-11-25
 
 - Add Spanish language support across the card UI, dock controls, configuration editor and live option labels.
