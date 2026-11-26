@@ -58,6 +58,14 @@ describe('device discovery (live Qrevo Curv 2 Flow fixture)', () => {
       dock_clean_water_empty: 'binary_sensor.woonkamer_qrevo_curv_2_flow_dock_clean_water_box',
       dock_dirty_water_full: 'binary_sensor.woonkamer_qrevo_curv_2_flow_dock_dirty_water_box',
       dock_error: 'sensor.woonkamer_qrevo_curv_2_flow_dock_dock_error',
+      // Robot settings and cleaning totals for the robot panel.
+      do_not_disturb_start: 'time.qrevo_curv_2_flow_do_not_disturb_begin',
+      do_not_disturb_end: 'time.qrevo_curv_2_flow_do_not_disturb_end',
+      robot_volume: 'number.qrevo_curv_2_flow_volume',
+      total_cleaning_time: 'sensor.qrevo_curv_2_flow_total_cleaning_time',
+      total_cleaning_area: 'sensor.qrevo_curv_2_flow_total_cleaning_area',
+      total_cleaning_count: 'sensor.qrevo_curv_2_flow_total_cleaning_count',
+      last_clean_start: 'sensor.qrevo_curv_2_flow_last_clean_begin',
     });
     expect(report.model).toBe('roborock.vacuum.a245');
   });
