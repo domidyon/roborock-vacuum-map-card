@@ -4,7 +4,7 @@
 
 - Add a robot panel (*Robot* in the action bar) for the robot's own settings: volume, do not disturb on/off and hours, and off-peak charging on/off and hours, each written to its native Home Assistant entity. It also shows lifetime cleaning time, area and count and when the last clean started. Setup and *Re-detect* find the new entities by translation key; the button only appears when at least one is configured.
 - The robot panel also lists system health from entities the card already uses: robot and dock errors, mop and water tank attached, robot water, clean and dirty water tanks and cleaning fluid. Problems are listed first and highlighted.
-- Schedule cleanings from the robot panel with the [Scheduler integration](https://github.com/nielsfaber/scheduler-component): list the robot's schedules with their next run, switch them on and off, and create, edit or delete them. Each schedule runs a script (the preset scripts the editor creates, or the jobs in `schedule_actions`), so it runs without a dashboard open. Schedules with several times or actions are listed but edited in the Scheduler card.
+- Add a *Schedule* button that schedules cleanings with the [Scheduler integration](https://github.com/nielsfaber/scheduler-component): list the robot's schedules with their next run, switch them on and off, and create, edit or delete them. Each schedule runs a script (the preset scripts the editor creates, or the jobs in `schedule_actions`), so it runs without a dashboard open. Schedules with several times or actions are listed but edited in the Scheduler card.
 
 ## 0.10.0 — 2026-11-25
 

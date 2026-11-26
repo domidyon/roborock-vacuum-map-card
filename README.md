@@ -47,7 +47,8 @@ guesses room boundaries.
 | 🛡️ **Safe by design** | Settings stay a draft until you press Start. Every option is validated against live entities, and a failed step aborts before cleaning |
 | 🚰 **Pre-start checks** | An empty clean-water tank or a detached mop blocks a mop job; a full dirty tank, a dock error or low battery gets a warning first |
 | 🧹 **Maintenance** | Brush, filter, sensor and strainer life in the dock panel, a badge when something is due, and resets with confirmation |
-| 🤖 **Robot settings** | Volume, do not disturb hours and off-peak charging from the robot panel, a live system health list, cleaning schedules (Scheduler integration), and lifetime cleaning time, area and count |
+| 🤖 **Robot settings** | Volume, do not disturb hours and off-peak charging from the robot panel, a live system health list and lifetime cleaning time, area and count |
+| 🗓️ **Schedules** | Create, edit, switch and delete cleaning schedules (Scheduler integration) from the *Schedule* button |
 | 📱 **Feels native** | Mobile bottom sheet, desktop dialog, light and dark themes, keyboard support |
 | 🌍 **Translated** | English, Nederlands, Polski, Türkçe, Español ([add yours](#-translations)) |
 | 🧩 **Visual editor** | Setup assistant, Re-detect, sections, Home Assistant's own pickers, lossless YAML round-tripping |
