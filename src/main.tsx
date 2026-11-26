@@ -51,6 +51,17 @@ export class RoborockVacuumMapCard extends ReactElement {
   private rawConfig?: unknown;
   private language?: Language;
   private homeAssistant?: HomeAssistant;
+  private sheetInsetObserver?: ResizeObserver;
+
+  // Sheets are position:fixed, so by default they centre over the whole viewport and the
+  // docked sidebar covers their left half. Expose the card's own box as CSS vars so the
+  // sheet layer centres over the card instead, matching the main card window.
+  private updateSheetInset = () => {
+    const rect = this.getBoundingClientRect();
+    const viewport = window.innerWidth || document.documentElement.clientWidth;
+    this.style.setProperty('--rvm-sheet-left', `${Math.max(0, rect.left)}px`);
+    this.style.setProperty('--rvm-sheet-right', `${Math.max(0, viewport - rect.right)}px`);
+  };
 
   setConfig(config: RoborockVacuumMapCardConfig) {
     // An unusable config shows the setup state instead of Home Assistant's error card.
@@ -70,10 +81,19 @@ export class RoborockVacuumMapCard extends ReactElement {
   // Lovelace keeps left views detached in memory and stops sending them hass,
   // so the card has to stop its own background work while it is off the page.
   connectedCallback() {
+    if (!this.sheetInsetObserver) {
+      this.sheetInsetObserver = new ResizeObserver(() => this.updateSheetInset());
+      this.sheetInsetObserver.observe(this);
+    }
+    window.addEventListener('resize', this.updateSheetInset);
+    this.updateSheetInset();
     this.render();
   }
 
   disconnectedCallback() {
+    this.sheetInsetObserver?.disconnect();
+    this.sheetInsetObserver = undefined;
+    window.removeEventListener('resize', this.updateSheetInset);
     this.render();
   }
 
