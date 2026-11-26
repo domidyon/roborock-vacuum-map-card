@@ -120,6 +120,16 @@ export interface RoborockEntityConfig {
   mop_attached?: string;
   water_box_attached?: string;
   do_not_disturb?: string;
+  do_not_disturb_start?: string;
+  do_not_disturb_end?: string;
+  robot_volume?: string;
+  off_peak_charging?: string;
+  off_peak_start?: string;
+  off_peak_end?: string;
+  total_cleaning_time?: string;
+  total_cleaning_area?: string;
+  total_cleaning_count?: string;
+  last_clean_start?: string;
   battery?: string;
   current_room?: string;
   cleaning_area?: string;
