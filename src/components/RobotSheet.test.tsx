@@ -126,4 +126,90 @@ describe('robot panel', () => {
     expect(rows).toEqual(['Dockwater empty', 'Water tankNot attached', 'RobotOK', 'MopAttached', 'Robot waterOK', 'Dirty water tankOK']);
     expect(group.querySelectorAll('.is-problem')).toHaveLength(2);
   });
+
+  describe('schedules', () => {
+    const schedule = {
+      schedule_id: 'abc',
+      entity_id: 'switch.schedule_abc',
+      weekdays: ['daily'],
+      timeslots: [{ start: '03:00:00', stop: null, actions: [{ service: 'script.clean', service_data: { cleaning_mode: 'vac_and_mop', kitchen: 'clean' } }] }],
+      repeat_type: 'repeat',
+      enabled: true,
+      timestamps: ['2026-11-27T03:00:00+02:00'],
+      next_entries: [0],
+    };
+
+    function scheduleSetup() {
+      const hass = robotHass();
+      hass.services = {
+        scheduler: { add: {}, edit: {}, remove: {} },
+        script: {
+          clean: {
+            fields: {
+              cleaning_mode: {},
+              kitchen: { name: 'Kitchen', default: 'skip', selector: { select: { options: [{ value: 'skip', label: 'Skip' }, { value: 'clean', label: 'Clean' }] } } },
+            },
+          },
+        },
+      };
+      hass.states['switch.schedule_abc'] = { entity_id: 'switch.schedule_abc', state: 'on', attributes: {} } as HomeAssistant['states'][string];
+      hass.callWS = vi.fn(async () => [schedule]) as HomeAssistant['callWS'];
+      hass.callService = vi.fn(async () => undefined);
+      const config = robotConfig();
+      config.schedule_actions = [
+        { name: 'Vacuum', script: 'script.clean', data: { cleaning_mode: 'vacuum' } },
+        { name: 'Vac & Mop', script: 'script.clean', data: { cleaning_mode: 'vac_and_mop' } },
+      ];
+      return { hass, config };
+    }
+
+    async function openSchedules(hass: HomeAssistant, config: RoborockVacuumMapCardConfig) {
+      render(<VacuumCard hass={hass} config={config} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Robot' }));
+      const dialog = screen.getByRole('dialog', { name: 'Robot settings' });
+      await within(dialog).findByText('Vac & Mop');
+      return within(dialog).getByRole('heading', { name: 'Schedules' }).closest('section') as HTMLElement;
+    }
+
+    it('lists the robot schedules and switches them on and off', async () => {
+      const { hass, config } = scheduleSetup();
+      const group = await openSchedules(hass, config);
+      expect(group).toHaveTextContent('03:00 · Every day');
+      await userEvent.click(within(group).getByRole('switch', { name: 'Vac & Mop' }));
+      await waitFor(() => expect(hass.callService).toHaveBeenCalledWith('switch', 'turn_off', {}, { entity_id: 'switch.schedule_abc' }));
+    });
+
+    it('creates a schedule with the chosen job, time, days and fields', async () => {
+      const { hass, config } = scheduleSetup();
+      const group = await openSchedules(hass, config);
+      await userEvent.click(within(group).getByRole('button', { name: 'Add schedule' }));
+      fireEvent.change(within(group).getByLabelText('Cleaning'), { target: { value: '0' } });
+      fireEvent.input(within(group).getByLabelText('Time'), { target: { value: '07:30' } });
+      for (const day of ['Sat', 'Sun']) await userEvent.click(within(group).getByRole('button', { name: day }));
+      fireEvent.change(within(group).getByLabelText('Kitchen'), { target: { value: 'clean' } });
+      await userEvent.click(within(group).getByRole('button', { name: 'Save' }));
+      await waitFor(() =>
+        expect(hass.callService).toHaveBeenCalledWith('scheduler', 'add', {
+          weekdays: ['mon', 'tue', 'wed', 'thu', 'fri'],
+          timeslots: [{ start: '07:30:00', actions: [{ service: 'script.clean', service_data: { cleaning_mode: 'vacuum', kitchen: 'clean' } }] }],
+          repeat_type: 'repeat',
+        }),
+      );
+    });
+
+    it('edits and deletes a schedule', async () => {
+      const { hass, config } = scheduleSetup();
+      const group = await openSchedules(hass, config);
+      await userEvent.click(within(group).getByRole('button', { name: 'Edit schedule: Vac & Mop' }));
+      expect(within(group).getByLabelText('Kitchen')).toHaveValue('clean');
+      fireEvent.input(within(group).getByLabelText('Time'), { target: { value: '04:15' } });
+      await userEvent.click(within(group).getByRole('button', { name: 'Save' }));
+      await waitFor(() =>
+        expect(hass.callService).toHaveBeenCalledWith('scheduler', 'edit', expect.objectContaining({ entity_id: 'switch.schedule_abc', weekdays: ['daily'], timeslots: [expect.objectContaining({ start: '04:15:00' })] })),
+      );
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      await userEvent.click(await within(group).findByRole('button', { name: 'Delete schedule: Vac & Mop' }));
+      await waitFor(() => expect(hass.callService).toHaveBeenCalledWith('scheduler', 'remove', { entity_id: 'switch.schedule_abc' }));
+    });
+  });
 });

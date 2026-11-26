@@ -391,6 +391,7 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
           onSwitch={robot.changeRobotSwitch}
           onTime={robot.changeRobotTime}
           onVolume={robot.changeRobotVolume}
+          onToast={setToast}
         />
       )}
 
