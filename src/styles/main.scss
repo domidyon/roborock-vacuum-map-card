@@ -263,14 +263,14 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   svg { width: 18px; height: 18px; }
 }
 
-.sheet-layer { position: fixed; z-index: 999; top: 0; bottom: 0; left: var(--rvm-sheet-left, 0px); right: var(--rvm-sheet-right, 0px); display: grid; place-items: center; padding: 24px; }
-.sheet-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: rgba(0, 0, 0, 0.48); backdrop-filter: blur(3px); }
+.sheet-layer { position: fixed; z-index: 999; top: var(--rvm-sheet-top, 0px); bottom: var(--rvm-sheet-bottom, 0px); left: var(--rvm-sheet-left, 0px); right: var(--rvm-sheet-right, 0px); display: grid; place-items: center; padding: 16px; overflow: hidden; overscroll-behavior: contain; border-radius: var(--ha-card-border-radius, 12px); }
+.sheet-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: inherit; background: rgba(0, 0, 0, 0.48); backdrop-filter: blur(3px); }
 .job-sheet {
   position: relative;
   display: flex;
   flex-direction: column;
   width: min(680px, 100%);
-  max-height: min(820px, calc(100vh - 48px));
+  max-height: min(820px, 100%);
   overflow: hidden;
   border-radius: 24px;
   background: var(--rvm-surface);
@@ -284,7 +284,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   footer button { min-width: 120px; }
 }
 .sheet-handle { display: none; }
-.sheet-body { overflow: auto; padding: 8px 24px 22px; }
+.sheet-body { overflow: auto; overscroll-behavior: contain; padding: 8px 24px 22px; }
 .icon-button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--rvm-surface-2); cursor: pointer; }
 
 .cleaning-mode-tabs {
@@ -593,8 +593,8 @@ button:focus-visible, select:focus-visible, input:focus-visible, .room-hitbox:fo
   .assisted-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; width: 100%; }
   .assisted-actions button { width: 100%; }
   .transport { flex-wrap: wrap; }
-  .sheet-layer { align-items: end; padding: 0; left: 0; right: 0; }
-  .job-sheet { width: 100%; max-height: 92vh; border-radius: 24px 24px 0 0; }
+  .sheet-layer { align-items: end; padding: 0; }
+  .job-sheet { width: 100%; max-height: 100%; border-radius: 24px 24px 0 0; }
   .sheet-handle { display: block; width: 42px; height: 5px; margin: 9px auto 0; border-radius: 9px; background: var(--rvm-border); }
   .job-sheet header { padding-top: 14px; }
   .dock-actions { grid-template-columns: 1fr; }
