@@ -52,16 +52,71 @@ export class RoborockVacuumMapCard extends ReactElement {
   private language?: Language;
   private homeAssistant?: HomeAssistant;
   private sheetInsetObserver?: ResizeObserver;
+  private sheetObserver?: MutationObserver;
+  private sheetOpen = false;
 
-  // Sheets are position:fixed, so by default they centre over the whole viewport and the
-  // docked sidebar covers their left half. Expose the card's own box as CSS vars so the
-  // sheet layer centres over the card instead, matching the main card window.
+  // Sheets are position:fixed. Expose the visible part of the card's own box as CSS vars,
+  // so a sheet opens inside the card (like the main card window), not over the whole page.
   private updateSheetInset = () => {
     const rect = this.getBoundingClientRect();
-    const viewport = window.innerWidth || document.documentElement.clientWidth;
+    const width = window.innerWidth || document.documentElement.clientWidth;
+    const height = window.innerHeight || document.documentElement.clientHeight;
     this.style.setProperty('--rvm-sheet-left', `${Math.max(0, rect.left)}px`);
-    this.style.setProperty('--rvm-sheet-right', `${Math.max(0, viewport - rect.right)}px`);
+    this.style.setProperty('--rvm-sheet-right', `${Math.max(0, width - rect.right)}px`);
+    this.style.setProperty('--rvm-sheet-top', `${Math.max(0, rect.top)}px`);
+    this.style.setProperty('--rvm-sheet-bottom', `${Math.max(0, height - rect.bottom)}px`);
   };
+
+  // While a sheet is open the page behind it must not scroll: wheel, touch and scroll keys
+  // only reach a scrollable area inside the sheet itself.
+  private blockPageScroll = (event: Event) => {
+    const path = event.composedPath();
+    const sheet = path.find((node) => node instanceof HTMLElement && node.classList.contains('job-sheet')) as HTMLElement | undefined;
+    if (!sheet) {
+      event.preventDefault();
+      return;
+    }
+    if (event.type === 'keydown') return;
+    const scroller = path.find(
+      (node) => node instanceof HTMLElement && sheet.contains(node) && node.scrollHeight > node.clientHeight && /(auto|scroll)/.test(getComputedStyle(node).overflowY),
+    );
+    if (!scroller) event.preventDefault();
+  };
+
+  private blockScrollKeys = (event: KeyboardEvent) => {
+    const target = event.composedPath()[0];
+    if (target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+    if (!['PageUp', 'PageDown', 'Home', 'End', ' ', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    this.blockPageScroll(event);
+  };
+
+  private syncSheetState = () => {
+    const open = Boolean(this.container.querySelector('.sheet-layer'));
+    if (open === this.sheetOpen) return;
+    this.sheetOpen = open;
+    const options = { capture: true, passive: false } as AddEventListenerOptions;
+    if (open) {
+      // Bring the card into view first so the sheet has room inside it, then measure.
+      const rect = this.getBoundingClientRect();
+      if (rect.top < 0 || rect.bottom > window.innerHeight) this.scrollIntoView({ block: rect.height > window.innerHeight ? 'start' : 'nearest' });
+      this.updateSheetInset();
+      window.addEventListener('wheel', this.blockPageScroll, options);
+      window.addEventListener('touchmove', this.blockPageScroll, options);
+      window.addEventListener('keydown', this.blockScrollKeys, options);
+      window.addEventListener('scroll', this.updateSheetInset, { capture: true, passive: true });
+    } else {
+      this.releaseSheet();
+    }
+  };
+
+  private releaseSheet() {
+    const options = { capture: true } as EventListenerOptions;
+    window.removeEventListener('wheel', this.blockPageScroll, options);
+    window.removeEventListener('touchmove', this.blockPageScroll, options);
+    window.removeEventListener('keydown', this.blockScrollKeys, options);
+    window.removeEventListener('scroll', this.updateSheetInset, options);
+    this.sheetOpen = false;
+  }
 
   setConfig(config: RoborockVacuumMapCardConfig) {
     // An unusable config shows the setup state instead of Home Assistant's error card.
@@ -85,6 +140,10 @@ export class RoborockVacuumMapCard extends ReactElement {
       this.sheetInsetObserver = new ResizeObserver(() => this.updateSheetInset());
       this.sheetInsetObserver.observe(this);
     }
+    if (!this.sheetObserver) {
+      this.sheetObserver = new MutationObserver(this.syncSheetState);
+      this.sheetObserver.observe(this.container, { childList: true, subtree: true });
+    }
     window.addEventListener('resize', this.updateSheetInset);
     this.updateSheetInset();
     this.render();
@@ -93,6 +152,9 @@ export class RoborockVacuumMapCard extends ReactElement {
   disconnectedCallback() {
     this.sheetInsetObserver?.disconnect();
     this.sheetInsetObserver = undefined;
+    this.sheetObserver?.disconnect();
+    this.sheetObserver = undefined;
+    this.releaseSheet();
     window.removeEventListener('resize', this.updateSheetInset);
     this.render();
   }
