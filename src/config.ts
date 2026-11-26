@@ -124,6 +124,16 @@ export const cardConfigSchema = z
       .optional(),
     enable_smartplan: z.boolean().optional(),
     cleaning_count_command: z.enum(['set_clean_repeat_times', 'app_segment_clean']).optional(),
+    schedule_actions: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          script: entityId.refine((value) => value.startsWith('script.'), 'Schedule actions run a script'),
+          data: z.record(z.string(), z.unknown()).optional(),
+          fields: z.array(z.string().min(1)).optional(),
+        }),
+      )
+      .optional(),
   })
   .passthrough()
   .superRefine((config, ctx) => {
