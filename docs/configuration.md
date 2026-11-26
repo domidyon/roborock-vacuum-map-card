@@ -92,6 +92,16 @@ entities:
   mop_attached: binary_sensor.qrevo_curv_2_flow_mop_attached
   water_box_attached: binary_sensor.qrevo_curv_2_flow_water_box_attached
   do_not_disturb: switch.qrevo_curv_2_flow_do_not_disturb
+  do_not_disturb_start: time.qrevo_curv_2_flow_do_not_disturb_begin
+  do_not_disturb_end: time.qrevo_curv_2_flow_do_not_disturb_end
+  robot_volume: number.qrevo_curv_2_flow_volume
+  off_peak_charging: switch.qrevo_curv_2_flow_off_peak_charging
+  off_peak_start: time.qrevo_curv_2_flow_off_peak_start
+  off_peak_end: time.qrevo_curv_2_flow_off_peak_end
+  total_cleaning_time: sensor.qrevo_curv_2_flow_total_cleaning_time
+  total_cleaning_area: sensor.qrevo_curv_2_flow_total_cleaning_area
+  total_cleaning_count: sensor.qrevo_curv_2_flow_total_cleaning_count
+  last_clean_start: sensor.qrevo_curv_2_flow_last_clean_begin
   battery: sensor.qrevo_curv_2_flow_battery
   current_room: sensor.qrevo_curv_2_flow_current_room
   cleaning_area: sensor.qrevo_curv_2_flow_cleaning_area
@@ -188,6 +198,10 @@ default_preset: vacuum_only
 | `entities.assisted_carry_job` | For assisted carry | Persistent `input_text` used for the compact saved room/settings payload |
 | `entities.assisted_carry_*_script` | For assisted carry | Prepare, start, and finish scripts that own the long-running dock and cleaning steps |
 | `entities.water_shortage`, `mop_attached`, `water_box_attached`, `do_not_disturb` | No | Safety and quiet-mode inputs used by the assisted scripts and the [pre-start checks](#pre-start-checks) |
+| `entities.do_not_disturb_start`, `do_not_disturb_end` | No | Native Roborock do-not-disturb begin and end `time` entities, editable in the robot panel |
+| `entities.robot_volume` | No | Native Roborock volume `number` entity, editable in the robot panel |
+| `entities.off_peak_charging`, `off_peak_start`, `off_peak_end` | No | Native off-peak charging switch and its begin and end `time` entities |
+| `entities.total_cleaning_time`, `total_cleaning_area`, `total_cleaning_count`, `last_clean_start` | No | Lifetime statistics and last clean start, shown read-only in the robot panel |
 | `entities.dock_clean_water_empty`, `dock_dirty_water_full` | No | Dock *Clean water box* / *Dirty water box* binary sensors for the pre-start checks |
 | `entities.dock_error` | No | Dock *Dock error* sensor; anything other than `ok` is shown before starting |
 | `entities.dock_clean_fluid_empty`, `dock_detergent_empty` | No | Detergent sensors on docks that have them (shown in the editor; checks are planned) |
