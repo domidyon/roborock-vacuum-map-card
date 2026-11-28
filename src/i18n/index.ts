@@ -64,6 +64,7 @@ const en = {
   launched: 'Cleaning job sent',
   floor: 'Floor',
   close: 'Close',
+  back: 'Back',
   dockStation: 'Dock station',
   dockOverview: 'Wash, empty, dry, and dock settings',
   empty: 'Empty',
@@ -325,6 +326,7 @@ const nl: typeof en = {
   launched: 'Schoonmaaktaak verzonden',
   floor: 'Verdieping',
   close: 'Sluiten',
+  back: 'Terug',
   dockStation: 'Dockstation',
   dockOverview: 'Wassen, legen, drogen en dockinstellingen',
   empty: 'Legen',
@@ -611,6 +613,7 @@ const tr: typeof en = {
 
   floor: 'Kat',
   close: 'Kapat',
+  back: 'Geri',
 
   dockStation: 'Bağlantı İstasyonu',
 
@@ -915,6 +918,7 @@ const pl: typeof en = {
   launched: 'Wysłano zadanie sprzątania',
   floor: 'Piętro',
   close: 'Zamknij',
+  back: 'Wstecz',
   dockStation: 'Stacja',
   dockOverview: 'Mycie, opróżnianie, suszenie i ustawienia stacji',
   empty: 'Opróżnij',
@@ -1172,6 +1176,7 @@ const es: typeof en = {
   launched: 'Limpieza iniciada',
   floor: 'Planta',
   close: 'Cerrar',
+  back: 'Volver',
   dockStation: 'Base',
   dockOverview: 'Lavado, vaciado, secado y ajustes de la base',
   empty: 'Vaciar',
