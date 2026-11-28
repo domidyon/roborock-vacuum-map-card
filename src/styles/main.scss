@@ -263,28 +263,48 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   svg { width: 18px; height: 18px; }
 }
 
-.sheet-layer { position: fixed; z-index: 999; top: var(--rvm-sheet-top, 0px); bottom: var(--rvm-sheet-bottom, 0px); left: var(--rvm-sheet-left, 0px); right: var(--rvm-sheet-right, 0px); display: grid; place-items: center; padding: 16px; overflow: hidden; overscroll-behavior: contain; border-radius: var(--ha-card-border-radius, 12px); }
-.sheet-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: inherit; background: rgba(0, 0, 0, 0.48); backdrop-filter: blur(3px); }
+.sheet-layer { position: absolute; inset: 0; z-index: 5; padding: 12px; overflow: clip; border-radius: inherit; }
+// The sheet rides on the card and stays in view while the page scrolls under the top bar.
+.sheet-layer > .job-sheet { position: sticky; top: calc(var(--header-height, 56px) + 12px); margin: 0 auto; max-height: min(100%, calc(100dvh - var(--header-height, 56px) - 130px)); }
+.roborock-card:has(> .sheet-layer), .roborock-card:has(.sheet-layer) { overflow: clip; }
+.sheet-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: inherit; background: rgba(0, 0, 0, 0.28); backdrop-filter: var(--ha-dialog-scrim-backdrop-filter, none); -webkit-backdrop-filter: var(--ha-dialog-scrim-backdrop-filter, none); cursor: default; }
 .job-sheet {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(680px, 100%);
-  max-height: min(820px, 100%);
+  // A pop-up that stays inside the card: as wide as the screen allows up to a comfortable
+  // reading width, never taller than the visible part of the card, with the card showing
+  // around it. Its glass (surface colour and blur) comes from the theme's dialog settings,
+  // so it matches Home Assistant's own pop-ups; themes without them get the card colour.
+  width: min(560px, 100%);
+  max-height: 100%;
   overflow: hidden;
-  border-radius: 24px;
-  background: var(--rvm-surface);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
+  border-radius: var(--ha-card-border-radius, 18px);
+  border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--rvm-border));
+  // Lighter glass than a full dialog: the theme's dialog surface at ~60% strength over the
+  // card's own blur. Themes can set --card-popup-background / --card-popup-backdrop-filter.
+  background: var(--card-popup-background, color-mix(in srgb, var(--ha-dialog-surface-background, var(--rvm-surface)) 62%, transparent));
+  backdrop-filter: var(--card-popup-backdrop-filter, var(--ha-card-backdrop-filter, var(--ha-dialog-surface-backdrop-filter, blur(10px) saturate(1.2))));
+  -webkit-backdrop-filter: var(--card-popup-backdrop-filter, var(--ha-card-backdrop-filter, var(--ha-dialog-surface-backdrop-filter, blur(10px) saturate(1.2))));
+  box-shadow: var(--dialog-box-shadow, 0 12px 32px rgba(0, 0, 0, 0.3));
+  color: var(--primary-text-color);
+  animation: rvm-sheet-in 0.2s ease-out;
 
-  header { display: flex; justify-content: space-between; gap: 16px; padding: 24px 24px 14px; }
+  header { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 20px 12px; }
+  header > div { min-width: 0; }
   h2, h3, p { margin: 0; }
   header p { margin-top: 5px; color: var(--rvm-muted); }
   h3 { margin-bottom: 10px; font-size: 15px; }
   footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px 22px; border-top: 1px solid var(--rvm-border); }
   footer button { min-width: 120px; }
 }
+@keyframes rvm-sheet-in { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
 .sheet-handle { display: none; }
-.sheet-body { overflow: auto; overscroll-behavior: contain; padding: 8px 24px 22px; }
+.sheet-body { overflow: auto; overscroll-behavior: auto; padding: 8px 24px 22px; }
+.sheet-back { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; margin-inline-start: -6px; padding: 4px 12px 4px 6px; border: 0; border-radius: 999px; color: var(--rvm-accent); background: color-mix(in srgb, var(--rvm-accent) 12%, transparent); font: inherit; font-weight: 600; cursor: pointer; }
+.sheet-back svg { width: 20px; height: 20px; }
+.sheet-back:hover { background: color-mix(in srgb, var(--rvm-accent) 20%, transparent); }
+:host([dir='rtl']) .sheet-back svg, [dir='rtl'] .sheet-back svg { transform: scaleX(-1); }
 .icon-button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--rvm-surface-2); cursor: pointer; }
 
 .cleaning-mode-tabs {
@@ -325,7 +345,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   background: var(--rvm-surface-2);
 
   button { min-width: 0; min-height: 46px; padding: 7px 6px; overflow: hidden; border: 0; border-radius: 11px; background: transparent; cursor: pointer; font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-  button.active { color: var(--rvm-accent); background: var(--rvm-surface); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+  button.active { color: #fff; background: color-mix(in srgb, var(--rvm-accent) 72%, #000); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
 }
 
 .range-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -358,13 +378,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   cursor: pointer;
   text-align: left;
 }
-.dock-actions > button.active { border-color: var(--rvm-accent); background: color-mix(in srgb, var(--rvm-accent) 12%, var(--rvm-surface)); }
+.dock-actions > button.active { border-color: var(--rvm-accent); background: color-mix(in srgb, var(--rvm-accent) 30%, var(--rvm-surface)); }
 .dock-actions strong, .dock-actions small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dock-actions small { color: var(--rvm-muted); }
 .dock-action-icon { grid-row: 1 / 3; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; color: var(--rvm-accent); background: var(--rvm-surface); }
 .dock-actions > button.active .dock-action-icon { color: var(--rvm-on-accent); background: var(--rvm-accent); }
 
-.dock-settings-group { overflow: hidden; border: 1px solid var(--rvm-border); border-radius: 18px; background: color-mix(in srgb, var(--rvm-surface-2) 44%, transparent); }
+.dock-settings-group { overflow: hidden; border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--rvm-border)); border-radius: calc(var(--ha-card-border-radius, 18px) - 4px); background: color-mix(in srgb, var(--primary-text-color, #fff) 5%, transparent); }
 .dock-settings-group h3 { display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 16px 10px; font-size: 15px; }
 .dock-settings-group h3 svg { width: 18px; height: 18px; color: var(--rvm-accent); }
 .dock-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 55px; padding: 8px 16px; border-top: 1px solid var(--rvm-border); }
@@ -372,6 +392,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 /* The native option list ignores translucent theme surfaces, so it gets a solid light background and dark text. */
 select option, select optgroup { color: #1c1c1e; background-color: #fff; }
 .dock-setting-row select { width: min(250px, 52%); min-height: 38px; padding: 7px 32px 7px 10px; border: 1px solid var(--rvm-border); border-radius: 10px; color: var(--rvm-text); background: var(--rvm-surface); }
+.time-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 16px 14px; border-top: 1px solid var(--rvm-border); }
+.time-field { display: grid; gap: 6px; min-width: 0; }
+.time-field > span { color: var(--rvm-muted); font-size: 13px; font-weight: 600; }
+.time-field input[type='time'] { width: 100%; min-width: 0; box-sizing: border-box; min-height: 40px; padding: 6px 10px; border: 1px solid var(--rvm-border); border-radius: 10px; color: var(--rvm-text); background: var(--rvm-surface); color-scheme: light dark; font: inherit; }
 .dock-setting-row input[type='time'] { min-height: 38px; padding: 6px 10px; border: 1px solid var(--rvm-border); border-radius: 10px; color: var(--rvm-text); background: var(--rvm-surface); color-scheme: light dark; }
 .robot-volume { display: flex; align-items: center; gap: 12px; width: min(250px, 58%); }
 .robot-volume input[type='range'] { flex: 1 1 auto; min-width: 0; accent-color: var(--rvm-accent); }
@@ -393,6 +417,8 @@ select option, select optgroup { color: #1c1c1e; background-color: #fff; }
 .schedule-form .mode-settings { margin-top: 14px; }
 .schedule-form .mode-settings > .app-field + .app-field { margin-top: 20px; }
 .schedule-time input { width: 100%; min-height: 46px; padding: 8px 12px; border: 1px solid var(--rvm-border); border-radius: 12px; color: var(--rvm-text); background: var(--rvm-surface); font: inherit; font-size: 18px; font-weight: 700; color-scheme: light dark; }
+.schedule-days { gap: 2px; padding: 3px; }
+.schedule-days button { padding: 7px 1px; font-size: 11.5px; text-overflow: clip; }
 .schedule-days button.active { color: var(--rvm-on-accent); background: var(--rvm-accent); }
 .option-strip button > span { overflow: hidden; text-overflow: ellipsis; }
 .app-field-title { display: flex; align-items: baseline; gap: 10px; color: var(--rvm-text) !important; font-size: 15px !important; }
@@ -446,8 +472,10 @@ select option, select optgroup { color: #1c1c1e; background-color: #fff; }
 .schedule-room-name ha-icon { color: var(--rvm-accent); --mdc-icon-size: 20px; }
 .schedule-input { width: 100%; min-height: 44px; padding: 8px 11px; border: 1px solid var(--rvm-border); border-radius: 11px; color: var(--rvm-text); background: var(--rvm-surface); font: inherit; }
 .dock-toggle { position: relative; flex: 0 0 auto; width: 48px; height: 28px; padding: 0; border: 0; border-radius: 14px; background: var(--rvm-border); cursor: pointer; transition: background 150ms ease; }
-.dock-toggle > span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--rvm-surface); box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25); transition: transform 150ms ease; }
-.dock-toggle.active { background: var(--rvm-accent); }
+.dock-toggle > span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #e8e8ec; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25); transition: transform 150ms ease; }
+// "On" uses a deeper shade of the accent so it stands out clearly on glass backgrounds.
+.dock-toggle.active { background: color-mix(in srgb, var(--rvm-accent) 72%, #000); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rvm-accent) 60%, #fff); }
+.dock-toggle.active > span { background: #fff; }
 .dock-toggle.active > span { transform: translateX(20px); }
 .drain-button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; padding: 11px 16px; border: 0; border-top: 1px solid var(--rvm-border); color: var(--rvm-danger); background: transparent; cursor: pointer; text-align: left; }
 .drain-button > span { display: grid; gap: 2px; }
@@ -593,10 +621,9 @@ button:focus-visible, select:focus-visible, input:focus-visible, .room-hitbox:fo
   .assisted-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; width: 100%; }
   .assisted-actions button { width: 100%; }
   .transport { flex-wrap: wrap; }
-  .sheet-layer { align-items: end; padding: 0; }
-  .job-sheet { width: 100%; max-height: 100%; border-radius: 24px 24px 0 0; }
-  .sheet-handle { display: block; width: 42px; height: 5px; margin: 9px auto 0; border-radius: 9px; background: var(--rvm-border); }
-  .job-sheet header { padding-top: 14px; }
+  .sheet-layer { padding: 8px; }
+  .job-sheet header { padding: 12px 14px 10px; }
+  .sheet-body { padding: 4px 14px 16px; }
   .dock-actions { grid-template-columns: 1fr; }
   .dock-actions > button { min-height: 68px; }
   .dock-setting-row { align-items: flex-start; flex-direction: column; gap: 7px; }
