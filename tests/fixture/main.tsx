@@ -70,6 +70,16 @@ const root = ReactDOM.createRoot(document.getElementById('root')!);
 if (params.get('view') === 'editor') {
   const editorHass = createDiscoveryHass(undefined, { locale: { language: params.get('lang') ?? 'en' } });
   root.render(<div className="editor"><CardEditor hass={editorHass} config={getStubConfig()} onChange={(next) => { window.__savedConfig = next; }} /></div>);
+} else if (params.get('view') === 'element') {
+  // ?view=element mounts the real custom element (shadow DOM, sheet positioning, scroll lock)
+  // next to a sidebar, inside a page that is taller than the viewport.
+  void import('../../src/main').then(() => {
+    document.body.style.cssText = 'margin:0;padding:24px 24px 1600px 280px;';
+    const card = document.createElement('roborock-vacuum-map-card') as HTMLElement & { setConfig(c: unknown): void; hass: unknown };
+    card.setConfig({ type: 'custom:roborock-vacuum-map-card', ...config });
+    card.hass = hass;
+    document.getElementById('root')!.replaceWith(card);
+  });
 } else {
   root.render(<VacuumCard hass={hass} config={config} />);
 }

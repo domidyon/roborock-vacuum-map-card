@@ -10,7 +10,7 @@ export interface EntityCandidate {
 /**
  * How each card entity is found among the Roborock robot and dock entities, in order of
  * preference. Translation keys come from Home Assistant core
- * (homeassistant/components/roborock/{select,sensor,binary_sensor,switch}.py) and were
+ * (homeassistant/components/roborock/{select,sensor,binary_sensor,switch,number,time}.py) and were
  * verified against a live Qrevo Curv 2 Flow on Home Assistant 2026.10.
  *
  * Keys without a native entity (dock setting helpers, assisted-carry helpers and scripts,
@@ -32,6 +32,16 @@ export const ENTITY_CANDIDATES: Partial<Record<keyof RoborockEntityConfig, Entit
   mop_attached: [{ domain: 'binary_sensor', translation_key: 'mop_attached' }],
   water_box_attached: [{ domain: 'binary_sensor', translation_key: 'water_box_attached' }],
   do_not_disturb: [{ domain: 'switch', translation_key: 'dnd_switch' }],
+  do_not_disturb_start: [{ domain: 'time', translation_key: 'dnd_start_time' }],
+  do_not_disturb_end: [{ domain: 'time', translation_key: 'dnd_end_time' }],
+  robot_volume: [{ domain: 'number', translation_key: 'volume' }],
+  off_peak_charging: [{ domain: 'switch', translation_key: 'off_peak_switch' }],
+  off_peak_start: [{ domain: 'time', translation_key: 'off_peak_start' }],
+  off_peak_end: [{ domain: 'time', translation_key: 'off_peak_end' }],
+  total_cleaning_time: [{ domain: 'sensor', translation_key: 'total_cleaning_time' }],
+  total_cleaning_area: [{ domain: 'sensor', translation_key: 'total_cleaning_area' }],
+  total_cleaning_count: [{ domain: 'sensor', translation_key: 'total_cleaning_count' }],
+  last_clean_start: [{ domain: 'sensor', translation_key: 'last_clean_start' }],
   battery: [{ domain: 'sensor', device_class: 'battery' }],
   current_room: [{ domain: 'sensor', translation_key: 'current_room' }],
   cleaning_area: [{ domain: 'sensor', translation_key: 'cleaning_area' }],

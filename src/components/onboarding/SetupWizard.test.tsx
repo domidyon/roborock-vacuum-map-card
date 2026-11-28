@@ -213,8 +213,10 @@ describe('re-detect panel', () => {
     const change = await screen.findByLabelText('Room Badkamer: area badkamer → bathroom');
     expect(change).toBeChecked();
     await userEvent.click(screen.getByLabelText('Add room Room to floor upstairs (no area yet)'));
-    await userEvent.click(screen.getByRole('button', { name: 'Apply 7 changes' }));
+    // Seven robot settings and totals join the earlier seven changes.
+    await userEvent.click(screen.getByRole('button', { name: 'Apply 14 changes' }));
     const applied = onChange.mock.calls.at(-1)?.[0] as RoborockVacuumMapCardConfig;
+    expect(applied.entities?.robot_volume).toBe('number.qrevo_curv_2_flow_volume');
     expect(applied.floors.find((floor) => floor.id === 'bathroom')?.rooms[0].area_id).toBe('bathroom');
     expect(applied.floors.find((floor) => floor.id === 'upstairs')?.rooms).toHaveLength(4);
   });

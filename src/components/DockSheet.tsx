@@ -1,4 +1,4 @@
-import { Droplets, Lock, Trash2, Waves, Wind, Wrench, X } from 'lucide-react';
+import { ChevronLeft, Droplets, Lock, Trash2, Waves, Wind, Wrench } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { DOCK_SETTING_DEFAULTS, DOCK_SETTING_ENTITIES, DOCK_SETTING_OPTIONS } from '../dock-settings';
 import { dockOptionText, t, type TranslationKey } from '../i18n';
@@ -143,11 +143,11 @@ export function DockSheet({
       <section className="job-sheet dock-sheet" role="dialog" aria-modal="true" aria-labelledby="dock-sheet-title" ref={dialogRef} tabIndex={-1}>
         <div className="sheet-handle" />
         <header>
+          <button type="button" className="sheet-back" aria-label={t(language, 'back')} onClick={onClose}><ChevronLeft /><span>{t(language, 'back')}</span></button>
           <div>
             <h2 id="dock-sheet-title">{t(language, 'dockStation')}</h2>
             <p>{t(language, 'dockOverview')}</p>
           </div>
-          <button type="button" className="icon-button" aria-label={t(language, 'close')} onClick={onClose}><X /></button>
         </header>
 
         <div className="sheet-body dock-sheet-body">
@@ -186,6 +186,15 @@ export function DockSheet({
             <SettingSelect label={t(language, 'dryDuration')} setting="dry_duration" value={dryDuration} language={language} disabled={disabled} onChange={(value) => onSetting('dry_duration', value)} />
           </section>
 
+          <section className="dock-settings-group">
+            <h3><Lock />{t(language, 'safetyMaintenance')}</h3>
+            {childLockEntity && <SettingToggle label={t(language, 'childLock')} checked={childLock} disabled={disabled} onChange={onChildLock} />}
+            <button type="button" className="drain-button" disabled>
+              <Droplets />
+              <span><strong>{t(language, 'drainWaterTank')}</strong><small>{t(language, 'drainWarning')}</small></span>
+            </button>
+          </section>
+
           {maintenance.length > 0 && (
             <section className="dock-settings-group maintenance-group">
               <h3><Wrench />{t(language, 'maintenance')}</h3>
@@ -206,15 +215,6 @@ export function DockSheet({
               {maintenance.some((item) => !item.can_reset) && <p className="maintenance-hint">{t(language, 'enableResetHint')}</p>}
             </section>
           )}
-
-          <section className="dock-settings-group">
-            <h3><Lock />{t(language, 'safetyMaintenance')}</h3>
-            {childLockEntity && <SettingToggle label={t(language, 'childLock')} checked={childLock} disabled={disabled} onChange={onChildLock} />}
-            <button type="button" className="drain-button" disabled>
-              <Droplets />
-              <span><strong>{t(language, 'drainWaterTank')}</strong><small>{t(language, 'drainWarning')}</small></span>
-            </button>
-          </section>
 
           {pending && <p className="dock-pending" role="status">{pending}</p>}
         </div>

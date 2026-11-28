@@ -65,20 +65,23 @@ test('Entire upstairs includes every current room', async ({ page }) => {
   await expect(dialog.getByRole('tab', { name: 'Vacuum only' })).toBeVisible();
 });
 
-test('mobile uses a bottom sheet and desktop uses a centered dialog', async ({ page }) => {
+test('sheets fit the screen on a phone and stay a pop-up on desktop', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('button', { name: 'Kitchen' }).click();
   await page.getByRole('button', { name: 'Configure job' }).click();
-  const mobileBox = await page.getByRole('dialog').boundingBox();
-  expect(mobileBox).not.toBeNull();
-  expect(Math.abs((mobileBox!.y + mobileBox!.height) - 844)).toBeLessThan(2);
+  const mobileBox = (await page.getByRole('dialog').boundingBox())!;
+  expect(mobileBox.x).toBeGreaterThanOrEqual(0);
+  expect(mobileBox.x + mobileBox.width).toBeLessThanOrEqual(390 + 1);
+  expect(mobileBox.y).toBeGreaterThanOrEqual(0);
+  expect(mobileBox.y + mobileBox.height).toBeLessThanOrEqual(844 + 1);
 
   await page.setViewportSize({ width: 1280, height: 900 });
-  const desktopBox = await page.getByRole('dialog').boundingBox();
-  expect(desktopBox).not.toBeNull();
-  expect(desktopBox!.y).toBeGreaterThan(20);
-  expect(desktopBox!.x).toBeGreaterThan(100);
+  const card = (await page.locator('ha-card').first().boundingBox())!;
+  const desktopBox = (await page.getByRole('dialog').boundingBox())!;
+  expect(desktopBox.width).toBeLessThanOrEqual(560 + 1);
+  expect(desktopBox.width).toBeLessThan(card.width);
+  expect(Math.abs((desktopBox.x + desktopBox.width / 2) - (card.x + card.width / 2))).toBeLessThan(2);
 });
 
 test('renders against a dark Home Assistant theme', async ({ page }) => {
@@ -118,4 +121,30 @@ test('retains the draft and never starts cleaning after a settings error', async
   await expect(page.getByRole('dialog')).toBeVisible();
   const calls = await page.evaluate(() => window.__serviceCalls);
   expect(calls.some((call) => call.service === 'clean_area')).toBe(false);
+});
+
+test('sheets stay inside the card and the page keeps scrolling behind them', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/?view=element');
+  const card = page.locator('roborock-vacuum-map-card');
+  await page.getByRole('button', { name: 'Kitchen' }).click();
+  await page.getByRole('button', { name: 'Configure job' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const cardBox = (await card.boundingBox())!;
+  const box = (await dialog.boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(cardBox.x);
+  expect(box.x + box.width).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+  expect(box.y).toBeGreaterThanOrEqual(Math.max(0, cardBox.y) - 1);
+  expect(box.y + box.height).toBeLessThanOrEqual(Math.min(900, cardBox.y + cardBox.height) + 1);
+
+  // The page is not locked while a sheet is open, and the sheet stays on screen.
+  const before = await page.evaluate(() => window.scrollY);
+  await page.mouse.move(100, 400);
+  await page.mouse.wheel(0, 400);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
+  await expect(dialog).toBeInViewport();
+
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(dialog).toBeHidden();
 });

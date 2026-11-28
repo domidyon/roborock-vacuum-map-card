@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import type { PreflightResult } from '../preflight';
 import type { AvailablePreset } from '../presets';
@@ -147,11 +147,11 @@ export function JobSheet({
       <section className="job-sheet" role="dialog" aria-modal="true" aria-labelledby="job-sheet-title" ref={dialogRef} tabIndex={-1}>
         <div className="sheet-handle" />
         <header>
+          <button type="button" className="sheet-back" aria-label={t(language, 'back')} onClick={onClose}><ChevronLeft /><span>{t(language, 'back')}</span></button>
           <div>
             <h2 id="job-sheet-title">{assistedCarry ? t(language, 'assistedCarryTitle') : t(language, 'configureTitle')}</h2>
             <p>{selectedRoomNames.join(' · ')}</p>
           </div>
-          <button type="button" className="icon-button" aria-label={t(language, 'close')} onClick={onClose}><X /></button>
         </header>
 
         <div className="sheet-body">

@@ -48,6 +48,47 @@ and is a snapshot, so create it again after changing the preset.
 
 If areas are missing, configure segment-to-area mapping in the Roborock vacuum entity settings first.
 
+### Schedules
+
+With the [Scheduler integration](https://github.com/nielsfaber/scheduler-component)
+installed, a *Schedule* button in the action bar lists cleaning schedules, with their next run and an on/off
+switch, and creates, edits and deletes them. A schedule runs a Home Assistant script, so
+it runs whether or not a dashboard is open. The card offers:
+
+- the preset scripts made with **Presets as scripts** (`script.rvmc_<vacuum>_<preset>`),
+  with their `floor` and `areas` fields (areas are picked from the card's rooms), or
+- the jobs in `schedule_actions`, which replace them:
+
+```yaml
+schedule_actions:
+  - name: Vac & Mop
+    icon: mdi:robot-vacuum
+    script: script.roborock_scheduled_cleaning
+    # Sent with every run of this job, and used to recognise its schedules.
+    data:
+      cleaning_mode: vac_and_mop
+    # Optional: which script fields to ask for (default: all fields not in data).
+    fields: [kitchen, living_room, suction, mop_mode, mop_intensity]
+    # Optional: which values to offer, in this order (the app hides Max+ for Vac & Mop).
+    options:
+      suction: [quiet, balanced, turbo, max]
+      mop_mode: [fast, standard, deep_plus]
+    # Optional: Home Assistant icons instead of the card's own on the option buttons.
+    option_icons:
+      suction: { quiet: mdi:fan-speed-1, balanced: mdi:fan-speed-2, max: mdi:fan }
+```
+
+The editor follows the Roborock app: the jobs are tabs; each select is a pill of icon
+buttons with its current value beside the name (suction levels, mop routes and water flow
+use the card's own line icons drawn after the app, `options` limits and orders the values,
+`option_icons` sets Home Assistant icons instead, and deep routes
+are marked as time-consuming); water flow levels are a slider with the app's level
+numbers; rooms (two-option selects such as `skip`/`clean`, or an area selector) are rows
+with the card's room icons. The schedule list shows the rooms and choices of each
+schedule. Other selectors (boolean,
+number, time, text) get plain inputs. A schedule with several times, an end time or several actions is listed and
+can be switched or deleted, but is edited in the Scheduler card.
+
 ### Config versions
 
 Configs written by the assistant include `config_version: 1`. Configs without it are
@@ -92,6 +133,16 @@ entities:
   mop_attached: binary_sensor.qrevo_curv_2_flow_mop_attached
   water_box_attached: binary_sensor.qrevo_curv_2_flow_water_box_attached
   do_not_disturb: switch.qrevo_curv_2_flow_do_not_disturb
+  do_not_disturb_start: time.qrevo_curv_2_flow_do_not_disturb_begin
+  do_not_disturb_end: time.qrevo_curv_2_flow_do_not_disturb_end
+  robot_volume: number.qrevo_curv_2_flow_volume
+  off_peak_charging: switch.qrevo_curv_2_flow_off_peak_charging
+  off_peak_start: time.qrevo_curv_2_flow_off_peak_start
+  off_peak_end: time.qrevo_curv_2_flow_off_peak_end
+  total_cleaning_time: sensor.qrevo_curv_2_flow_total_cleaning_time
+  total_cleaning_area: sensor.qrevo_curv_2_flow_total_cleaning_area
+  total_cleaning_count: sensor.qrevo_curv_2_flow_total_cleaning_count
+  last_clean_start: sensor.qrevo_curv_2_flow_last_clean_begin
   battery: sensor.qrevo_curv_2_flow_battery
   current_room: sensor.qrevo_curv_2_flow_current_room
   cleaning_area: sensor.qrevo_curv_2_flow_cleaning_area
@@ -188,6 +239,10 @@ default_preset: vacuum_only
 | `entities.assisted_carry_job` | For assisted carry | Persistent `input_text` used for the compact saved room/settings payload |
 | `entities.assisted_carry_*_script` | For assisted carry | Prepare, start, and finish scripts that own the long-running dock and cleaning steps |
 | `entities.water_shortage`, `mop_attached`, `water_box_attached`, `do_not_disturb` | No | Safety and quiet-mode inputs used by the assisted scripts and the [pre-start checks](#pre-start-checks) |
+| `entities.do_not_disturb_start`, `do_not_disturb_end` | No | Native Roborock do-not-disturb begin and end `time` entities, editable in the robot panel |
+| `entities.robot_volume` | No | Native Roborock volume `number` entity, editable in the robot panel |
+| `entities.off_peak_charging`, `off_peak_start`, `off_peak_end` | No | Native off-peak charging switch and its begin and end `time` entities |
+| `entities.total_cleaning_time`, `total_cleaning_area`, `total_cleaning_count`, `last_clean_start` | No | Lifetime statistics and last clean start, shown read-only in the robot panel |
 | `entities.dock_clean_water_empty`, `dock_dirty_water_full` | No | Dock *Clean water box* / *Dirty water box* binary sensors for the pre-start checks |
 | `entities.dock_error` | No | Dock *Dock error* sensor; anything other than `ok` is shown before starting |
 | `entities.dock_clean_fluid_empty`, `dock_detergent_empty` | No | Detergent sensors on docks that have them (shown in the editor; checks are planned) |

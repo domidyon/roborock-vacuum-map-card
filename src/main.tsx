@@ -25,6 +25,15 @@ function warnDeprecatedVacuumModeFallback() {
   );
 }
 
+// Bottom edge of Home Assistant's fixed dashboard top bar, so a sheet never opens underneath it.
+function topBarBottom(): number {
+  const main = document.querySelector('home-assistant')?.shadowRoot?.querySelector('home-assistant-main');
+  const panel = main?.shadowRoot?.querySelector('partial-panel-resolver ha-panel-lovelace');
+  const header = panel?.shadowRoot?.querySelector('hui-root')?.shadowRoot?.querySelector('.header');
+  if (!header || getComputedStyle(header).position !== 'fixed') return 0;
+  return Math.max(0, header.getBoundingClientRect().bottom);
+}
+
 abstract class ReactElement extends HTMLElement {
   protected root?: ReactDOM.Root;
   protected container: HTMLDivElement;
@@ -51,6 +60,65 @@ export class RoborockVacuumMapCard extends ReactElement {
   private rawConfig?: unknown;
   private language?: Language;
   private homeAssistant?: HomeAssistant;
+  private sheetInsetObserver?: ResizeObserver;
+  private sheetObserver?: MutationObserver;
+  private sheetOpen = false;
+
+  // Sheets are position:fixed. Expose the visible part of the card's own box as CSS vars,
+  // so a sheet opens inside the card (like the main card window), not over the whole page.
+  private updateSheetInset = () => {
+    // The sheet covers only the part of the card that is on screen, below Home Assistant's own top bar.
+    const rect = this.getBoundingClientRect();
+    const width = window.innerWidth || document.documentElement.clientWidth;
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    this.style.setProperty('--rvm-sheet-left', `${Math.max(0, rect.left)}px`);
+    this.style.setProperty('--rvm-sheet-right', `${Math.max(0, width - rect.right)}px`);
+    this.style.setProperty('--rvm-sheet-top', `${Math.max(0, rect.top, topBarBottom())}px`);
+    this.style.setProperty('--rvm-sheet-bottom', `${Math.max(0, height - rect.bottom)}px`);
+  };
+
+  // While a sheet is open the page behind it must not scroll: wheel, touch and scroll keys
+  // only reach a scrollable area inside the sheet itself.
+  private blockPageScroll = (event: Event) => {
+    const path = event.composedPath();
+    const sheet = path.find((node) => node instanceof HTMLElement && node.classList.contains('job-sheet')) as HTMLElement | undefined;
+    if (!sheet) {
+      event.preventDefault();
+      return;
+    }
+    if (event.type === 'keydown') return;
+    const scroller = path.find(
+      (node) => node instanceof HTMLElement && sheet.contains(node) && node.scrollHeight > node.clientHeight && /(auto|scroll)/.test(getComputedStyle(node).overflowY),
+    );
+    if (!scroller) event.preventDefault();
+  };
+
+  private blockScrollKeys = (event: KeyboardEvent) => {
+    const target = event.composedPath()[0];
+    if (target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+    if (!['PageUp', 'PageDown', 'Home', 'End', ' ', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    this.blockPageScroll(event);
+  };
+
+  private syncSheetState = () => {
+    const open = Boolean(this.container.querySelector('.sheet-layer'));
+    if (open === this.sheetOpen) return;
+    this.sheetOpen = open;
+    // The page keeps scrolling while a sheet is open: the sheet sits on the card and stays in
+    // view with position: sticky, so nothing needs to be measured or locked here.
+    if (!open) {
+      this.releaseSheet();
+    }
+  };
+
+  private releaseSheet() {
+    const options = { capture: true } as EventListenerOptions;
+    window.removeEventListener('wheel', this.blockPageScroll, options);
+    window.removeEventListener('touchmove', this.blockPageScroll, options);
+    window.removeEventListener('keydown', this.blockScrollKeys, options);
+    window.removeEventListener('scroll', this.updateSheetInset, options);
+    this.sheetOpen = false;
+  }
 
   setConfig(config: RoborockVacuumMapCardConfig) {
     // An unusable config shows the setup state instead of Home Assistant's error card.
@@ -70,10 +138,26 @@ export class RoborockVacuumMapCard extends ReactElement {
   // Lovelace keeps left views detached in memory and stops sending them hass,
   // so the card has to stop its own background work while it is off the page.
   connectedCallback() {
+    if (!this.sheetInsetObserver) {
+      this.sheetInsetObserver = new ResizeObserver(() => this.updateSheetInset());
+      this.sheetInsetObserver.observe(this);
+    }
+    if (!this.sheetObserver) {
+      this.sheetObserver = new MutationObserver(this.syncSheetState);
+      this.sheetObserver.observe(this.container, { childList: true, subtree: true });
+    }
+    window.addEventListener('resize', this.updateSheetInset);
+    this.updateSheetInset();
     this.render();
   }
 
   disconnectedCallback() {
+    this.sheetInsetObserver?.disconnect();
+    this.sheetInsetObserver = undefined;
+    this.sheetObserver?.disconnect();
+    this.sheetObserver = undefined;
+    this.releaseSheet();
+    window.removeEventListener('resize', this.updateSheetInset);
     this.render();
   }
 

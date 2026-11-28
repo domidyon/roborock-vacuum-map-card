@@ -28,7 +28,12 @@ import { formatRemainingTime, initialFloor } from './card/format';
 import { assistedPreset, entireFloorSegments, runTransport, zonePreset, type TransportService } from './card/jobs';
 import { useAssistedCarry } from './card/useAssistedCarry';
 import { useDockControls } from './card/useDockControls';
+import { useRobotControls } from './card/useRobotControls';
 import { DockSheet } from './DockSheet';
+import { RobotSheet } from './RobotSheet';
+import { ScheduleSheet } from './ScheduleSheet';
+import { hasScheduler, scheduleActions } from '../schedules';
+import { hasRobotPanel } from '../robot-settings';
 import { JobSheet } from './JobSheet';
 import { MapView } from './MapView';
 
@@ -50,6 +55,8 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [assistedConfiguring, setAssistedConfiguring] = useState(false);
   const [dockOpen, setDockOpen] = useState(false);
+  const [robotOpen, setRobotOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [toast, setToast] = useState<string>();
   const [execution, setExecution] = useState<JobExecutionState>({ phase: 'idle' });
   const capabilities = useMemo(() => detectCapabilities(hass, config), [hass, config]);
@@ -215,6 +222,7 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
     closeSheet: () => setSheetOpen(false),
   });
   const dock = useDockControls(hassRef, config, language, setToast);
+  const robot = useRobotControls(hassRef, config, language, setToast);
 
   const submit = async (submittedDraft: JobDraft = draft) => {
     if (assistedConfiguring) {
@@ -336,6 +344,8 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
         onConfigure={() => openJobSheet(Boolean(floor.assisted_carry))}
         onTransport={transport}
         onDock={() => setDockOpen(true)}
+        onRobot={hasRobotPanel(config) ? () => setRobotOpen(true) : undefined}
+        onSchedule={hasScheduler(hass) && scheduleActions(config, hass).length > 0 ? () => setScheduleOpen(true) : undefined}
       />
 
       {sheetOpen && (
@@ -372,6 +382,21 @@ export function VacuumCard({ hass, config, connected = true }: VacuumCardProps) 
           onChildLock={dock.changeChildLock}
           maintenance={maintenance}
           onResetConsumable={dock.resetConsumable}
+        />
+      )}
+
+      {scheduleOpen && <ScheduleSheet hass={hass} config={config} language={language} onClose={() => setScheduleOpen(false)} onToast={setToast} />}
+
+      {robotOpen && (
+        <RobotSheet
+          hass={hass}
+          config={config}
+          language={language}
+          pending={robot.robotPending}
+          onClose={() => !robot.robotPending && setRobotOpen(false)}
+          onSwitch={robot.changeRobotSwitch}
+          onTime={robot.changeRobotTime}
+          onVolume={robot.changeRobotVolume}
         />
       )}
 
