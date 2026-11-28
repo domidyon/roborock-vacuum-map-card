@@ -25,6 +25,15 @@ function warnDeprecatedVacuumModeFallback() {
   );
 }
 
+// Bottom edge of Home Assistant's fixed dashboard top bar, so a sheet never opens underneath it.
+function topBarBottom(): number {
+  const main = document.querySelector('home-assistant')?.shadowRoot?.querySelector('home-assistant-main');
+  const panel = main?.shadowRoot?.querySelector('partial-panel-resolver ha-panel-lovelace');
+  const header = panel?.shadowRoot?.querySelector('hui-root')?.shadowRoot?.querySelector('.header');
+  if (!header || getComputedStyle(header).position !== 'fixed') return 0;
+  return Math.max(0, header.getBoundingClientRect().bottom);
+}
+
 abstract class ReactElement extends HTMLElement {
   protected root?: ReactDOM.Root;
   protected container: HTMLDivElement;
@@ -58,12 +67,13 @@ export class RoborockVacuumMapCard extends ReactElement {
   // Sheets are position:fixed. Expose the visible part of the card's own box as CSS vars,
   // so a sheet opens inside the card (like the main card window), not over the whole page.
   private updateSheetInset = () => {
+    // The sheet covers only the part of the card that is on screen, below Home Assistant's own top bar.
     const rect = this.getBoundingClientRect();
     const width = window.innerWidth || document.documentElement.clientWidth;
     const height = window.innerHeight || document.documentElement.clientHeight;
     this.style.setProperty('--rvm-sheet-left', `${Math.max(0, rect.left)}px`);
     this.style.setProperty('--rvm-sheet-right', `${Math.max(0, width - rect.right)}px`);
-    this.style.setProperty('--rvm-sheet-top', `${Math.max(0, rect.top)}px`);
+    this.style.setProperty('--rvm-sheet-top', `${Math.max(0, rect.top, topBarBottom())}px`);
     this.style.setProperty('--rvm-sheet-bottom', `${Math.max(0, height - rect.bottom)}px`);
   };
 
@@ -94,17 +104,9 @@ export class RoborockVacuumMapCard extends ReactElement {
     const open = Boolean(this.container.querySelector('.sheet-layer'));
     if (open === this.sheetOpen) return;
     this.sheetOpen = open;
-    const options = { capture: true, passive: false } as AddEventListenerOptions;
-    if (open) {
-      // Bring the card into view first so the sheet has room inside it, then measure.
-      const rect = this.getBoundingClientRect();
-      if (rect.top < 0 || rect.bottom > window.innerHeight) this.scrollIntoView({ block: rect.height > window.innerHeight ? 'start' : 'nearest' });
-      this.updateSheetInset();
-      window.addEventListener('wheel', this.blockPageScroll, options);
-      window.addEventListener('touchmove', this.blockPageScroll, options);
-      window.addEventListener('keydown', this.blockScrollKeys, options);
-      window.addEventListener('scroll', this.updateSheetInset, { capture: true, passive: true });
-    } else {
+    // The page keeps scrolling while a sheet is open: the sheet sits on the card and stays in
+    // view with position: sticky, so nothing needs to be measured or locked here.
+    if (!open) {
       this.releaseSheet();
     }
   };
