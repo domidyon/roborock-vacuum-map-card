@@ -1,4 +1,4 @@
-import { Activity, BarChart3, BatteryCharging, MoonStar, Volume2, X } from 'lucide-react';
+import { Activity, BarChart3, BatteryCharging, ChevronLeft, MoonStar, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { t, type TranslationKey } from '../i18n';
 import { formatRelativeTime, stateText } from './card/format';
@@ -71,7 +71,7 @@ function TimeRow({ label, value, disabled, onChange }: { label: string; value?: 
     if (/^\d{2}:\d{2}$/.test(next) && next !== value) onChange(next);
   });
   return (
-    <label className="dock-setting-row">
+    <label className="time-field">
       <span>{label}</span>
       <input
         ref={ref}
@@ -196,21 +196,14 @@ export function RobotSheet({ hass, config, language, pending, onClose, onSwitch,
       <section className="job-sheet dock-sheet robot-sheet" role="dialog" aria-modal="true" aria-labelledby="robot-sheet-title" ref={dialogRef} tabIndex={-1}>
         <div className="sheet-handle" />
         <header>
+          <button type="button" className="sheet-back" aria-label={t(language, 'back')} onClick={onClose}><ChevronLeft /><span>{t(language, 'back')}</span></button>
           <div>
             <h2 id="robot-sheet-title">{t(language, 'robotSettings')}</h2>
             <p>{t(language, 'robotOverview')}</p>
           </div>
-          <button type="button" className="icon-button" aria-label={t(language, 'close')} onClick={onClose}><X /></button>
         </header>
 
         <div className="sheet-body dock-sheet-body">
-          {health.length > 0 && (
-            <section className="dock-settings-group">
-              <h3><Activity />{t(language, 'robotHealth')}</h3>
-              {health.map((row) => <StatRow key={row.label} label={row.label} value={row.value} problem={row.problem} />)}
-            </section>
-          )}
-
           {entities.robot_volume && (
             <section className="dock-settings-group">
               <h3><Volume2 />{t(language, 'robotVolume')}</h3>
@@ -222,8 +215,12 @@ export function RobotSheet({ hass, config, language, pending, onClose, onSwitch,
             <section className="dock-settings-group">
               <h3><MoonStar />{t(language, 'doNotDisturb')}</h3>
               {entities.do_not_disturb && <Toggle label={t(language, 'doNotDisturb')} checked={switchOn('do_not_disturb')} disabled={disabled} onChange={(on) => onSwitch('do_not_disturb', on)} />}
-              {entities.do_not_disturb_start && <TimeRow label={t(language, 'timeFrom')} value={timeValue(hass, entities.do_not_disturb_start)} disabled={disabled} onChange={(value) => onTime('do_not_disturb_start', value)} />}
-              {entities.do_not_disturb_end && <TimeRow label={t(language, 'timeUntil')} value={timeValue(hass, entities.do_not_disturb_end)} disabled={disabled} onChange={(value) => onTime('do_not_disturb_end', value)} />}
+              {(entities.do_not_disturb_start || entities.do_not_disturb_end) && (
+                <div className="time-pair">
+                  {entities.do_not_disturb_start && <TimeRow label={t(language, 'timeFrom')} value={timeValue(hass, entities.do_not_disturb_start)} disabled={disabled} onChange={(value) => onTime('do_not_disturb_start', value)} />}
+                  {entities.do_not_disturb_end && <TimeRow label={t(language, 'timeUntil')} value={timeValue(hass, entities.do_not_disturb_end)} disabled={disabled} onChange={(value) => onTime('do_not_disturb_end', value)} />}
+                </div>
+              )}
             </section>
           )}
 
@@ -231,8 +228,12 @@ export function RobotSheet({ hass, config, language, pending, onClose, onSwitch,
             <section className="dock-settings-group">
               <h3><BatteryCharging />{t(language, 'offPeakCharging')}</h3>
               {entities.off_peak_charging && <Toggle label={t(language, 'offPeakCharging')} checked={switchOn('off_peak_charging')} disabled={disabled} onChange={(on) => onSwitch('off_peak_charging', on)} />}
-              {entities.off_peak_start && <TimeRow label={t(language, 'timeFrom')} value={timeValue(hass, entities.off_peak_start)} disabled={disabled} onChange={(value) => onTime('off_peak_start', value)} />}
-              {entities.off_peak_end && <TimeRow label={t(language, 'timeUntil')} value={timeValue(hass, entities.off_peak_end)} disabled={disabled} onChange={(value) => onTime('off_peak_end', value)} />}
+              {(entities.off_peak_start || entities.off_peak_end) && (
+                <div className="time-pair">
+                  {entities.off_peak_start && <TimeRow label={t(language, 'timeFrom')} value={timeValue(hass, entities.off_peak_start)} disabled={disabled} onChange={(value) => onTime('off_peak_start', value)} />}
+                  {entities.off_peak_end && <TimeRow label={t(language, 'timeUntil')} value={timeValue(hass, entities.off_peak_end)} disabled={disabled} onChange={(value) => onTime('off_peak_end', value)} />}
+                </div>
+              )}
             </section>
           )}
 
@@ -240,6 +241,13 @@ export function RobotSheet({ hass, config, language, pending, onClose, onSwitch,
             <section className="dock-settings-group">
               <h3><BarChart3 />{t(language, 'statistics')}</h3>
               {stats.map((item) => <StatRow key={item.label} label={item.label} value={item.value} />)}
+            </section>
+          )}
+
+          {health.length > 0 && (
+            <section className="dock-settings-group">
+              <h3><Activity />{t(language, 'robotHealth')}</h3>
+              {health.map((row) => <StatRow key={row.label} label={row.label} value={row.value} problem={row.problem} />)}
             </section>
           )}
 
